@@ -44,12 +44,12 @@
                         "<(module_root_dir)/src/libcurl/lib/Release/libcurl_imp.lib"
                     ],
                     "copies": [
-                        {
-                            "destination": "<(module_root_dir)/build/Debug/",
-                            "files": [
-                                "<(module_root_dir)/src/libcurl/lib/Debug/libcurl-d.dll"
-                            ]
-                        },
+                        # {
+                        #     "destination": "<(module_root_dir)/build/Debug/",
+                        #     "files": [
+                        #         "<(module_root_dir)/src/libcurl/lib/Debug/libcurl-d.dll"
+                        #     ]
+                        # },
                         {
                             "destination": "<(module_root_dir)/build/Release/",
                             "files": [
