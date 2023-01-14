@@ -5,7 +5,7 @@ type LibCurlBodyInfo = string | Uint8Array | any;
 type LibCurlCookieInfo = {
     key: string,
     value: string,
-    domain: string,
+    domain?: string,//可选 因为有fetch连接url参数提供
 }
 type LibCurlCookiesInfo = string | LibCurlCookieInfo[];
 type LibCurlHttpVersionInfo = LibCurl_HTTP_VERSION;
@@ -46,13 +46,13 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo): Pro
     return new Promise((resolve, reject) => {
         const { method = "GET",
             headers = [], redirect = false, httpVersion = 0,
-            openInnerLog = false, proxy, body } = request;
+            openInnerLog = false, proxy, body, cookies } = request;
         curl.open(method, url + '', true);
         if (Array.isArray(headers)) {
             headers.forEach(([key, value]) => {
                 curl.setRequestHeader(key, value);
             });
-        } else if(typeof headers == 'object') {
+        } else if (typeof headers == 'object') {
             Object.keys(headers).forEach((key: string) => {
                 curl.setRequestHeader(key, headers[key]);
             })
@@ -67,6 +67,21 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo): Pro
         }
         if (openInnerLog) {
             curl.printInnerLogger();
+        }
+        if (cookies) {
+            const { hostname } = new URL(url);
+            if (typeof cookies == 'string') {
+                cookies.replace(/\s+/g, '')
+                    .split(';')
+                    .map(e => e.split('=', 2))
+                    .forEach(([key, value]) => {
+                        curl.setCookie(key, value, hostname)
+                    });
+            } else {
+                cookies.forEach(({ key, value, domain }) => {
+                    curl.setCookie(key, value, domain || hostname);
+                })
+            }
         }
         if (proxy) {
             if (typeof proxy == "string") {
