@@ -23,8 +23,7 @@
     "dom"
   ],
   "include": [
-    "src/*",
-    "test/*"
+    "src/*"
   ],
   "exclude": [
   
