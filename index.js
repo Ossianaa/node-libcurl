@@ -1,3 +1,3 @@
-const LibCurl = require('./dist/src/index.js')
+const { LibCurl } = require('./dist/src/libcurl.js')
 
 module.exports = LibCurl;
