@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug C/C++ Addon",
+            "type": "lldb",
+            "request": "launch",
+            "preLaunchTask": "npm: build:dev",
+            "program": "node",
+            "args": ["${workspaceFolder}/dist/test/libcurl_test.js"]
+        },
+        {
+            "name": "Attach C/C++ Addon",
+            "type": "lldb",
+            "request": "attach",
+            "pid": "${command:pickMyProcess}"
+        }
+    ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "libcurl",
+  "version": "1.0.0",
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "node-addon-api": "^5.0.0",
+    "node-gyp": "^9.3.1"
+  },
+  "scripts": {
+    "test": "node ./test/requests_tls.js",
+    "build:dev": "node-gyp configure --node_use_openssl=false --openssl_quic=false --node_shared_openssl=false && node-gyp -j 16 build --release",
+    "unittest": "mocha"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.18",
+    "body-parser": "^1.20.1",
+    "chai": "^4.3.7",
+    "express": "^4.18.2",
+    "mocha": "^10.2.0",
+    "typescript": "^4.9.4"
+  },
+  "author": {
+    "name": "Ossian"
+  }
+}

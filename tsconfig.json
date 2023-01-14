@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "noImplicitAny": false,
+    "sourceMap": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "typeRoots": [
+      "./typings"
+    ],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "watch": true,
+    "esModuleInterop": true
+  },
+  "lib": [
+    "es2017",
+    "es7",
+    "es6",
+    "dom"
+  ],
+  "include": [
+    "src/*",
+    "test/*"
+  ],
+  "exclude": [
+  
+  ]
+}
