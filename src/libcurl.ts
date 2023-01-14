@@ -2,7 +2,7 @@ import bindings from 'bindings'
 
 const { BaoLibCurl } = bindings('bao_curl_node_addon');
 
-enum HTTP_VERSION {
+export enum LibCurl_HTTP_VERSION {
     http1_1,
     http2,
 }
@@ -10,16 +10,23 @@ enum HTTP_VERSION {
 export class LibCurl {
     private m_libCurl_impl_: any;
     private m_isAsync_: boolean;
+    private m_isSending_: boolean;
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
     }
-
+    private checkSending():void {
+        if (this.m_isSending_) {
+            throw new Error('the last request is sending, don\'t send one more request on one instance!')
+        }
+    }
     public open(method: string, url: string, async: boolean = true): void {
+        this.checkSending();
         this.m_libCurl_impl_.open(method, url);
         this.m_isAsync_ = async;
     }
 
     public setRequestHeader(key: string, value: string): void {
+        this.checkSending();
         this.m_libCurl_impl_.setRequestHeader(key, value);
     }
 
@@ -28,6 +35,7 @@ export class LibCurl {
      * @param headers 多个header 以\n换行链接的文本
      */
     public setRequestHeaders(headers: string): void {
+        this.checkSending();
         this.m_libCurl_impl_.setRequestHeaders(headers);
     }
 
@@ -38,6 +46,7 @@ export class LibCurl {
      * @param password 
      */
     public setProxy(proxy: string, username?: string, password?: string): void {
+        this.checkSending();
         if (username && password) {
             this.m_libCurl_impl_.setProxy(proxy);
         } else {
@@ -52,6 +61,7 @@ export class LibCurl {
      * sendTime时长包含connectTime 所以sendTime要大于connectTime
      */
     public setTimeout(connectTime: number, sendTime: number): void {
+        this.checkSending();
         if (connectTime > sendTime) {
             throw new Error('连接时间大于发送等待时间.');
         }
@@ -65,6 +75,7 @@ export class LibCurl {
      * @param domain cookie作用域 sample: .baidu.com  baike.baidu.com
      */
     public setCookie(key: string, value: string, domain: string): void {
+        this.checkSending();
         this.m_libCurl_impl_.setCookie(key, value, domain);
     }
 
@@ -74,6 +85,7 @@ export class LibCurl {
      * @param domain cookie作用域 sample: .baidu.com  baike.baidu.com
      */
     public removeCookie(key: string, domain: string): void {
+        this.checkSending();
         this.m_libCurl_impl_.removeCookie(key, domain);
     }
 
@@ -83,6 +95,7 @@ export class LibCurl {
      * sample: 
      */
     public getCookies(): string {
+        this.checkSending();
         return this.m_libCurl_impl_.getCookies();
     }
 
@@ -93,6 +106,7 @@ export class LibCurl {
      * sample: 
      */
     public getCookie(key: string): string {
+        this.checkSending();
         return this.m_libCurl_impl_.getCookie(key);
     }
 
@@ -102,6 +116,7 @@ export class LibCurl {
      * sample: 200 403 404
      */
     public getResponseStatus(): number {
+        this.checkSending();
         return this.m_libCurl_impl_.getResponseStatus();
     }
 
@@ -109,6 +124,7 @@ export class LibCurl {
      * 重置curl 包括之前的所有设定
      */
     public reset(): void {
+        this.checkSending();
         this.m_libCurl_impl_.reset();
     }
 
@@ -117,6 +133,7 @@ export class LibCurl {
      * @param isAllow 是否允许重定向
      */
     public setRedirect(isAllow: boolean): void {
+        this.checkSending();
         this.m_libCurl_impl_.setRedirect(isAllow);
     }
 
@@ -124,6 +141,7 @@ export class LibCurl {
      * 打印libcurl内部的 解析信息、连接信息、tls信息等等
      */
     public printInnerLogger(): void {
+        this.checkSending();
         this.m_libCurl_impl_.printInnerLogger();
     }
 
@@ -132,7 +150,8 @@ export class LibCurl {
      * @param version 
      * 设置http版本号
      */
-    public setHttpVersion(version: HTTP_VERSION): void {
+    public setHttpVersion(version: LibCurl_HTTP_VERSION): void {
+        this.checkSending();
         this.m_libCurl_impl_.setHttpVersion(version);
     }
 
@@ -142,12 +161,18 @@ export class LibCurl {
      * 当body不为string或uint8array时 此函数将用JSON.stringify转换对象
      */
     public send(body?: string | Uint8Array | any): Promise<undefined> | undefined {
+        this.checkSending();
+        this.m_isSending_ = true;
         if (this.m_isAsync_) {
             return new Promise((resolve, reject) => {
+                const callback = () => {
+                    this.m_isSending_ = false;
+                    resolve(void 0);
+                };
                 if (body) {
-                    this.m_libCurl_impl_.sendAsync(body, resolve)
+                    this.m_libCurl_impl_.sendAsync(body, callback);
                 } else {
-                    this.m_libCurl_impl_.sendAsync(resolve)
+                    this.m_libCurl_impl_.sendAsync(callback);
                 }
             })
         }
@@ -159,14 +184,17 @@ export class LibCurl {
     }
 
     public getResponseBody(): Uint8Array {
+        this.checkSending();
         return this.m_libCurl_impl_.getResponseBody();
     }
 
     public getResponseString(): string {
+        this.checkSending();
         return this.m_libCurl_impl_.getResponseString();
     }
 
     public getResponseJson(): Object {
+        this.checkSending();
         return JSON.parse(this.getResponseString());
     }
 
@@ -177,6 +205,7 @@ export class LibCurl {
      * sample __WX__({a:1})
      */
     public getResponseJsonp(callbackName?: string): Object {
+        this.checkSending();
         const str: string = this.getResponseString();
         let jsonstr: string = str;
         if (callbackName) {

@@ -5,9 +5,9 @@
             "name": "Debug C/C++ Addon",
             "type": "lldb",
             "request": "launch",
-            "preLaunchTask": "npm: build:dev",
+            // "preLaunchTask": "npm: build:dev",
             "program": "node",
-            "args": ["${workspaceFolder}/dist/test/libcurl_test.js"]
+            "args": ["${workspaceFolder}/test/libcurl_test.js"]
         },
         {
             "name": "Attach C/C++ Addon",
