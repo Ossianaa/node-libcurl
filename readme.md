@@ -52,7 +52,7 @@ fetch("https://xxx.io/api/graphql/", {
 
 ### winhttp  style
 ```javascript
-const curl = new Libcurl();
+const curl = new LibCurl();
 curl.open('POST', 'https://xxx.io/api/graphql/', true);
 curl.setRequestHeaders(`Host: xxx.io
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36
