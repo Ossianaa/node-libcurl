@@ -3,6 +3,7 @@ const { LibCurl, fetch } = require('../index.js');
 async function main() {
     const curl = new LibCurl();
     curl.open('GET', 'http://127.0.0.1:51053/unittest/getJsonp')
+    curl.setProxy('127.0.0.1:10512')
     curl.setRequestHeader('user-Agent', 'chrome')
     await curl.send();
     // console.log(curl.getResponseString());

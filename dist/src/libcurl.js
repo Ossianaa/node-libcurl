@@ -36,10 +36,10 @@ class LibCurl {
     setProxy(proxy, username, password) {
         this.checkSending();
         if (username && password) {
-            this.m_libCurl_impl_.setProxy(proxy);
+            this.m_libCurl_impl_.setProxy(proxy, username, password);
         }
         else {
-            this.m_libCurl_impl_.setProxy(proxy, username, password);
+            this.m_libCurl_impl_.setProxy(proxy);
         }
     }
     setTimeout(connectTime, sendTime) {

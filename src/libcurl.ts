@@ -48,9 +48,9 @@ export class LibCurl {
     public setProxy(proxy: string, username?: string, password?: string): void {
         this.checkSending();
         if (username && password) {
-            this.m_libCurl_impl_.setProxy(proxy);
-        } else {
             this.m_libCurl_impl_.setProxy(proxy, username, password);
+        } else {
+            this.m_libCurl_impl_.setProxy(proxy);
         }
     }
 
