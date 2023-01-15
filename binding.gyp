@@ -27,6 +27,7 @@
                         'Release': {
                             'msvs_settings': {
                                 'VCCLCompilerTool': {
+                                    'DisableSpecificWarnings':['4530','4819'],
                                     'RuntimeLibrary': '2',
                                 }
                             }
@@ -34,6 +35,7 @@
                         'Debug': {
                             'msvs_settings': {
                                 'VCCLCompilerTool': {
+                                    'DisableSpecificWarnings':['4530','4819'],
                                     'RuntimeLibrary': '3',
                                 }
                             }
