@@ -1,4 +1,1 @@
-const { LibCurl } = require('./dist/src/libcurl.js')
-const { fetch } = require('./dist/src/fetch.js')
-
-module.exports = { LibCurl, fetch };
+module.exports = require('./dist/src/export.js')
