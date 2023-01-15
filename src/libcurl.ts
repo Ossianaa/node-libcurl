@@ -115,7 +115,7 @@ export class LibCurl {
      * 
      * @returns 返回响应头
      */
-    public getResponseHeaders(): number {
+    public getResponseHeaders(): string {
         this.checkSending();
         return this.m_libCurl_impl_.getResponseHeaders();
     }

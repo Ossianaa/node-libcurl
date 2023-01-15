@@ -21,11 +21,12 @@ interface LibCurlRequestInfo {
     instance?: LibCurl;
 }
 interface LibCurlResponseInfo {
-    status: number;
+    status: () => number;
     arraybuffer: () => ArrayBuffer;
     text: () => string;
     json: () => object;
     jsonp: (callbackName?: string) => object;
+    headers: () => string;
 }
 export declare function fetch(url: string | URL, request: LibCurlRequestInfo): Promise<LibCurlResponseInfo>;
 export {};

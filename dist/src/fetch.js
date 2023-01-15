@@ -75,11 +75,12 @@ function fetch(url, request) {
             }
             promise.then(() => {
                 resolve({
-                    status: curl.getResponseStatus(),
+                    status: () => curl.getResponseStatus(),
                     arraybuffer: () => curl.getResponseBody().buffer,
                     text: () => curl.getResponseString(),
                     json: () => curl.getResponseJson(),
                     jsonp: (callbackName) => curl.getResponseJsonp(callbackName),
+                    headers: () => curl.getResponseHeaders(),
                 });
             });
         });

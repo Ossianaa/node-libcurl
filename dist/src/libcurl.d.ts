@@ -17,7 +17,7 @@ export declare class LibCurl {
     removeCookie(key: string, domain: string): void;
     getCookies(): string;
     getCookie(key: string): string;
-    getResponseHeaders(): number;
+    getResponseHeaders(): string;
     getResponseStatus(): number;
     reset(): void;
     setRedirect(isAllow: boolean): void;
