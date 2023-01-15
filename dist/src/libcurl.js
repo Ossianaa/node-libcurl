@@ -65,6 +65,10 @@ class LibCurl {
         this.checkSending();
         return this.m_libCurl_impl_.getCookie(key);
     }
+    getResponseHeaders() {
+        this.checkSending();
+        return this.m_libCurl_impl_.getResponseHeaders();
+    }
     getResponseStatus() {
         this.checkSending();
         return this.m_libCurl_impl_.getResponseStatus();

@@ -113,6 +113,15 @@ export class LibCurl {
 
     /**
      * 
+     * @returns 返回响应头
+     */
+    public getResponseHeaders(): number {
+        this.checkSending();
+        return this.m_libCurl_impl_.getResponseHeaders();
+    }
+
+    /**
+     * 
      * @returns 返回状态码
      * sample: 200 403 404
      */

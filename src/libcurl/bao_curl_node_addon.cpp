@@ -44,6 +44,7 @@ private:
 	Napi::Value sendAsync(const Napi::CallbackInfo &info);
 	Napi::Value getResponseBody(const Napi::CallbackInfo &info);
 	Napi::Value getResponseString(const Napi::CallbackInfo &info);
+	Napi::Value getResponseHeaders(const Napi::CallbackInfo &info);
 };
 
 Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
@@ -54,6 +55,7 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
 		InstanceMethod<&BaoLibCurlWarp::getResponseBody>("getResponseBody", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::getResponseString>("getResponseString", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::sendAsync>("sendAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::getResponseHeaders>("getResponseHeaders", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		// StaticMethod<&BaoLibCurlWarp::CreateNewItem>("CreateNewItem", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 	};
 	Napi::Function func = DefineClass(env, "BaoLibCurl", methodList);
@@ -382,6 +384,15 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 	return env.Undefined();
 }
 
+/*
+	getResponseHeaders()
+*/
+Napi::Value BaoLibCurlWarp::getResponseHeaders(const Napi::CallbackInfo &info)
+{
+	Napi::Env env = info.Env();
+	size_t argsLen = info.Length();
+	return Napi::String::New(env, this->m_curl.getResponseHeaders());
+}
 /*
 	getResponseBody()
 */
