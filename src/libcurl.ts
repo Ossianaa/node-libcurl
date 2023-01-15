@@ -14,7 +14,7 @@ export class LibCurl {
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
     }
-    private checkSending():void {
+    private checkSending(): void {
         if (this.m_isSending_) {
             throw new Error('the last request is sending, don\'t send one more request on one instance!')
         }
@@ -93,7 +93,7 @@ export class LibCurl {
      * 
      * @returns 返回所有Cookies 以\n连接
      * sample: .127.0.0.1      TRUE    /       FALSE   3000000000      a       b
-     *         .127.0.0.1      TRUE    /api       FALSE   3000000000      c       d
+     *         .127.0.0.1      TRUE    /api    FALSE   3000000000      c       d
      */
     public getCookies(): string {
         this.checkSending();
@@ -203,6 +203,7 @@ export class LibCurl {
      * 
      * @param callbackName 
      * @returns JSON
+     * unsafe
      * sample __WX__({a:1})
      */
     public getResponseJsonp(callbackName?: string): Object {
@@ -210,8 +211,16 @@ export class LibCurl {
         const str: string = this.getResponseString();
         let jsonstr: string = str;
         if (callbackName) {
-            [, jsonstr] = new RegExp(`\s*${callbackName}\(([\s\S]*?)\)`, 'g').exec(str)
+            [, jsonstr] = new RegExp(`\s*${callbackName}[\s\S]*(.*)[\s\S]*`, 'g').exec(str)
+        } else {
+            try {
+                eval(str)
+                throw new Error('it seem not a jsonp');
+            } catch (error) {
+                [, callbackName] = /(.*) is not defined/g.exec(error.message)
+                return this.getResponseJsonp(callbackName);
+            }
         }
-        return JSON.parse(jsonstr);
+        return eval(jsonstr);
     }
 }

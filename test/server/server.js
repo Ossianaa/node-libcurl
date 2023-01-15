@@ -23,6 +23,13 @@ app.get('/unittest/getIp', (req, res) => {
     res.send(req.ip.split(':')[3])
 })
 
+app.get('/unittest/getJsonp', (req, res) => {
+    const { cbname="__WX__" } = req.query;
+
+    res.send(`${cbname}({a:1})`)
+})
+
+
 app.get('/unittest/setTimeout', (req, res) => {
     const usp = new URLSearchParams(req.query)
     const timeout = usp.get('timeout');

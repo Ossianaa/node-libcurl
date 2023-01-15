@@ -126,9 +126,19 @@ class LibCurl {
         const str = this.getResponseString();
         let jsonstr = str;
         if (callbackName) {
-            [, jsonstr] = new RegExp(`\s*${callbackName}\(([\s\S]*?)\)`, 'g').exec(str);
+            [, jsonstr] = new RegExp(`\s*${callbackName}[\s\S]*(.*)[\s\S]*`, 'g').exec(str);
         }
-        return JSON.parse(jsonstr);
+        else {
+            try {
+                eval(str);
+                throw new Error('it seem not a jsonp');
+            }
+            catch (error) {
+                [, callbackName] = /(.*) is not defined/g.exec(error.message);
+                return this.getResponseJsonp(callbackName);
+            }
+        }
+        return eval(jsonstr);
     }
 }
 exports.LibCurl = LibCurl;
