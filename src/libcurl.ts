@@ -92,7 +92,8 @@ export class LibCurl {
     /**
      * 
      * @returns 返回所有Cookies 以\n连接
-     * sample: 
+     * sample: .127.0.0.1      TRUE    /       FALSE   3000000000      a       b
+     *         .127.0.0.1      TRUE    /api       FALSE   3000000000      c       d
      */
     public getCookies(): string {
         this.checkSending();
