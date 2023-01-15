@@ -2,3 +2,4 @@
 /node_modules/*
 .vscode/*
 /src/libcurl/lib/Debug/*
+/test/*
