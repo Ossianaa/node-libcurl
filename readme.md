@@ -18,7 +18,7 @@ You should install Python 2.7 and the Visual Studio compiler;
 
 ### import
 ```javascript
-import { default as Libcurl, fetch } from '@ossiana/node-libcurl'
+import { LibCurl, fetch } from '@ossiana/node-libcurl'
 ```
 
 ### browser fetch  style
