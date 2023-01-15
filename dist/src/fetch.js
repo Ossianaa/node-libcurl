@@ -16,7 +16,7 @@ function fetch(url, request) {
         request.instance || (request.instance = new libcurl_1.LibCurl());
         const curl = request.instance;
         return new Promise((resolve, reject) => {
-            const { method = "GET", headers = [], redirect = false, httpVersion = 0, openInnerLog = false, proxy, body } = request;
+            const { method = "GET", headers = [], redirect = false, httpVersion = 0, openInnerLog = false, proxy, body, cookies } = request;
             curl.open(method, url + '', true);
             if (Array.isArray(headers)) {
                 headers.forEach(([key, value]) => {
@@ -39,6 +39,23 @@ function fetch(url, request) {
             }
             if (openInnerLog) {
                 curl.printInnerLogger();
+            }
+            if (cookies) {
+                const { hostname } = new URL(url);
+                if (typeof cookies == 'string') {
+                    cookies.replace(/\s+/g, '')
+                        .split(';')
+                        .reverse()
+                        .map(e => e.split('=', 2))
+                        .forEach(([key, value]) => {
+                        curl.setCookie(key, value, hostname);
+                    });
+                }
+                else {
+                    Object.keys(cookies).forEach(key => {
+                        curl.setCookie(key, cookies[key], hostname);
+                    });
+                }
             }
             if (proxy) {
                 if (typeof proxy == "string") {

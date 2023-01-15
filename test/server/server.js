@@ -43,7 +43,6 @@ app.post('/unittest/getRawContentRandomTime', (req, res) => {
     }, Math.random() * 1e3 + 3000)
 })
 
-
 module.exports = {
     host: `http://127.0.0.1:${port}`,
     start() {

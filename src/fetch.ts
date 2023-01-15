@@ -2,12 +2,7 @@ import { LibCurl, LibCurl_HTTP_VERSION } from "./libcurl";
 
 type LibCurlHeadersInfo = [string, string][] | object | string;
 type LibCurlBodyInfo = string | Uint8Array | any;
-type LibCurlCookieInfo = {
-    key: string,
-    value: string,
-    domain?: string,//可选 因为有fetch连接url参数提供
-}
-type LibCurlCookiesInfo = string | LibCurlCookieInfo[];
+type LibCurlCookiesInfo = string | object;
 type LibCurlHttpVersionInfo = LibCurl_HTTP_VERSION;
 
 type LibCurlProxyWithAccountInfo = {
@@ -73,13 +68,14 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo): Pro
             if (typeof cookies == 'string') {
                 cookies.replace(/\s+/g, '')
                     .split(';')
+                    .reverse()//保证顺序不颠倒
                     .map(e => e.split('=', 2))
                     .forEach(([key, value]) => {
                         curl.setCookie(key, value, hostname)
                     });
             } else {
-                cookies.forEach(({ key, value, domain }) => {
-                    curl.setCookie(key, value, domain || hostname);
+                Object.keys(cookies).forEach(key => {
+                    curl.setCookie(key, cookies[key], hostname);
                 })
             }
         }

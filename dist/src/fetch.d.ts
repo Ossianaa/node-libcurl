@@ -1,12 +1,7 @@
 import { LibCurl, LibCurl_HTTP_VERSION } from "./libcurl";
 type LibCurlHeadersInfo = [string, string][] | object | string;
 type LibCurlBodyInfo = string | Uint8Array | any;
-type LibCurlCookieInfo = {
-    key: string;
-    value: string;
-    domain: string;
-};
-type LibCurlCookiesInfo = string | LibCurlCookieInfo[];
+type LibCurlCookiesInfo = string | object;
 type LibCurlHttpVersionInfo = LibCurl_HTTP_VERSION;
 type LibCurlProxyWithAccountInfo = {
     proxy: string;
