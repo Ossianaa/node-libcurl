@@ -29,11 +29,11 @@ interface LibCurlRequestInfo {
 
 interface LibCurlResponseInfo {
     status: () => number;
-    arraybuffer: () => ArrayBuffer;
-    text: () => string;
-    json: () => object;
-    jsonp: (callbackName?: string) => object;
-    headers: () => string;
+    arraybuffer: () => Promise<ArrayBuffer>;
+    text: () => Promise<string>;
+    json: () => Promise<object>;
+    jsonp: (callbackName?: string) => Promise<object>;
+    headers: () => Promise<string>;
 }
 
 export async function fetch(url: string | URL, request: LibCurlRequestInfo = {}): Promise<LibCurlResponseInfo> {
@@ -103,11 +103,11 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
             resolve(
                 {
                     status: () => curl.getResponseStatus(),
-                    arraybuffer: () => curl.getResponseBody().buffer,
-                    text: () => curl.getResponseString(),
-                    json: () => curl.getResponseJson(),
-                    jsonp: (callbackName?: string) => curl.getResponseJsonp(callbackName),
-                    headers: () => curl.getResponseHeaders(),
+                    arraybuffer: async () => curl.getResponseBody().buffer,
+                    text: async () => curl.getResponseString(),
+                    json: async () => curl.getResponseJson(),
+                    jsonp: async (callbackName?: string) => curl.getResponseJsonp(callbackName),
+                    headers: async () => curl.getResponseHeaders(),
                 }
             )
         })
