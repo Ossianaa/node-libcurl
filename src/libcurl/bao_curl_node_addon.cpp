@@ -347,7 +347,7 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 	curlAsyncWorker *workerPtr;
 	if (argsLen == 1 || info[0].IsFunction())
 	{
-		workerPtr = new curlAsyncWorker(info[0].As<Napi::Function>(), this->m_curl, Napi::Uint8Array::New(env, 1));
+		workerPtr = new curlAsyncWorker(info[0].As<Napi::Function>(), this->m_curl, nullptr, 0);
 		workerPtr->Queue();
 		return env.Undefined();
 	}
@@ -359,7 +359,7 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 	if (info[0].IsTypedArray())
 	{
 		Napi::Uint8Array u8Arr = info[0].As<Napi::Uint8Array>();
-		workerPtr = new curlAsyncWorker(info[1].As<Napi::Function>(), this->m_curl, u8Arr);
+		workerPtr = new curlAsyncWorker(info[1].As<Napi::Function>(), this->m_curl, (const char *)u8Arr.Data(), u8Arr.ElementLength());
 		workerPtr->Queue();
 		// this->m_curl.sendByte(reinterpret_cast<const char *>(utf8Buffer), u8Arr.ByteLength());
 		return env.Undefined();
@@ -370,7 +370,7 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 		size_t strLen = str.size();
 		Napi::Uint8Array u8buffer = Napi::Uint8Array::New(env, strLen);
 		memcpy_s(u8buffer.Data(), strLen, str.c_str(), strLen);
-		workerPtr = new curlAsyncWorker(info[1].As<Napi::Function>(), this->m_curl, u8buffer);
+		workerPtr = new curlAsyncWorker(info[1].As<Napi::Function>(), this->m_curl, (const char *)u8buffer.Data(),u8buffer.ElementLength());
 		workerPtr->Queue();
 		return env.Undefined();
 	}
@@ -379,7 +379,7 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 	size_t strLen = jsonStr.size();
 	Napi::Uint8Array u8buffer = Napi::Uint8Array::New(env, strLen);
 	memcpy_s(u8buffer.Data(), strLen, jsonStr.c_str(), strLen);
-	workerPtr = new curlAsyncWorker(info[1].As<Napi::Function>(), this->m_curl, u8buffer);
+	workerPtr = new curlAsyncWorker(info[1].As<Napi::Function>(), this->m_curl, (const char *)u8buffer.Data(),u8buffer.ElementLength());
 	workerPtr->Queue();
 	return env.Undefined();
 }

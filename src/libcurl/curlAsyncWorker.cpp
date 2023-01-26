@@ -1,9 +1,17 @@
 #include "curlAysncWorker.h"
 
-curlAsyncWorker::curlAsyncWorker(Napi::Function &callback, BaoCurl &baoCurlInstance, Napi::Uint8Array body)
-    : Napi::AsyncWorker(callback), m_baoCurlInstance(baoCurlInstance), m_sendBody(body) {}
+curlAsyncWorker::curlAsyncWorker(Napi::Function &callback, BaoCurl &baoCurlInstance, const char *body, size_t bodySize)
+    : Napi::AsyncWorker(callback), m_baoCurlInstance(baoCurlInstance)
+{
+    this->m_sendBody = (char *)malloc(bodySize);
+    this->m_bodySize = bodySize;
+    memcpy_s(this->m_sendBody, bodySize, body, bodySize);
+}
 
-curlAsyncWorker::~curlAsyncWorker() {}
+curlAsyncWorker::~curlAsyncWorker()
+{
+    free(m_sendBody);
+}
 
 // Executed inside the worker-thread.
 // It is not safe to access JS engine data structure
@@ -11,7 +19,7 @@ curlAsyncWorker::~curlAsyncWorker() {}
 // should go on `this`.
 void curlAsyncWorker::Execute()
 {
-    this->m_baoCurlInstance.sendByte((const char *)this->m_sendBody.Data(), this->m_sendBody.ByteLength());
+    this->m_baoCurlInstance.sendByte(this->m_sendBody, this->m_bodySize);
 }
 
 // Executed when the async work is complete
@@ -28,4 +36,3 @@ void curlAsyncWorker::OnOK()
         /* u8buffer */
     });
 }
-

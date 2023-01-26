@@ -4,11 +4,13 @@
 class curlAsyncWorker : public Napi::AsyncWorker
 {
 public:
-     curlAsyncWorker(Napi::Function &callback, BaoCurl& baoCurlInstance, Napi::Uint8Array m_sendBody);
+    curlAsyncWorker(Napi::Function &callback, BaoCurl &baoCurlInstance, const char *sendBody, size_t bodySize);
     ~curlAsyncWorker();
     void Execute();
     void OnOK();
+
 private:
-    BaoCurl& m_baoCurlInstance;
-    Napi::Uint8Array m_sendBody;
+    BaoCurl &m_baoCurlInstance;
+    char* m_sendBody = nullptr;
+    size_t m_bodySize;
 };

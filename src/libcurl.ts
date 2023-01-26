@@ -226,8 +226,12 @@ export class LibCurl {
                 eval(str)
                 throw new Error('it seem not a jsonp');
             } catch (error) {
-                [, callbackName] = /(.*) is not defined/g.exec(error.message)
-                return this.getResponseJsonp(callbackName);
+                try {
+                    [, callbackName] = /(.*) is not defined/g.exec(error.message);
+                    return this.getResponseJsonp(callbackName);
+                } catch {
+                    throw new Error('it seem not a jsonp')
+                }
             }
         }
         return eval(jsonstr);

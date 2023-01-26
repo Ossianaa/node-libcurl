@@ -1,7 +1,7 @@
 const { LibCurl, fetch } = require('../index.js');
 
 async function main() {
-    const curl = new LibCurl();
+    /* const curl = new LibCurl();
     curl.open('GET', 'http://127.0.0.1:51053/unittest/getJsonp')
     curl.setProxy('127.0.0.1:10512')
     curl.setRequestHeader('user-Agent', 'chrome')
@@ -15,12 +15,14 @@ async function main() {
     await curl.send();
     console.log(curl.getCookies());
     console.log(curl.getResponseString());
-    return
-    fetch('http://127.0.0.1:51053/unittest/getRawHeaders', {
+    return */
+    fetch('https://juejin.cn/post/', {
         cookies: 'a=b;c=d;e=f',
         headers: {
         }
     }).then(e => e.json()).then(e => {
+        console.log(e);
+    }).catch((e) => {
         console.log(e);
     })
 }

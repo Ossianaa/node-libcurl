@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetch = void 0;
 const libcurl_1 = require("./libcurl");
-function fetch(url, request) {
+function fetch(url, request = {}) {
     return __awaiter(this, void 0, void 0, function* () {
         request.instance || (request.instance = new libcurl_1.LibCurl());
         const curl = request.instance;
@@ -76,11 +76,11 @@ function fetch(url, request) {
             promise.then(() => {
                 resolve({
                     status: () => curl.getResponseStatus(),
-                    arraybuffer: () => curl.getResponseBody().buffer,
-                    text: () => curl.getResponseString(),
-                    json: () => curl.getResponseJson(),
-                    jsonp: (callbackName) => curl.getResponseJsonp(callbackName),
-                    headers: () => curl.getResponseHeaders(),
+                    arraybuffer: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseBody().buffer; }),
+                    text: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseString(); }),
+                    json: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseJson(); }),
+                    jsonp: (callbackName) => __awaiter(this, void 0, void 0, function* () { return curl.getResponseJsonp(callbackName); }),
+                    headers: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseHeaders(); }),
                 });
             });
         });
