@@ -36,7 +36,7 @@ interface LibCurlResponseInfo {
     headers: () => string;
 }
 
-export async function fetch(url: string | URL, request: LibCurlRequestInfo): Promise<LibCurlResponseInfo> {
+export async function fetch(url: string | URL, request: LibCurlRequestInfo = {}): Promise<LibCurlResponseInfo> {
     request.instance ||= new LibCurl();
     const curl = request.instance;
     return new Promise((resolve, reject) => {
