@@ -1,11 +1,11 @@
 #include "curlAysncWorker.h"
 
-curlAsyncWorker::curlAsyncWorker(Napi::Function &callback, BaoCurl &baoCurlInstance, const char *body, size_t bodySize)
+curlAsyncWorker::curlAsyncWorker(const Napi::Function &callback, BaoCurl &baoCurlInstance, const char *body, size_t bodySize)
     : Napi::AsyncWorker(callback), m_baoCurlInstance(baoCurlInstance)
 {
     this->m_sendBody = (char *)malloc(bodySize);
     this->m_bodySize = bodySize;
-    memcpy_s(this->m_sendBody, bodySize, body, bodySize);
+    memcpy(this->m_sendBody,  body, bodySize);
 }
 
 curlAsyncWorker::~curlAsyncWorker()
@@ -31,7 +31,7 @@ void curlAsyncWorker::OnOK()
     /* std::string str = this->m_baoCurlInstance.getResponseBody();
     size_t strLen = str.size();
     Napi::Uint8Array u8buffer = Napi::Uint8Array::New(Env(), strLen);
-    memcpy_s(u8buffer.Data(), strLen, str.c_str(), strLen); */
+    memcpy(u8buffer.Data(), strLen, str.c_str(), strLen); */
     Callback().Call({
         /* u8buffer */
     });

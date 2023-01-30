@@ -10,4 +10,11 @@
 
 
 std::vector<std::string> StringSplit(const std::string& str, const std::string& pattern);
-std::string StringFormat(const char* lpcszFormat, ...);
+template<typename ... Args>
+std::string StringFormat(const std::string& format, Args ... args){
+    size_t size = 1 + snprintf(nullptr, 0, format.c_str(), args ...);  // Extra space for \0
+    // unique_ptr<char[]> buf(new char[size]);
+    char bytes[size];
+    snprintf(bytes, size, format.c_str(), args ...);
+    return std::string(bytes);
+}

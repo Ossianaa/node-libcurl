@@ -5,7 +5,7 @@ std::vector<std::string> StringSplit(const std::string& str, const std::string& 
 	std::string::size_type pos;
 	std::vector<std::string> result;
 	std::string _str(str);
-	_str += pattern;//À©Õ¹×Ö·û´®ÒÔ·½±ã²Ù×÷
+	_str += pattern;//ï¿½ï¿½Õ¹ï¿½Ö·ï¿½ï¿½ï¿½ï¿½Ô·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	size_t size = _str.size();
 	for (size_t i = 0; i < size; i++)
 	{
@@ -21,21 +21,23 @@ std::vector<std::string> StringSplit(const std::string& str, const std::string& 
 }
 
 
-std::string StringFormat(const char* lpcszFormat, ...)
-{
-	std::string strResult;
-	if (NULL != lpcszFormat)
-	{
-		va_list marker = NULL;
-		va_start(marker, lpcszFormat); //³õÊ¼»¯±äÁ¿²ÎÊý
-		size_t nLength = _vscprintf(lpcszFormat, marker) + 1; //»ñÈ¡¸ñÊ½»¯×Ö·û´®³¤¶È
-		std::vector<char> vBuffer(nLength, '\0'); //´´½¨ÓÃÓÚ´æ´¢¸ñÊ½»¯×Ö·û´®µÄ×Ö·ûÊý×é
-		int nWritten = _vsnprintf_s(&vBuffer[0], vBuffer.size(), nLength, lpcszFormat, marker);
-		if (nWritten > 0)
-		{
-			strResult = &vBuffer[0];
-		}
-		va_end(marker); //ÖØÖÃ±äÁ¿²ÎÊý
-	}
-	return strResult;
-}
+
+
+// std::string StringFormat(const char* lpcszFormat, ...)
+// {
+// 	std::string strResult;
+// 	if (NULL != lpcszFormat)
+// 	{
+// 		va_list marker = {};
+// 		va_start(marker, lpcszFormat); //ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+// 		size_t nLength = vsnprintf(lpcszFormat, marker) + 1; //ï¿½ï¿½È¡ï¿½ï¿½Ê½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+// 		std::vector<char> vBuffer(nLength, '\0'); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´æ´¢ï¿½ï¿½Ê½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½
+// 		int nWritten = vsnprintf(&vBuffer[0], nLength, lpcszFormat, marker);
+// 		if (nWritten > 0)
+// 		{
+// 			strResult = &vBuffer[0];
+// 		}
+// 		va_end(marker); //ï¿½ï¿½ï¿½Ã±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+// 	}
+// 	return strResult;
+// }
