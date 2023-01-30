@@ -7,7 +7,7 @@
 #include <iostream>
 #include <stdlib.h> 
 #include <time.h> 
-
+#include <memory>
 
 std::vector<std::string> StringSplit(const std::string& str, const std::string& pattern);
 template<typename ... Args>
