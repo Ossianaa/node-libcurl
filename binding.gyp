@@ -42,7 +42,7 @@
                     },
                     'libraries': [
                         # "<(module_root_dir)/src/libcurl/lib/Debug/libcurl-d_imp.lib"
-                        "<(module_root_dir)/src/libcurl/lib/Release/libcurl_imp.lib"
+                        "<(module_root_dir)/src/libcurl/lib/Release/windows/libcurl_imp.lib"
                     ],
                     "copies": [
                         # {
@@ -54,11 +54,27 @@
                         {
                             "destination": "<(module_root_dir)/build/Release/",
                             "files": [
-                                "<(module_root_dir)/src/libcurl/lib/Release/libcurl.dll"
+                                "<(module_root_dir)/src/libcurl/lib/Release/windows/libcurl.dll"
                             ]
                         }
                     ]
 
+                }, {
+                    "configurations": {
+                        'Release': {
+                             'cflags': [ '-std=c++11', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch' ,'-fPIC'],
+                            'cflags_cc': [ '-std=c++11', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch','-fPIC' ]
+                        },
+                        'Debug': {
+                            
+                        },
+                    },
+                    'libraries': [
+                        "<(module_root_dir)/src/libcurl/lib/Release/darwin/libcurl.a",
+                        "<(module_root_dir)/src/libcurl/lib/Release/darwin/libssl.a",
+                        "<(module_root_dir)/src/libcurl/lib/Release/darwin/libcrypto.a"
+                    ],
+                    "copies": []
                 }],
                 ['OS=="linux"', {
 
@@ -73,9 +89,9 @@
                     },
                     'libraries': [
                         # "<(module_root_dir)/src/libcurl/lib/Debug/libcurl-d_imp.lib"
-                        "<(module_root_dir)/src/libcurl/lib/Release/libcurl.a",
-                        "<(module_root_dir)/src/libcurl/lib/Release/libssl.a",
-                        "<(module_root_dir)/src/libcurl/lib/Release/libcrypto.a"
+                        "<(module_root_dir)/src/libcurl/lib/Release/linux/libcurl.a",
+                        "<(module_root_dir)/src/libcurl/lib/Release/linux/libssl.a",
+                        "<(module_root_dir)/src/libcurl/lib/Release/linux/libcrypto.a"
                     ],
                     "copies": [
                         # {
@@ -91,8 +107,7 @@
                         #     ]
                         # }
                     ]
-
-                }]
+                }],
             ],
 
             # "configurations":{
