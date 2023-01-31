@@ -2,15 +2,27 @@
 
 ## different with Nodejs fetch api
 * JA3 FingerPrint is the same as chrome 108,it modified the BoringSSL extension, set the custom cipher suite with Libcurl
-* Now only support on Windows, linux and MacOS will be supported in the future
-
 ------------
+
+## Build Status
+
+| Platform                              | Support |
+|:-----------------------------:|:---------:|
+| __Windows (x64)__             |__Yes__|
+| __Windows (x86)__             |__No__|
+| __Windows (ARM)__             |__No__|
+| __Ubuntu (x86_64)__             |__Yes__|
+| __MacOS (x86_64)__             |__Yes__|
+| __MacOS (arm64)__             |__No__|
+------------
+
 ## how to build
-> npm i @ossiana/node-libcurl -g
+> npm i -g @ossiana/node-libcurl
 
 #### Some Problems on Windows
-You should install Python 2.7 and the Visual Studio compiler;
+You should install Python 3.x and the Visual Studio compiler;
 > npm i -g --production windows-build-tools
+------------
 
 
 
@@ -57,7 +69,7 @@ curl.open('POST', 'https://xxx.io/api/graphql/', true);
 curl.setRequestHeaders(`Host: xxx.io
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36
 Content-Type: application/octet-stream
-Referer: https://opensea.io/
+Referer: https://xxx.io/
 Accept-Encoding: gzip, deflate, br
 Accept-Language: zh-CN,zh;q=0.9
 `);
