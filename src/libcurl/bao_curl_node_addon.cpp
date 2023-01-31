@@ -213,7 +213,7 @@ Napi::Value BaoLibCurlWarp::removeCookie(const Napi::CallbackInfo &info)
 Napi::Value BaoLibCurlWarp::getCookies(const Napi::CallbackInfo &info)
 {
 	Napi::Env env = info.Env();
-	size_t argsLen = info.Length();
+	// size_t argsLen = info.Length();
 
 	return Napi::String::New(env, this->m_curl.getCookies());
 }
@@ -237,7 +237,7 @@ Napi::Value BaoLibCurlWarp::getCookie(const Napi::CallbackInfo &info)
 Napi::Value BaoLibCurlWarp::getResponseStatus(const Napi::CallbackInfo &info)
 {
 	Napi::Env env = info.Env();
-	size_t argsLen = info.Length();
+	// size_t argsLen = info.Length();
 
 	return Napi::Number::New(env, this->m_curl.getResponseStatus());
 }
@@ -248,7 +248,7 @@ Napi::Value BaoLibCurlWarp::getResponseStatus(const Napi::CallbackInfo &info)
 Napi::Value BaoLibCurlWarp::reset(const Napi::CallbackInfo &info)
 {
 	Napi::Env env = info.Env();
-	size_t argsLen = info.Length();
+	// size_t argsLen = info.Length();
 
 	this->m_curl.reset();
 	return env.Undefined();
@@ -274,7 +274,7 @@ Napi::Value BaoLibCurlWarp::setRedirect(const Napi::CallbackInfo &info)
 Napi::Value BaoLibCurlWarp::printInnerLogger(const Napi::CallbackInfo &info)
 {
 	Napi::Env env = info.Env();
-	size_t argsLen = info.Length();
+	// size_t argsLen = info.Length();
 	this->m_curl.printInnerLogger();
 	return env.Undefined();
 }
@@ -390,7 +390,7 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 Napi::Value BaoLibCurlWarp::getResponseHeaders(const Napi::CallbackInfo &info)
 {
 	Napi::Env env = info.Env();
-	size_t argsLen = info.Length();
+	// size_t argsLen = info.Length();
 	return Napi::String::New(env, this->m_curl.getResponseHeaders());
 }
 /*
@@ -399,7 +399,7 @@ Napi::Value BaoLibCurlWarp::getResponseHeaders(const Napi::CallbackInfo &info)
 Napi::Value BaoLibCurlWarp::getResponseBody(const Napi::CallbackInfo &info)
 {
 	Napi::Env env = info.Env();
-	size_t argsLen = info.Length();
+	// size_t argsLen = info.Length();
 	string utf8Str = this->m_curl.getResponseBody();
 	size_t utf8Size = utf8Str.size();
 	Napi::Uint8Array uint8buffer = Napi::Uint8Array::New(env, utf8Size);
@@ -413,7 +413,7 @@ Napi::Value BaoLibCurlWarp::getResponseBody(const Napi::CallbackInfo &info)
 Napi::Value BaoLibCurlWarp::getResponseString(const Napi::CallbackInfo &info)
 {
 	Napi::Env env = info.Env();
-	size_t argsLen = info.Length();
+	// size_t argsLen = info.Length();
 	return Napi::String::New(env, this->m_curl.getResponseBody());
 }
 
