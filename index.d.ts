@@ -1,1 +1,0 @@
-declare module '@ossiana/node-libcurl'

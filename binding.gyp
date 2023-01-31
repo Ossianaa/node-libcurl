@@ -5,8 +5,7 @@
     "targets": [
         {
             "target_name": "bao_curl_node_addon",
-            "cflags!": [],
-            "cflags_cc!": [],
+           
             "sources": [
                 "./src/libcurl/bao_curl_node_addon.cpp",
                 "./src/libcurl/bao_curl.cpp",
@@ -43,7 +42,7 @@
                     },
                     'libraries': [
                         # "<(module_root_dir)/src/libcurl/lib/Debug/libcurl-d_imp.lib"
-                        "<(module_root_dir)/src/libcurl/lib/Release/libcurl_imp.lib"
+                        "<(module_root_dir)/src/libcurl/lib/Release/windows/libcurl_imp.lib"
                     ],
                     "copies": [
                         # {
@@ -55,11 +54,58 @@
                         {
                             "destination": "<(module_root_dir)/build/Release/",
                             "files": [
-                                "<(module_root_dir)/src/libcurl/lib/Release/libcurl.dll"
+                                "<(module_root_dir)/src/libcurl/lib/Release/windows/libcurl.dll"
                             ]
                         }
                     ]
 
+                }],
+                ['OS=="linux"', {
+
+                    "configurations": {
+                        'Release': {
+                             'cflags': [ '-std=c++11', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch' ,'-fPIC'],
+                            'cflags_cc': [ '-std=c++11', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch','-fPIC']
+                        },
+                        'Debug': {
+                            
+                        },
+                    },
+                    'libraries': [
+                        # "<(module_root_dir)/src/libcurl/lib/Debug/libcurl-d_imp.lib"
+                        "<(module_root_dir)/src/libcurl/lib/Release/linux/libcurl.a",
+                        "<(module_root_dir)/src/libcurl/lib/Release/linux/libssl.a",
+                        "<(module_root_dir)/src/libcurl/lib/Release/linux/libcrypto.a"
+                    ],
+                    "copies": [
+                        # {
+                        #     "destination": "<(module_root_dir)/build/Debug/",
+                        #     "files": [
+                        #         "<(module_root_dir)/src/libcurl/lib/Debug/libcurl-d.dll"
+                        #     ]
+                        # },
+                        # {
+                        #     "destination": "<(module_root_dir)/build/Release/",
+                        #     "files": [
+                        #         "<(module_root_dir)/src/libcurl/lib/Release/libcurl.so"
+                        #     ]
+                        # }
+                    ]
+                }],
+                ['OS=="mac"', {
+                    "configurations": {
+                        'Release': {
+                            'cflags': [ '-std=c++11', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch' ,'-fPIC'],
+                            'cflags_cc': [ '-std=c++11', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch','-fPIC'],
+                        },
+                    },
+                    'libraries': [
+                        "/System/Library/Frameworks/CoreFoundation.framework",
+                        "/System/Library/Frameworks/SystemConfiguration.framework",
+                        "<(module_root_dir)/src/libcurl/lib/Release/darwin/libcurl.a",
+                        "<(module_root_dir)/src/libcurl/lib/Release/darwin/libssl.a",
+                        "<(module_root_dir)/src/libcurl/lib/Release/darwin/libcrypto.a"
+                    ],
                 }]
             ],
 

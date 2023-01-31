@@ -97,7 +97,7 @@ void BaoCurl::setProxy(std::string proxy, std::string username,
 					   std::string password)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXY, proxy.c_str()));
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXYUSERPWD, username + ":" + password));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXYUSERPWD, (username + ":" + password).c_str()));
 	this->m_bProxy = true;
 }
 

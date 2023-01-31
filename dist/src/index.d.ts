@@ -1,2 +1,1 @@
-import { LibCurl } from './libcurl';
-export { LibCurl };
+export * from './export';
