@@ -1,8 +1,8 @@
-const { LibCurl, fetch, LibCurl_HTTP_VERSION } = require('../src/index.js');
+const { LibCurl, fetch } = require('../dist/index.js');
 
 async function main() {
     const curl = new LibCurl();
-    curl.setHttpVersion(1)
+    curl.setHttpVersion(1);
     curl.open('GET', 'https://tls.peet.ws/api/all')
     curl.setRequestHeader('user-Agent', 'chrome')
     await curl.send();

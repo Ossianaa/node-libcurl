@@ -72,7 +72,7 @@ private:
 	struct curl_slist* m_pHeaders = NULL;
 	std::string m_method = "GET";
 	struct Stream_st m_stream;
-	struct curl_slist* m_cookies = NULL;
+	// struct curl_slist* m_cookies = NULL;
 	bool m_bProxy = false;
 	bool m_bIsHttps = false;
 
