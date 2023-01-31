@@ -6,7 +6,7 @@
     "removeComments": true,
     "noImplicitAny": false,
     "sourceMap": true,
-    "rootDir": ".",
+    "rootDir": "src",
     "outDir": "dist",
     "typeRoots": [
       "./typings"
@@ -26,6 +26,6 @@
     "src/*"
   ],
   "exclude": [
-  
+    
   ]
 }

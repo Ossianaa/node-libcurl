@@ -1,4 +1,4 @@
-const { LibCurl, fetch, LibCurl_HTTP_VERSION } = require('../index.js');
+const { LibCurl, fetch, LibCurl_HTTP_VERSION } = require('../src/index.js');
 
 async function main() {
     const curl = new LibCurl();
