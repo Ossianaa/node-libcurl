@@ -1,14 +1,14 @@
-const { LibCurl, fetch } = require('../dist/index.js');
+const { LibCurl, fetch } = require('../dist/src/index');
 
 async function main() {
     const curl = new LibCurl();
     curl.setHttpVersion(1);
-    curl.open('GET', 'https://tls.peet.ws/api/all')
+    curl.open('GET', 'https://tls.peet.ws/api/clean')
     curl.setRequestHeader('user-Agent', 'chrome')
     await curl.send();
     console.log(curl.getResponseString());
 
-    curl.open('GET', 'https://tls.peet.ws/api/all')
+    curl.open('GET', 'https://tls.peet.ws/api/clean')
     curl.setRequestHeader('user-Agent', 'chrome')
     await curl.send();
     console.log(curl.getResponseString());
