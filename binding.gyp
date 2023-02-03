@@ -27,7 +27,7 @@
                             'msvs_settings': {
                                 'VCCLCompilerTool': {
                                     'DisableSpecificWarnings':['4530','4819'],
-                                    'RuntimeLibrary': '2',
+                                    'RuntimeLibrary': '1',
                                 }
                             }
                         },
@@ -64,7 +64,7 @@
 
                     "configurations": {
                         'Release': {
-                             'cflags': [ '-std=c++11', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch' ,'-fPIC'],
+                            'cflags': [ '-std=c++11', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch' ,'-fPIC'],
                             'cflags_cc': [ '-std=c++11', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch','-fPIC']
                         },
                         'Debug': {
@@ -72,25 +72,11 @@
                         },
                     },
                     'libraries': [
-                        # "<(module_root_dir)/src/libcurl/lib/Debug/libcurl-d_imp.lib"
                         "<(module_root_dir)/src/libcurl/lib/Release/linux/libcurl.a",
                         "<(module_root_dir)/src/libcurl/lib/Release/linux/libssl.a",
                         "<(module_root_dir)/src/libcurl/lib/Release/linux/libcrypto.a"
                     ],
-                    "copies": [
-                        # {
-                        #     "destination": "<(module_root_dir)/build/Debug/",
-                        #     "files": [
-                        #         "<(module_root_dir)/src/libcurl/lib/Debug/libcurl-d.dll"
-                        #     ]
-                        # },
-                        # {
-                        #     "destination": "<(module_root_dir)/build/Release/",
-                        #     "files": [
-                        #         "<(module_root_dir)/src/libcurl/lib/Release/libcurl.so"
-                        #     ]
-                        # }
-                    ]
+                
                 }],
                 ['OS=="mac"', {
                     "configurations": {
