@@ -7,7 +7,7 @@
     "node-gyp": "^9.3.1"
   },
   "scripts": {
-    "test": "node ./test/requests_tls.js",
+    "test": "node ./test/libcurl_test.js",
     "build:dev": "node-gyp configure --node_use_openssl=false --openssl_quic=false --node_shared_openssl=false && node-gyp -j 16 build --release",
     "unittest": "mocha"
   },

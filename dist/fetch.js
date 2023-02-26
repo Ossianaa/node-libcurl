@@ -48,12 +48,22 @@ function fetch(url, request = {}) {
                         .reverse()
                         .map(e => e.split('=', 2))
                         .forEach(([key, value]) => {
-                        curl.setCookie(key, value, hostname);
+                        curl.setCookie({
+                            name: key,
+                            value,
+                            domain: hostname,
+                            path: '/',
+                        });
                     });
                 }
                 else {
                     Object.keys(cookies).forEach(key => {
-                        curl.setCookie(key, cookies[key], hostname);
+                        curl.setCookie({
+                            name: key,
+                            value: cookies[key],
+                            domain: hostname,
+                            path: '/',
+                        });
                     });
                 }
             }
@@ -81,6 +91,8 @@ function fetch(url, request = {}) {
                     json: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseJson(); }),
                     jsonp: (callbackName) => __awaiter(this, void 0, void 0, function* () { return curl.getResponseJsonp(callbackName); }),
                     headers: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseHeaders(); }),
+                    cookies: () => __awaiter(this, void 0, void 0, function* () { return curl.getCookies(); }),
+                    cookiesMap: () => __awaiter(this, void 0, void 0, function* () { return curl.getCookiesMap(); }),
                 });
             });
         });

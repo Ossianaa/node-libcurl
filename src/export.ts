@@ -1,4 +1,4 @@
-import { LibCurl } from "./libcurl";
+import { LibCurl } from "./libcurl"
 import { fetch } from "./fetch"
-
-export { LibCurl, fetch };
+import { requests } from './requests'
+export { LibCurl, fetch, requests };

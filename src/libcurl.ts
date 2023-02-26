@@ -7,6 +7,82 @@ export enum LibCurl_HTTP_VERSION {
     http2,
 }
 
+//Domain         Secure  Path    CORS    TimeStamp       Name    Value
+export type LibCurlSetCookieOption = {
+    domain?: string;
+    // secure?: boolean;
+    path?: string;
+    // cors?: boolean;
+    name: string;
+    value: string;
+}
+
+export type LibCurlGetCookiesOption = {
+    domain?: string;
+    path?: string;
+}
+
+export type LibCurlGetCookieOption = {
+    name: string;
+    domain: string;
+    path?: string;
+}
+
+export type LibCurlCookieAttrArray = [
+    domain: string, secure: boolean, path: string, cors: boolean, timestamp: number, name: string, value: string
+]
+
+export type LibCurlCookieAttrObject = {
+    domain: string, secure: boolean, path: string, cors: boolean, timestamp: number, value: string
+}
+
+export type LibCurlCookiesAttr = Map<string, LibCurlCookieAttrObject>
+
+export type LibCurlHeadersAttr = Map<string, string>
+
+const httpCookiesToArray: (cookies: string) => LibCurlCookieAttrArray[] = (cookies) => {
+    const stringBooleanToJsBoolean = (e: string) => {
+        switch (e) {
+            case 'TRUE':
+                return true;
+            case 'FALSE':
+                return false;
+            default:
+                throw new Error(`unkonw type ${e}`)
+        }
+    }
+    /*
+     *          Domain         Secure  Path    CORS    TimeStamp       Name    Value
+     * sample: .127.0.0.1      TRUE    /       FALSE   3000000000      a       b
+     *         .127.0.0.1      TRUE    /api    FALSE   3000000000      c       d
+     */
+    const cookies_ = [];
+    for (const it of cookies.split('\n')) {
+        if (!it) {
+            continue;
+        }
+        const [domain, secure, path, cors, timestamp, name, value] = it.split('\t');
+        cookies_.push([domain, stringBooleanToJsBoolean(secure), path, stringBooleanToJsBoolean(cors), parseInt(timestamp), name, value])
+    }
+    return cookies_;
+}
+
+const cookieOptFilter = (cookieOpt: LibCurlGetCookiesOption) => {
+    return (e: LibCurlCookieAttrArray) => {
+        if (cookieOpt) {
+            if (cookieOpt.domain) {
+                if (cookieOpt.domain != e[0])
+                    return false;
+            }
+            if (cookieOpt.path) {
+                if (cookieOpt.path != e[2])
+                    return false;
+            }
+        }
+        return true;
+    }
+}
+
 export class LibCurl {
     private m_libCurl_impl_: any;
     private m_isAsync_: boolean;
@@ -74,41 +150,60 @@ export class LibCurl {
      * @param value 
      * @param domain cookie作用域 sample: .baidu.com  baike.baidu.com
      */
-    public setCookie(key: string, value: string, domain: string): void {
+    public setCookie(cookieOpt: LibCurlSetCookieOption): void {
         this.checkSending();
-        this.m_libCurl_impl_.setCookie(key, value, domain);
+        this.m_libCurl_impl_.setCookie(cookieOpt.name, cookieOpt.value, cookieOpt.domain, cookieOpt.path);
     }
 
     /**
      * 
-     * @param key 
+     * @param cookieOpt 
      * @param domain cookie作用域 sample: .baidu.com  baike.baidu.com
      */
-    public removeCookie(key: string, domain: string): void {
+    public deleteCookie(cookieOpt: LibCurlGetCookieOption): void {
         this.checkSending();
-        this.m_libCurl_impl_.removeCookie(key, domain);
+        this.m_libCurl_impl_.deleteCookie(cookieOpt.name, cookieOpt.domain, cookieOpt.path || "/");
     }
 
     /**
-     * 
-     * @returns 返回所有Cookies 以\n连接
-     * sample: .127.0.0.1      TRUE    /       FALSE   3000000000      a       b
-     *         .127.0.0.1      TRUE    /api    FALSE   3000000000      c       d
+     * @param {LibCurlGetCookiesOption}cookieOpt
+     * @returns 返回所有Cookies sample:'a=b;c=d;'
      */
-    public getCookies(): string {
+    public getCookies(cookieOpt?: LibCurlGetCookiesOption): string {
         this.checkSending();
-        return this.m_libCurl_impl_.getCookies();
+        const cookies_ = this.m_libCurl_impl_.getCookies();
+        return httpCookiesToArray(cookies_).filter(cookieOptFilter(cookieOpt)).map(e => `${e[5]}=${encodeURIComponent(e[6])}`).join(';');
+    }
+
+    /**
+     * @param {LibCurlGetCookiesOption}cookieOpt
+     * @returns 返回所有Cookie的Map
+     */
+    public getCookiesMap(cookieOpt?: LibCurlGetCookiesOption): LibCurlCookiesAttr {
+        this.checkSending();
+        const cookies_ = this.m_libCurl_impl_.getCookies();
+        return httpCookiesToArray(cookies_).filter(cookieOptFilter(cookieOpt)).reduce((e: LibCurlCookiesAttr, t: LibCurlCookieAttrArray) => {
+            e.set(t[5], {
+                domain: t[0],
+                secure: t[1],
+                path: t[2],
+                cors: t[3],
+                timestamp: t[4],
+                value: t[6],
+            } as LibCurlCookieAttrObject)
+            return e;
+        }, new Map<string, LibCurlCookieAttrObject>());
     }
 
     /**
      * 
-     * @param key
-     * @returns 返回该key对应的cookie
+     * @param cookieOpt
+     * @returns 返回该cookieOpt对应的cookieValue
      * sample: 
      */
-    public getCookie(key: string): string {
+    public getCookie(cookieOpt: LibCurlGetCookieOption): string {
         this.checkSending();
-        return this.m_libCurl_impl_.getCookie(key);
+        return this.m_libCurl_impl_.getCookie(cookieOpt.name, cookieOpt.domain || "", cookieOpt.path || "");
     }
 
     /**
@@ -118,6 +213,24 @@ export class LibCurl {
     public getResponseHeaders(): string {
         this.checkSending();
         return this.m_libCurl_impl_.getResponseHeaders();
+    }
+
+    /**
+     * @returns 返回响应头 Map
+     */
+    public getResponseHeadersMap(): LibCurlHeadersAttr {
+        this.checkSending();
+        const headers_ = this.m_libCurl_impl_.getResponseHeaders();
+        return headers_.split('\r\n')
+            .slice(1)//HTTP/1.1 200 OK
+            .reduce((e: LibCurlHeadersAttr, t: string) => {
+                if (!t) {
+                    return e;
+                }
+                const [key, value] = t.split(': ');
+                e.set(key, value);
+                return e;
+            }, new Map<string, string>());
     }
 
     /**

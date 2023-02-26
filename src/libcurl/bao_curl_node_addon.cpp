@@ -32,7 +32,7 @@ private:
 	Napi::Value setProxy(const Napi::CallbackInfo &info);
 	Napi::Value setTimeout(const Napi::CallbackInfo &info);
 	Napi::Value setCookie(const Napi::CallbackInfo &info);
-	Napi::Value removeCookie(const Napi::CallbackInfo &info);
+	Napi::Value deleteCookie(const Napi::CallbackInfo &info);
 	Napi::Value getCookies(const Napi::CallbackInfo &info);
 	Napi::Value getCookie(const Napi::CallbackInfo &info);
 	Napi::Value getResponseStatus(const Napi::CallbackInfo &info);
@@ -51,7 +51,7 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
 {
 	// This method is used to hook the accessor and method callbacks
 	std::vector<Napi::ClassPropertyDescriptor<BaoLibCurlWarp>> methodList = {
-		InstanceMethod<&BaoLibCurlWarp::open>("open", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setRequestHeader>("setRequestHeader", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setRequestHeaders>("setRequestHeaders", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setProxy>("setProxy", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setTimeout>("setTimeout", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setCookie>("setCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::removeCookie>("removeCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getCookies>("getCookies", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getCookie>("getCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getResponseStatus>("getResponseStatus", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::reset>("reset", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setRedirect>("setRedirect", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::printInnerLogger>("printInnerLogger", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setHttpVersion>("setHttpVersion", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::send>("send", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::open>("open", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setRequestHeader>("setRequestHeader", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setRequestHeaders>("setRequestHeaders", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setProxy>("setProxy", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setTimeout>("setTimeout", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setCookie>("setCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::deleteCookie>("deleteCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getCookies>("getCookies", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getCookie>("getCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getResponseStatus>("getResponseStatus", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::reset>("reset", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setRedirect>("setRedirect", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::printInnerLogger>("printInnerLogger", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setHttpVersion>("setHttpVersion", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::send>("send", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::getResponseBody>("getResponseBody", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::getResponseString>("getResponseString", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::sendAsync>("sendAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -182,28 +182,31 @@ Napi::Value BaoLibCurlWarp::setCookie(const Napi::CallbackInfo &info)
 {
 	Napi::Env env = info.Env();
 	size_t argsLen = info.Length();
-	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setCookie", 3, argsLen)
+	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setCookie", 4, argsLen)
 	REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
 	REQUEST_TLS_METHOD_CHECK(env, info[1].IsString(), "argument 1 is not a string")
 	REQUEST_TLS_METHOD_CHECK(env, info[2].IsString(), "argument 2 is not a string")
+	REQUEST_TLS_METHOD_CHECK(env, info[3].IsString(), "argument 3 is not a string")
 	string key = info[0].As<Napi::String>().Utf8Value();
 	string value = info[1].As<Napi::String>().Utf8Value();
 	string domain = info[2].As<Napi::String>().Utf8Value();
-	this->m_curl.setCookie(key, value, domain);
+	string path = info[3].As<Napi::String>().Utf8Value();
+	this->m_curl.setCookie(key, value, domain,path);
 	return env.Undefined();
 }
 
 /*
-	removeCookie(key, domain)
+	deleteCookie(key, domain)
 */
-Napi::Value BaoLibCurlWarp::removeCookie(const Napi::CallbackInfo &info)
+Napi::Value BaoLibCurlWarp::deleteCookie(const Napi::CallbackInfo &info)
 {
 	Napi::Env env = info.Env();
 	size_t argsLen = info.Length();
-	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "removeCookie", 2, argsLen)
+	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "deleteCookie", 3, argsLen)
 	string key = info[0].As<Napi::String>().Utf8Value();
 	string domain = info[1].As<Napi::String>().Utf8Value();
-	this->m_curl.removeCookie(key, domain);
+	string path = info[2].As<Napi::String>().Utf8Value();
+	this->m_curl.deleteCookie(key, domain, path);
 	return env.Undefined();
 }
 
@@ -225,10 +228,14 @@ Napi::Value BaoLibCurlWarp::getCookie(const Napi::CallbackInfo &info)
 {
 	Napi::Env env = info.Env();
 	size_t argsLen = info.Length();
-	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "getCookie", 1, argsLen);
+	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "getCookie", 3, argsLen)
 	REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
-	return Napi::String::New(env, this->m_curl.getCookie(
-									  info[0].As<Napi::String>().Utf8Value()));
+	REQUEST_TLS_METHOD_CHECK(env, info[1].IsString(), "argument 1 is not a string")
+	REQUEST_TLS_METHOD_CHECK(env, info[2].IsString(), "argument 2 is not a string")
+	std::string key = info[0].As<Napi::String>().Utf8Value();
+	std::string domain = info[1].As<Napi::String>().Utf8Value();
+	std::string path = info[2].As<Napi::String>().Utf8Value();
+	return Napi::String::New(env, this->m_curl.getCookie(key, domain, path));
 }
 
 /*
@@ -370,7 +377,7 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 		size_t strLen = str.size();
 		Napi::Uint8Array u8buffer = Napi::Uint8Array::New(env, strLen);
 		memcpy(u8buffer.Data(), str.c_str(), strLen);
-		workerPtr = new curlAsyncWorker(info[1].As<Napi::Function>(), this->m_curl, (const char *)u8buffer.Data(),u8buffer.ElementLength());
+		workerPtr = new curlAsyncWorker(info[1].As<Napi::Function>(), this->m_curl, (const char *)u8buffer.Data(), u8buffer.ElementLength());
 		workerPtr->Queue();
 		return env.Undefined();
 	}
@@ -379,7 +386,7 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 	size_t strLen = jsonStr.size();
 	Napi::Uint8Array u8buffer = Napi::Uint8Array::New(env, strLen);
 	memcpy(u8buffer.Data(), jsonStr.c_str(), strLen);
-	workerPtr = new curlAsyncWorker(info[1].As<Napi::Function>(), this->m_curl, (const char *)u8buffer.Data(),u8buffer.ElementLength());
+	workerPtr = new curlAsyncWorker(info[1].As<Napi::Function>(), this->m_curl, (const char *)u8buffer.Data(), u8buffer.ElementLength());
 	workerPtr->Queue();
 	return env.Undefined();
 }

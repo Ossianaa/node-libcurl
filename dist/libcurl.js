@@ -11,6 +11,42 @@ var LibCurl_HTTP_VERSION;
     LibCurl_HTTP_VERSION[LibCurl_HTTP_VERSION["http1_1"] = 0] = "http1_1";
     LibCurl_HTTP_VERSION[LibCurl_HTTP_VERSION["http2"] = 1] = "http2";
 })(LibCurl_HTTP_VERSION = exports.LibCurl_HTTP_VERSION || (exports.LibCurl_HTTP_VERSION = {}));
+const httpCookiesToArray = (cookies) => {
+    const stringBooleanToJsBoolean = (e) => {
+        switch (e) {
+            case 'TRUE':
+                return true;
+            case 'FALSE':
+                return false;
+            default:
+                throw new Error(`unkonw type ${e}`);
+        }
+    };
+    const cookies_ = [];
+    for (const it of cookies.split('\n')) {
+        if (!it) {
+            continue;
+        }
+        const [domain, secure, path, cors, timestamp, name, value] = it.split('\t');
+        cookies_.push([domain, stringBooleanToJsBoolean(secure), path, stringBooleanToJsBoolean(cors), parseInt(timestamp), name, value]);
+    }
+    return cookies_;
+};
+const cookieOptFilter = (cookieOpt) => {
+    return (e) => {
+        if (cookieOpt) {
+            if (cookieOpt.domain) {
+                if (cookieOpt.domain != e[0])
+                    return false;
+            }
+            if (cookieOpt.path) {
+                if (cookieOpt.path != e[2])
+                    return false;
+            }
+        }
+        return true;
+    };
+};
 class LibCurl {
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
@@ -49,25 +85,55 @@ class LibCurl {
         }
         this.m_libCurl_impl_.setTimeout(connectTime, sendTime);
     }
-    setCookie(key, value, domain) {
+    setCookie(cookieOpt) {
         this.checkSending();
-        this.m_libCurl_impl_.setCookie(key, value, domain);
+        this.m_libCurl_impl_.setCookie(cookieOpt.name, cookieOpt.value, cookieOpt.domain, cookieOpt.path);
     }
-    removeCookie(key, domain) {
+    deleteCookie(cookieOpt) {
         this.checkSending();
-        this.m_libCurl_impl_.removeCookie(key, domain);
+        this.m_libCurl_impl_.deleteCookie(cookieOpt.name, cookieOpt.domain, cookieOpt.path || "/");
     }
-    getCookies() {
+    getCookies(cookieOpt) {
         this.checkSending();
-        return this.m_libCurl_impl_.getCookies();
+        const cookies_ = this.m_libCurl_impl_.getCookies();
+        return httpCookiesToArray(cookies_).filter(cookieOptFilter(cookieOpt)).map(e => `${e[5]}=${encodeURIComponent(e[6])}`).join(';');
     }
-    getCookie(key) {
+    getCookiesMap(cookieOpt) {
         this.checkSending();
-        return this.m_libCurl_impl_.getCookie(key);
+        const cookies_ = this.m_libCurl_impl_.getCookies();
+        return httpCookiesToArray(cookies_).filter(cookieOptFilter(cookieOpt)).reduce((e, t) => {
+            e.set(t[5], {
+                domain: t[0],
+                secure: t[1],
+                path: t[2],
+                cors: t[3],
+                timestamp: t[4],
+                value: t[6],
+            });
+            return e;
+        }, new Map());
+    }
+    getCookie(cookieOpt) {
+        this.checkSending();
+        return this.m_libCurl_impl_.getCookie(cookieOpt.name, cookieOpt.domain || "", cookieOpt.path || "");
     }
     getResponseHeaders() {
         this.checkSending();
         return this.m_libCurl_impl_.getResponseHeaders();
+    }
+    getResponseHeadersMap() {
+        this.checkSending();
+        const headers_ = this.m_libCurl_impl_.getResponseHeaders();
+        return headers_.split('\r\n')
+            .slice(1)
+            .reduce((e, t) => {
+            if (!t) {
+                return e;
+            }
+            const [key, value] = t.split(': ');
+            e.set(key, value);
+            return e;
+        }, new Map());
     }
     getResponseStatus() {
         this.checkSending();

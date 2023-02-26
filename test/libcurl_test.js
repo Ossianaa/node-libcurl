@@ -1,18 +1,29 @@
-const { LibCurl, fetch } = require('../dist/src/index');
+const { LibCurl, fetch, requests } = require('../dist/index');
 
 async function main() {
-    const curl = new LibCurl();
-    curl.setHttpVersion(1);
-    curl.open('GET', 'https://tls.peet.ws/api/clean')
-    curl.setRequestHeader('user-Agent', 'chrome')
-    await curl.send();
-    console.log(curl.getResponseString());
-
-    curl.open('GET', 'https://tls.peet.ws/api/clean')
-    curl.setRequestHeader('user-Agent', 'chrome')
-    await curl.send();
-    console.log(curl.getResponseString());
-    return
+    const session = requests.session();
+    session.setCookie('ua', '123=/1a', '.baidu.com', '/');
+    const res = await session.get('https://www.baidu.com', {
+        headers: {
+            "user-Agent": "1"
+        }
+    });
+    console.log(res.headersMap);
+    console.log(session.getCookiesMap().get('ua'));
+    
+    debugger
+    /*  const curl = new LibCurl();
+     curl.setHttpVersion(1);
+     curl.open('GET', 'https://tls.peet.ws/api/clean')
+     curl.setRequestHeader('user-Agent', 'chrome')
+     await curl.send();
+     console.log(curl.getResponseString());
+ 
+     curl.open('GET', 'https://tls.peet.ws/api/clean')
+     curl.setRequestHeader('user-Agent', 'chrome')
+     await curl.send();
+     console.log(curl.getResponseString());
+     return */
     // curl.open('GET', 'http://127.0.0.1:51053/unittest/getRawHeaders')
     // curl.setRequestHeader('user-Agent', 'chrome')
     // curl.removeCookie("a", "127.0.0.1")

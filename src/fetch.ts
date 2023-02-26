@@ -1,9 +1,10 @@
-import { LibCurl, LibCurl_HTTP_VERSION } from "./libcurl";
+import { LibCurl, LibCurlCookiesAttr, LibCurl_HTTP_VERSION } from "./libcurl";
 
 type LibCurlHeadersInfo = [string, string][] | object | string;
 type LibCurlBodyInfo = string | Uint8Array | any;
 type LibCurlCookiesInfo = string | object;
 type LibCurlHttpVersionInfo = LibCurl_HTTP_VERSION;
+type LibCurlMethodInfo = 'GET' | 'POST' | 'HEAD' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATCH'
 
 type LibCurlProxyWithAccountInfo = {
     proxy: string;
@@ -13,7 +14,7 @@ type LibCurlProxyWithAccountInfo = {
 type LibCurlProxyInfo = string | LibCurlProxyWithAccountInfo;
 
 interface LibCurlRequestInfo {
-    method?: string;
+    method?: LibCurlMethodInfo;
     headers?: LibCurlHeadersInfo;
     body?: LibCurlBodyInfo;
     redirect?: boolean;
@@ -34,6 +35,8 @@ interface LibCurlResponseInfo {
     json: () => Promise<object>;
     jsonp: (callbackName?: string) => Promise<object>;
     headers: () => Promise<string>;
+    cookies: () => Promise<string>;
+    cookiesMap: () => Promise<LibCurlCookiesAttr>;
 }
 
 export async function fetch(url: string | URL, request: LibCurlRequestInfo = {}): Promise<LibCurlResponseInfo> {
@@ -72,11 +75,21 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
                     .reverse()//保证顺序不颠倒
                     .map(e => e.split('=', 2))
                     .forEach(([key, value]) => {
-                        curl.setCookie(key, value, hostname)
+                        curl.setCookie({
+                            name: key,
+                            value,
+                            domain: hostname,
+                            path: '/',
+                        })
                     });
             } else {
                 Object.keys(cookies).forEach(key => {
-                    curl.setCookie(key, cookies[key], hostname);
+                    curl.setCookie({
+                        name: key,
+                        value: cookies[key],
+                        domain: hostname,
+                        path: '/',
+                    });
                 })
             }
         }
@@ -108,6 +121,8 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
                     json: async () => curl.getResponseJson(),
                     jsonp: async (callbackName?: string) => curl.getResponseJsonp(callbackName),
                     headers: async () => curl.getResponseHeaders(),
+                    cookies: async () => curl.getCookies(),
+                    cookiesMap: async () => curl.getCookiesMap(),
                 }
             )
         })
