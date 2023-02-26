@@ -30,7 +30,7 @@ You should install Python 3.x and the Visual Studio compiler;
 
 ### import
 ```javascript
-import { LibCurl, fetch } from '@ossiana/node-libcurl'
+import { LibCurl, fetch, requests} from '@ossiana/node-libcurl'
 ```
 
 ### browser fetch  style
