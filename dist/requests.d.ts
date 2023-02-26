@@ -14,7 +14,7 @@ interface requestsResponseImp {
     readonly json: object;
     readonly buffer: Uint8Array;
     readonly headers: string;
-    readonly headersMap: string;
+    readonly headersMap: LibCurlHeadersAttr;
     readonly status: number;
     jsonp(callbackName?: string): object;
 }
