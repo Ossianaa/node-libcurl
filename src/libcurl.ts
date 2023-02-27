@@ -284,7 +284,7 @@ export class LibCurl {
         this.m_isSending_ = true;
         if (this.m_isAsync_) {
             return new Promise((resolve, reject) => {
-                const callback = (curlcode, curlcodeError) => {
+                const callback = (curlcode: number, curlcodeError: string) => {
                     this.m_isSending_ = false;
                     if (curlcode != 0) {
                         reject(new LibCurlError(curlcodeError));
