@@ -50,6 +50,7 @@ export type LibCurlProxyWithAccountInfo = {
     password: string;
 };
 export type LibCurlProxyInfo = string | LibCurlProxyWithAccountInfo;
+export type LibCurlURLInfo = string | URL;
 export declare class LibCurlError extends Error {
     constructor(e: string);
 }
@@ -59,7 +60,7 @@ export declare class LibCurl {
     private m_isSending_;
     constructor();
     private checkSending;
-    open(method: LibCurlMethodInfo, url: string, async?: boolean): void;
+    open(method: LibCurlMethodInfo, url: LibCurlURLInfo, async?: boolean): void;
     setRequestHeader(key: string, value: string): void;
     setRequestHeaders(headers: LibCurlHeadersInfo): void;
     setProxy(proxyOpt: LibCurlProxyInfo): void;

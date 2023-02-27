@@ -29,7 +29,7 @@ class LibCurl {
     }
     open(method, url, async = true) {
         this.checkSending();
-        this.m_libCurl_impl_.open(method, url);
+        this.m_libCurl_impl_.open(method, url + '');
         this.m_isAsync_ = async;
     }
     setRequestHeader(key, value) {

@@ -58,6 +58,7 @@ export type LibCurlProxyWithAccountInfo = {
 
 export type LibCurlProxyInfo = string | LibCurlProxyWithAccountInfo;
 
+export type LibCurlURLInfo = string | URL;
 
 export class LibCurlError extends Error {
     constructor(e: string) {
@@ -77,9 +78,9 @@ export class LibCurl {
             throw new Error('the last request is sending, don\'t send one more request on one instance!')
         }
     }
-    public open(method: LibCurlMethodInfo, url: string, async: boolean = true): void {
+    public open(method: LibCurlMethodInfo, url: LibCurlURLInfo, async: boolean = true): void {
         this.checkSending();
-        this.m_libCurl_impl_.open(method, url);
+        this.m_libCurl_impl_.open(method, url+'');
         this.m_isAsync_ = async;
     }
 
