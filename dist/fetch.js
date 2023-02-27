@@ -37,14 +37,7 @@ function fetch(url, request = {}) {
         if (proxy) {
             curl.setProxy(proxy);
         }
-        let promise;
-        if (body) {
-            promise = curl.send(body);
-        }
-        else {
-            promise = curl.send();
-        }
-        yield promise;
+        yield curl.send(body);
         return {
             status: () => curl.getResponseStatus(),
             arraybuffer: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseBody().buffer; }),

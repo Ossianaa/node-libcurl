@@ -178,14 +178,7 @@ class requests {
             if (proxy) {
                 curl.setProxy(proxy);
             }
-            let promise;
-            if (body) {
-                promise = curl.send(body);
-            }
-            else {
-                promise = curl.send();
-            }
-            yield promise;
+            yield curl.send(body);
             return new requestsResponse(curl);
         });
     }

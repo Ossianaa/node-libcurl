@@ -207,13 +207,7 @@ export class requests {
         if (proxy) {
             curl.setProxy(proxy);
         }
-        let promise: Promise<undefined>;
-        if (body) {
-            promise = curl.send(body);
-        } else {
-            promise = curl.send();
-        }
-        await promise;
+        await curl.send(body);
         return new requestsResponse(curl);
     }
 }

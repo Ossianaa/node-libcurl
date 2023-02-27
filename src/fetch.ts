@@ -53,13 +53,7 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
     if (proxy) {
         curl.setProxy(proxy);
     }
-    let promise: Promise<undefined>;
-    if (body) {
-        promise = curl.send(body);
-    } else {
-        promise = curl.send();
-    }
-    await promise;
+    await curl.send(body);
     return {
         status: () => curl.getResponseStatus(),
         arraybuffer: async () => curl.getResponseBody().buffer,
