@@ -34,9 +34,6 @@ class requestsResponse {
     get status() {
         return this.curl.getResponseStatus();
     }
-    jsonp(callbackName) {
-        return this.curl.getResponseJsonp(callbackName);
-    }
 }
 const assignURLSearchParam = (target, source) => {
     source.forEach((value, key) => {

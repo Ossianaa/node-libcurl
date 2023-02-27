@@ -80,5 +80,4 @@ export declare class LibCurl {
     getResponseBody(): Uint8Array;
     getResponseString(): string;
     getResponseJson(): Object;
-    getResponseJsonp(callbackName?: string): Object;
 }

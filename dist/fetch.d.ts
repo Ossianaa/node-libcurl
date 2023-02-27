@@ -15,7 +15,6 @@ interface LibCurlResponseInfo {
     arraybuffer: () => Promise<ArrayBuffer>;
     text: () => Promise<string>;
     json: () => Promise<object>;
-    jsonp: (callbackName?: string) => Promise<object>;
     headers: () => Promise<string>;
     cookies: () => Promise<string>;
     cookiesMap: () => Promise<LibCurlCookiesAttr>;

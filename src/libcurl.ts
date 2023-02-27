@@ -325,32 +325,5 @@ export class LibCurl {
         return JSON.parse(this.getResponseString());
     }
 
-    /**
-     * 
-     * @param callbackName 
-     * @returns JSON
-     * unsafe
-     * sample __WX__({a:1})
-     */
-    public getResponseJsonp(callbackName?: string): Object {
-        this.checkSending();
-        const str: string = this.getResponseString();
-        let jsonstr: string = str;
-        if (callbackName) {
-            [, jsonstr] = new RegExp(`\s*${callbackName}[\s\S]*(.*)[\s\S]*`, 'g').exec(str)
-        } else {
-            try {
-                eval(str)
-                throw new Error('it seem not a jsonp');
-            } catch (error) {
-                try {
-                    [, callbackName] = /(.*) is not defined/g.exec(error.message);
-                    return this.getResponseJsonp(callbackName);
-                } catch {
-                    throw new Error('it seem not a jsonp')
-                }
-            }
-        }
-        return eval(jsonstr);
-    }
+    
 }

@@ -43,7 +43,6 @@ function fetch(url, request = {}) {
             arraybuffer: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseBody().buffer; }),
             text: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseString(); }),
             json: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseJson(); }),
-            jsonp: (callbackName) => __awaiter(this, void 0, void 0, function* () { return curl.getResponseJsonp(callbackName); }),
             headers: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseHeaders(); }),
             cookies: () => __awaiter(this, void 0, void 0, function* () { return curl.getCookies(); }),
             cookiesMap: () => __awaiter(this, void 0, void 0, function* () { return curl.getCookiesMap(); }),

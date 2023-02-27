@@ -21,7 +21,6 @@ interface LibCurlResponseInfo {
     arraybuffer: () => Promise<ArrayBuffer>;
     text: () => Promise<string>;
     json: () => Promise<object>;
-    jsonp: (callbackName?: string) => Promise<object>;
     headers: () => Promise<string>;
     cookies: () => Promise<string>;
     cookiesMap: () => Promise<LibCurlCookiesAttr>;
@@ -59,7 +58,6 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
         arraybuffer: async () => curl.getResponseBody().buffer,
         text: async () => curl.getResponseString(),
         json: async () => curl.getResponseJson(),
-        jsonp: async (callbackName?: string) => curl.getResponseJsonp(callbackName),
         headers: async () => curl.getResponseHeaders(),
         cookies: async () => curl.getCookies(),
         cookiesMap: async () => curl.getCookiesMap(),

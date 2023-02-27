@@ -17,7 +17,6 @@ interface requestsResponseImp {
     readonly headers: string;
     readonly headersMap: LibCurlHeadersAttr;
     readonly status: number;
-    jsonp(callbackName?: string): object;
 }
 
 class requestsResponse implements requestsResponseImp {
@@ -50,9 +49,6 @@ class requestsResponse implements requestsResponseImp {
         return this.curl.getResponseStatus();
     }
 
-    public jsonp(callbackName?: string): object {
-        return this.curl.getResponseJsonp(callbackName);
-    }
 
 }
 
