@@ -3,15 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LibCurl = exports.LibCurlError = exports.LibCurl_HTTP_VERSION = void 0;
+exports.LibCurl = exports.LibCurlError = exports.LibCurlHttpVersionInfo = void 0;
 const bindings_1 = __importDefault(require("bindings"));
 const utils_1 = require("./utils");
 const { BaoLibCurl } = (0, bindings_1.default)('bao_curl_node_addon');
-var LibCurl_HTTP_VERSION;
-(function (LibCurl_HTTP_VERSION) {
-    LibCurl_HTTP_VERSION[LibCurl_HTTP_VERSION["http1_1"] = 0] = "http1_1";
-    LibCurl_HTTP_VERSION[LibCurl_HTTP_VERSION["http2"] = 1] = "http2";
-})(LibCurl_HTTP_VERSION = exports.LibCurl_HTTP_VERSION || (exports.LibCurl_HTTP_VERSION = {}));
+var LibCurlHttpVersionInfo;
+(function (LibCurlHttpVersionInfo) {
+    LibCurlHttpVersionInfo[LibCurlHttpVersionInfo["http1_1"] = 0] = "http1_1";
+    LibCurlHttpVersionInfo[LibCurlHttpVersionInfo["http2"] = 1] = "http2";
+})(LibCurlHttpVersionInfo = exports.LibCurlHttpVersionInfo || (exports.LibCurlHttpVersionInfo = {}));
 class LibCurlError extends Error {
     constructor(e) {
         super(e);

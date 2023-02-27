@@ -1,5 +1,5 @@
-import { LibCurl, LibCurlBodyInfo, LibCurlCookiesAttr, LibCurlCookiesInfo, LibCurlHeadersAttr, LibCurlHeadersInfo, LibCurlProxyInfo, LibCurl_HTTP_VERSION } from "./libcurl";
-type requestsHttpVersionInfo = LibCurl_HTTP_VERSION;
+import { LibCurl, LibCurlBodyInfo, LibCurlCookiesAttr, LibCurlCookiesInfo, LibCurlHeadersAttr, LibCurlHeadersInfo, LibCurlProxyInfo, LibCurlHttpVersionInfo } from "./libcurl";
+type requestsHttpVersionInfo = LibCurlHttpVersionInfo;
 type requestsHeadersInfo = LibCurlHeadersInfo;
 type requestsBodyInfo = LibCurlBodyInfo;
 type requestsCookiesInfo = LibCurlCookiesInfo;

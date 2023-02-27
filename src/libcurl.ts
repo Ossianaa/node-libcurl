@@ -3,7 +3,7 @@ import { httpCookiesToArray, cookieOptFilter } from './utils';
 
 const { BaoLibCurl } = bindings('bao_curl_node_addon');
 
-export enum LibCurl_HTTP_VERSION {
+export enum LibCurlHttpVersionInfo {
     http1_1,
     http2,
 }
@@ -90,7 +90,7 @@ export class LibCurl {
 
     /**
      * 
-     * @param headers 多个header 以\n换行链接的文本
+     * @param headers
      */
     public setRequestHeaders(headers: LibCurlHeadersInfo): void {
         this.checkSending();
@@ -269,7 +269,7 @@ export class LibCurl {
      * @param version 
      * 设置http版本号
      */
-    public setHttpVersion(version: LibCurl_HTTP_VERSION): void {
+    public setHttpVersion(version: LibCurlHttpVersionInfo): void {
         this.checkSending();
         this.m_libCurl_impl_.setHttpVersion(version);
     }

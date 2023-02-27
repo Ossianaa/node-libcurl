@@ -1,4 +1,4 @@
-export declare enum LibCurl_HTTP_VERSION {
+export declare enum LibCurlHttpVersionInfo {
     http1_1 = 0,
     http2 = 1
 }
@@ -75,7 +75,7 @@ export declare class LibCurl {
     reset(): void;
     setRedirect(isAllow: boolean): void;
     printInnerLogger(): void;
-    setHttpVersion(version: LibCurl_HTTP_VERSION): void;
+    setHttpVersion(version: LibCurlHttpVersionInfo): void;
     send(body?: LibCurlBodyInfo): Promise<undefined> | undefined;
     getResponseBody(): Uint8Array;
     getResponseString(): string;

@@ -1,7 +1,5 @@
-import { LibCurl, LibCurlBodyInfo, LibCurlMethodInfo, LibCurlHeadersInfo, LibCurlCookiesAttr, LibCurl_HTTP_VERSION, LibCurlProxyInfo, LibCurlCookiesInfo } from "./libcurl";
+import { LibCurl, LibCurlBodyInfo, LibCurlMethodInfo, LibCurlHeadersInfo, LibCurlCookiesAttr, LibCurlHttpVersionInfo, LibCurlProxyInfo, LibCurlCookiesInfo } from "./libcurl";
 import { libcurlSetCookies } from "./utils";
-
-type LibCurlHttpVersionInfo = LibCurl_HTTP_VERSION;
 
 interface LibCurlRequestInfo {
     method?: LibCurlMethodInfo;
