@@ -37,6 +37,11 @@ class requestsResponse {
         return this.curl.getResponseJsonp(callbackName);
     }
 }
+const assignURLSearchParam = (target, source) => {
+    source.forEach((value, key) => {
+        target.append(key, value);
+    });
+};
 class requests {
     constructor(option = {}) {
         var _a;
@@ -77,6 +82,36 @@ class requests {
     static session(option = {}) {
         return new requests(option);
     }
+    static get(url, requestOpt) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return requests.session().sendRequest('GET', url, requestOpt);
+        });
+    }
+    static post(url, requestOpt) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return requests.session().sendRequest('POST', url, requestOpt);
+        });
+    }
+    static put(url, requestOpt) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return requests.session().sendRequest('PUT', url, requestOpt);
+        });
+    }
+    static patch(url, requestOpt) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return requests.session().sendRequest('PATCH', url, requestOpt);
+        });
+    }
+    static trace(url, requestOpt) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return requests.session().sendRequest('TRACE', url, requestOpt);
+        });
+    }
+    static head(url, requestOpt) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return requests.session().sendRequest('HEAD', url, requestOpt);
+        });
+    }
     get(url, requestOpt) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.sendRequest('GET', url, requestOpt);
@@ -100,6 +135,11 @@ class requests {
     trace(url, requestOpt) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.sendRequest('TRACE', url, requestOpt);
+        });
+    }
+    head(url, requestOpt) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.sendRequest('HEAD', url, requestOpt);
         });
     }
     setCookie(key, value, domain = '', path = '') {
@@ -145,8 +185,12 @@ class requests {
     sendRequest(method, url, requestOpt) {
         return __awaiter(this, void 0, void 0, function* () {
             const { instance: curl, redirect = false, proxy, httpVersion } = this.option;
+            const { headers, body, params } = requestOpt || {};
+            const url_ = new URL(url);
+            if (params) {
+                assignURLSearchParam(url_.searchParams, new URLSearchParams(params));
+            }
             curl.open(method, url + '', true);
-            const { headers, body } = requestOpt;
             if (Array.isArray(headers)) {
                 headers.forEach(([key, value]) => {
                     curl.setRequestHeader(key, value);
@@ -182,12 +226,7 @@ class requests {
             else {
                 promise = curl.send();
             }
-            try {
-                yield promise;
-            }
-            catch (error) {
-                throw error;
-            }
+            yield promise;
             return new requestsResponse(curl);
         });
     }

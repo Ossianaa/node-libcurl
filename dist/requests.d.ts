@@ -9,6 +9,7 @@ type requestsWithAccountInfo = {
     password: string;
 };
 type requestsInfo = string | requestsWithAccountInfo;
+type requestsURL = URL | string;
 interface requestsResponseImp {
     readonly text: string;
     readonly json: object;
@@ -38,19 +39,30 @@ interface requestsInitOption {
     timeout?: number;
     instance?: LibCurl;
 }
+type requestsParamsInfo = URLSearchParams | string | {
+    [key: string]: string;
+};
 interface requestsOption {
     headers?: requestsHeadersInfo;
     body?: requestsBodyInfo;
+    params?: requestsParamsInfo;
 }
 export declare class requests {
     private option;
     constructor(option?: requestsInitOption);
     static session(option?: requestsInitOption): requests;
-    get(url: URL | string, requestOpt?: requestsOption): Promise<requestsResponse>;
-    post(url: URL | string, requestOpt?: requestsOption): Promise<requestsResponse>;
-    put(url: URL | string, requestOpt?: requestsOption): Promise<requestsResponse>;
-    patch(url: URL | string, requestOpt?: requestsOption): Promise<requestsResponse>;
-    trace(url: URL | string, requestOpt?: requestsOption): Promise<requestsResponse>;
+    static get(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse>;
+    static post(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse>;
+    static put(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse>;
+    static patch(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse>;
+    static trace(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse>;
+    static head(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse>;
+    get(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse>;
+    post(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse>;
+    put(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse>;
+    patch(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse>;
+    trace(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse>;
+    head(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse>;
     setCookie(key: string, value: string, domain?: string, path?: string): void;
     getCookie(key: string, domain?: string, path?: string): string;
     getCookies(domain?: string, path?: string): string;

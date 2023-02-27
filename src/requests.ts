@@ -11,6 +11,7 @@ type requestsWithAccountInfo = {
     password: string;
 };
 type requestsInfo = string | requestsWithAccountInfo;
+type requestsURL = URL | string;
 
 interface requestsResponseImp {
     readonly text: string;
@@ -64,6 +65,7 @@ interface requestsInitOption {
     proxy?: requestsInfo;
     body?: requestsBodyInfo;
     httpVersion?: requestsHttpVersionInfo;
+
     /**
      * 单位(秒)
      */
@@ -74,11 +76,19 @@ interface requestsInitOption {
     instance?: LibCurl;
 }
 
+type requestsParamsInfo = URLSearchParams | string | { [key: string]: string };
+
 interface requestsOption {
     headers?: requestsHeadersInfo;
     body?: requestsBodyInfo;
+    params?: requestsParamsInfo;
 }
 
+const assignURLSearchParam = (target: URLSearchParams, source: URLSearchParams) => {
+    source.forEach((value, key) => {
+        target.append(key, value);
+    })
+}
 
 export class requests {
     private option: requestsInitOption;
@@ -114,7 +124,7 @@ export class requests {
             }
         }
         if (timeout) {
-            curl.setTimeout(timeout,timeout);
+            curl.setTimeout(timeout, timeout);
         }
     }
 
@@ -122,21 +132,43 @@ export class requests {
         return new requests(option);
     }
 
-    //暂定5种常用方法
-    async get(url: URL | string, requestOpt?: requestsOption): Promise<requestsResponse> {
+
+    //暂定6种常用方法
+    static async get(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return requests.session().sendRequest('GET', url, requestOpt);
+    }
+    static async post(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return requests.session().sendRequest('POST', url, requestOpt);
+    }
+    static async put(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return requests.session().sendRequest('PUT', url, requestOpt);
+    }
+    static async patch(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return requests.session().sendRequest('PATCH', url, requestOpt);
+    }
+    static async trace(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return requests.session().sendRequest('TRACE', url, requestOpt);
+    }
+    static async head(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return requests.session().sendRequest('HEAD', url, requestOpt);
+    }
+    async get(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('GET', url, requestOpt);
     }
-    async post(url: URL | string, requestOpt?: requestsOption): Promise<requestsResponse> {
+    async post(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('POST', url, requestOpt);
     }
-    async put(url: URL | string, requestOpt?: requestsOption): Promise<requestsResponse> {
+    async put(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('PUT', url, requestOpt);
     }
-    async patch(url: URL | string, requestOpt?: requestsOption): Promise<requestsResponse> {
+    async patch(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('PATCH', url, requestOpt);
     }
-    async trace(url: URL | string, requestOpt?: requestsOption): Promise<requestsResponse> {
+    async trace(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('TRACE', url, requestOpt);
+    }
+    async head(url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequest('HEAD', url, requestOpt);
     }
 
     setCookie(key: string, value: string, domain: string = '', path: string = '') {
@@ -183,10 +215,14 @@ export class requests {
         })
     }
 
-    private async sendRequest(method: requestsMethodInfo, url: URL | string, requestOpt?: requestsOption): Promise<requestsResponse> {
+    private async sendRequest(method: requestsMethodInfo, url: requestsURL, requestOpt?: requestsOption): Promise<requestsResponse> {
         const { instance: curl, redirect = false, proxy, httpVersion } = this.option;
+        const { headers, body, params } = requestOpt || {};
+        const url_ = new URL(url);
+        if (params) {
+            assignURLSearchParam(url_.searchParams, new URLSearchParams(params));
+        }
         curl.open(method, url + '', true);
-        const { headers, body } = requestOpt;
         if (Array.isArray(headers)) {
             headers.forEach(([key, value]) => {
                 curl.setRequestHeader(key, value);
@@ -222,11 +258,7 @@ export class requests {
         } else {
             promise = curl.send();
         }
-        try {
-            await promise;
-        } catch (error) {
-            throw error;            
-        }
+        await promise;
         return new requestsResponse(curl);
     }
 }
