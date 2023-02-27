@@ -193,7 +193,9 @@ export class requests {
             assignURLSearchParam(url_.searchParams, new URLSearchParams(params));
         }
         curl.open(method, url + '', true);
-        curl.setRequestHeaders(headers);
+        if (headers) {
+            curl.setRequestHeaders(headers);
+        }
         if (redirect) {
             curl.setRedirect(true);
         }

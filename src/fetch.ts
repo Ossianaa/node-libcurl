@@ -33,7 +33,9 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
         headers, redirect = false, httpVersion = 0,
         openInnerLog = false, proxy, body, cookies } = request;
     curl.open(method, url + '', true);
-    curl.setRequestHeaders(headers);
+    if (headers) {
+        curl.setRequestHeaders(headers);
+    }
     if (redirect) {
         curl.setRedirect(true);
     }

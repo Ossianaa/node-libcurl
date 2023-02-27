@@ -18,7 +18,9 @@ function fetch(url, request = {}) {
         const curl = request.instance;
         const { method = "GET", headers, redirect = false, httpVersion = 0, openInnerLog = false, proxy, body, cookies } = request;
         curl.open(method, url + '', true);
-        curl.setRequestHeaders(headers);
+        if (headers) {
+            curl.setRequestHeaders(headers);
+        }
         if (redirect) {
             curl.setRedirect(true);
         }
