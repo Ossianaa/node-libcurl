@@ -1,14 +1,9 @@
-import { LibCurl, LibCurlCookiesAttr, LibCurlHeadersAttr, LibCurl_HTTP_VERSION } from "./libcurl";
+import { LibCurl, LibCurlBodyInfo, LibCurlCookiesAttr, LibCurlCookiesInfo, LibCurlHeadersAttr, LibCurlHeadersInfo, LibCurlProxyInfo, LibCurl_HTTP_VERSION } from "./libcurl";
 type requestsHttpVersionInfo = LibCurl_HTTP_VERSION;
-type requestsHeadersInfo = [string, string][] | object | string;
-type requestsBodyInfo = string | Uint8Array | any;
-type requestsCookiesInfo = string | object;
-type requestsWithAccountInfo = {
-    proxy: string;
-    username: string;
-    password: string;
-};
-type requestsInfo = string | requestsWithAccountInfo;
+type requestsHeadersInfo = LibCurlHeadersInfo;
+type requestsBodyInfo = LibCurlBodyInfo;
+type requestsCookiesInfo = LibCurlCookiesInfo;
+type requestsProxyInfo = LibCurlProxyInfo;
 type requestsURL = URL | string;
 interface requestsResponseImp {
     readonly text: string;
@@ -33,7 +28,7 @@ declare class requestsResponse implements requestsResponseImp {
 interface requestsInitOption {
     redirect?: boolean;
     cookies?: requestsCookiesInfo;
-    proxy?: requestsInfo;
+    proxy?: requestsProxyInfo;
     body?: requestsBodyInfo;
     httpVersion?: requestsHttpVersionInfo;
     timeout?: number;

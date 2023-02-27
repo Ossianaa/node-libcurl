@@ -8,6 +8,9 @@ export type LibCurlSetCookieOption = {
     name: string;
     value: string;
 };
+export type LibCurlCookiesInfo = string | {
+    [key: string]: string;
+};
 export type LibCurlGetCookiesOption = {
     domain?: string;
     path?: string;
@@ -36,8 +39,19 @@ export type LibCurlCookieAttrObject = {
 };
 export type LibCurlCookiesAttr = Map<string, LibCurlCookieAttrObject>;
 export type LibCurlHeadersAttr = Map<string, string>;
+export type LibCurlHeadersInfo = string | {
+    [key: string]: [value: string];
+} | LibCurlHeadersAttr;
+export type LibCurlBodyInfo = string | Uint8Array | any;
+export type LibCurlMethodInfo = 'GET' | 'POST' | 'HEAD' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATCH';
+export type LibCurlProxyWithAccountInfo = {
+    proxy: string;
+    username: string;
+    password: string;
+};
+export type LibCurlProxyInfo = string | LibCurlProxyWithAccountInfo;
 export declare class LibCurlError extends Error {
-    constructor(e: any);
+    constructor(e: string);
 }
 export declare class LibCurl {
     private m_libCurl_impl_;
@@ -45,10 +59,10 @@ export declare class LibCurl {
     private m_isSending_;
     constructor();
     private checkSending;
-    open(method: string, url: string, async?: boolean): void;
+    open(method: LibCurlMethodInfo, url: string, async?: boolean): void;
     setRequestHeader(key: string, value: string): void;
-    setRequestHeaders(headers: string): void;
-    setProxy(proxy: string, username?: string, password?: string): void;
+    setRequestHeaders(headers: LibCurlHeadersInfo): void;
+    setProxy(proxyOpt: LibCurlProxyInfo): void;
     setTimeout(connectTime: number, sendTime: number): void;
     setCookie(cookieOpt: LibCurlSetCookieOption): void;
     deleteCookie(cookieOpt: LibCurlGetCookieOption): void;
@@ -62,7 +76,7 @@ export declare class LibCurl {
     setRedirect(isAllow: boolean): void;
     printInnerLogger(): void;
     setHttpVersion(version: LibCurl_HTTP_VERSION): void;
-    send(body?: string | Uint8Array | any): Promise<undefined> | undefined;
+    send(body?: LibCurlBodyInfo): Promise<undefined> | undefined;
     getResponseBody(): Uint8Array;
     getResponseString(): string;
     getResponseJson(): Object;

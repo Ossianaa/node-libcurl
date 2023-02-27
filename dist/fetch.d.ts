@@ -1,15 +1,5 @@
-import { LibCurl, LibCurlCookiesAttr, LibCurl_HTTP_VERSION } from "./libcurl";
-type LibCurlHeadersInfo = [string, string][] | object | string;
-type LibCurlBodyInfo = string | Uint8Array | any;
-type LibCurlCookiesInfo = string | object;
+import { LibCurl, LibCurlBodyInfo, LibCurlMethodInfo, LibCurlHeadersInfo, LibCurlCookiesAttr, LibCurl_HTTP_VERSION, LibCurlProxyInfo, LibCurlCookiesInfo } from "./libcurl";
 type LibCurlHttpVersionInfo = LibCurl_HTTP_VERSION;
-type LibCurlMethodInfo = 'GET' | 'POST' | 'HEAD' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATCH';
-type LibCurlProxyWithAccountInfo = {
-    proxy: string;
-    username: string;
-    password: string;
-};
-type LibCurlProxyInfo = string | LibCurlProxyWithAccountInfo;
 interface LibCurlRequestInfo {
     method?: LibCurlMethodInfo;
     headers?: LibCurlHeadersInfo;

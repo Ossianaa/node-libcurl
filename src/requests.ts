@@ -1,16 +1,13 @@
-import { LibCurl, LibCurlCookiesAttr, LibCurlHeadersAttr, LibCurl_HTTP_VERSION } from "./libcurl"
+import { LibCurl, LibCurlBodyInfo, LibCurlCookiesAttr, LibCurlCookiesInfo, LibCurlHeadersAttr, LibCurlHeadersInfo, LibCurlMethodInfo, LibCurlProxyInfo, LibCurl_HTTP_VERSION } from "./libcurl"
+import { libcurlSetCookies } from "./utils";
 
 type requestsHttpVersionInfo = LibCurl_HTTP_VERSION;
-type requestsHeadersInfo = [string, string][] | object | string;
-type requestsBodyInfo = string | Uint8Array | any;
-type requestsCookiesInfo = string | object;
-type requestsMethodInfo = 'GET' | 'POST' | 'HEAD' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATCH'
-type requestsWithAccountInfo = {
-    proxy: string;
-    username: string;
-    password: string;
-};
-type requestsInfo = string | requestsWithAccountInfo;
+type requestsHeadersInfo = LibCurlHeadersInfo;
+type requestsBodyInfo = LibCurlBodyInfo;
+type requestsCookiesInfo = LibCurlCookiesInfo;
+type requestsMethodInfo = LibCurlMethodInfo;
+
+type requestsProxyInfo = LibCurlProxyInfo;
 type requestsURL = URL | string;
 
 interface requestsResponseImp {
@@ -62,7 +59,7 @@ class requestsResponse implements requestsResponseImp {
 interface requestsInitOption {
     redirect?: boolean;
     cookies?: requestsCookiesInfo;
-    proxy?: requestsInfo;
+    proxy?: requestsProxyInfo;
     body?: requestsBodyInfo;
     httpVersion?: requestsHttpVersionInfo;
 
@@ -98,30 +95,7 @@ export class requests {
         const curl = this.option.instance ||= new LibCurl();
 
         if (cookies) {
-            const hostname = '.';//暂定全局
-            if (typeof cookies == 'string') {
-                cookies.replace(/\s+/g, '')
-                    .split(';')
-                    .reverse()//保证顺序不颠倒
-                    .map(e => e.split('=', 2))
-                    .forEach(([key, value]) => {
-                        curl.setCookie({
-                            name: key,
-                            value,
-                            domain: hostname,
-                            path: '/',
-                        })
-                    });
-            } else {
-                Object.keys(cookies).forEach(key => {
-                    curl.setCookie({
-                        name: key,
-                        value: cookies[key],
-                        domain: hostname,
-                        path: '/',
-                    });
-                })
-            }
+            libcurlSetCookies(curl, cookies, '.');
         }
         if (timeout) {
             curl.setTimeout(timeout, timeout);
@@ -223,17 +197,7 @@ export class requests {
             assignURLSearchParam(url_.searchParams, new URLSearchParams(params));
         }
         curl.open(method, url + '', true);
-        if (Array.isArray(headers)) {
-            headers.forEach(([key, value]) => {
-                curl.setRequestHeader(key, value);
-            });
-        } else if (typeof headers == 'object') {
-            Object.keys(headers).forEach((key: string) => {
-                curl.setRequestHeader(key, headers[key]);
-            })
-        } else if (typeof headers == 'string') {
-            curl.setRequestHeaders(headers);
-        }
+        curl.setRequestHeaders(headers);
         if (redirect) {
             curl.setRedirect(true);
         }
@@ -241,16 +205,7 @@ export class requests {
             curl.setHttpVersion(httpVersion);
         }
         if (proxy) {
-            if (typeof proxy == "string") {
-                curl.setProxy(proxy);
-            } else {
-                const {
-                    proxy: proxy_,
-                    username,
-                    password,
-                } = proxy;
-                curl.setProxy(proxy_, username, password);
-            }
+            curl.setProxy(proxy);
         }
         let promise: Promise<undefined>;
         if (body) {

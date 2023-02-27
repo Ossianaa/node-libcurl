@@ -1,4 +1,5 @@
 import bindings from 'bindings'
+import { httpCookiesToArray, cookieOptFilter } from './utils';
 
 const { BaoLibCurl } = bindings('bao_curl_node_addon');
 
@@ -16,6 +17,9 @@ export type LibCurlSetCookieOption = {
     name: string;
     value: string;
 }
+
+export type LibCurlCookiesInfo = string | { [key: string]: string };
+
 
 export type LibCurlGetCookiesOption = {
     domain?: string;
@@ -40,51 +44,23 @@ export type LibCurlCookiesAttr = Map<string, LibCurlCookieAttrObject>
 
 export type LibCurlHeadersAttr = Map<string, string>
 
-const httpCookiesToArray: (cookies: string) => LibCurlCookieAttrArray[] = (cookies) => {
-    const stringBooleanToJsBoolean = (e: string) => {
-        switch (e) {
-            case 'TRUE':
-                return true;
-            case 'FALSE':
-                return false;
-            default:
-                throw new Error(`unkonw type ${e}`)
-        }
-    }
-    /*
-     *          Domain         Secure  Path    CORS    TimeStamp       Name    Value
-     * sample: .127.0.0.1      TRUE    /       FALSE   3000000000      a       b
-     *         .127.0.0.1      TRUE    /api    FALSE   3000000000      c       d
-     */
-    const cookies_ = [];
-    for (const it of cookies.split('\n')) {
-        if (!it) {
-            continue;
-        }
-        const [domain, secure, path, cors, timestamp, name, value] = it.split('\t');
-        cookies_.push([domain, stringBooleanToJsBoolean(secure), path, stringBooleanToJsBoolean(cors), parseInt(timestamp), name, value])
-    }
-    return cookies_;
-}
+export type LibCurlHeadersInfo = string | { [key: string]: [value: string] } | LibCurlHeadersAttr
 
-const cookieOptFilter = (cookieOpt: LibCurlGetCookiesOption) => {
-    return (e: LibCurlCookieAttrArray) => {
-        if (cookieOpt) {
-            if (cookieOpt.domain) {
-                if (cookieOpt.domain != e[0])
-                    return false;
-            }
-            if (cookieOpt.path) {
-                if (cookieOpt.path != e[2])
-                    return false;
-            }
-        }
-        return true;
-    }
-}
+export type LibCurlBodyInfo = string | Uint8Array | any;
+
+export type LibCurlMethodInfo = 'GET' | 'POST' | 'HEAD' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATCH'
+
+export type LibCurlProxyWithAccountInfo = {
+    proxy: string;
+    username: string;
+    password: string;
+};
+
+export type LibCurlProxyInfo = string | LibCurlProxyWithAccountInfo;
+
 
 export class LibCurlError extends Error {
-    constructor(e){
+    constructor(e: string) {
         super(e)
     }
 }
@@ -101,7 +77,7 @@ export class LibCurl {
             throw new Error('the last request is sending, don\'t send one more request on one instance!')
         }
     }
-    public open(method: string, url: string, async: boolean = true): void {
+    public open(method: LibCurlMethodInfo, url: string, async: boolean = true): void {
         this.checkSending();
         this.m_libCurl_impl_.open(method, url);
         this.m_isAsync_ = async;
@@ -116,9 +92,23 @@ export class LibCurl {
      * 
      * @param headers 多个header 以\n换行链接的文本
      */
-    public setRequestHeaders(headers: string): void {
+    public setRequestHeaders(headers: LibCurlHeadersInfo): void {
         this.checkSending();
-        this.m_libCurl_impl_.setRequestHeaders(headers);
+        if (!headers) {
+            return;
+        }
+        if (headers instanceof Map) {
+            headers.forEach((value, key) => this.m_libCurl_impl_.setRequestHeader(key, value))
+        } else if (typeof headers == 'string') {
+            this.m_libCurl_impl_.setRequestHeaders(headers);
+        } else if (typeof headers == 'object') {
+            Object.keys(headers).forEach((key) => {
+                const value = headers[key];
+                this.m_libCurl_impl_.setRequestHeader(key, value);
+            })
+        } else {
+            throw new TypeError('unkown type')
+        }
     }
 
     /**
@@ -127,12 +117,12 @@ export class LibCurl {
      * @param username 
      * @param password 
      */
-    public setProxy(proxy: string, username?: string, password?: string): void {
+    public setProxy(proxyOpt: LibCurlProxyInfo): void {
         this.checkSending();
-        if (username && password) {
-            this.m_libCurl_impl_.setProxy(proxy, username, password);
+        if (typeof proxyOpt == 'string') {
+            this.m_libCurl_impl_.setProxy(proxyOpt);
         } else {
-            this.m_libCurl_impl_.setProxy(proxy);
+            this.m_libCurl_impl_.setProxy(proxyOpt.proxy, proxyOpt.username, proxyOpt.password);
         }
     }
 
@@ -289,7 +279,7 @@ export class LibCurl {
      * @param body POST PUT PATCH时 发送的body
      * 当body不为string或uint8array时 此函数将用JSON.stringify转换对象
      */
-    public send(body?: string | Uint8Array | any): Promise<undefined> | undefined {
+    public send(body?: LibCurlBodyInfo): Promise<undefined> | undefined {
         this.checkSending();
         this.m_isSending_ = true;
         if (this.m_isAsync_) {

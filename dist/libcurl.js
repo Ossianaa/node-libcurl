@@ -5,48 +5,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LibCurl = exports.LibCurlError = exports.LibCurl_HTTP_VERSION = void 0;
 const bindings_1 = __importDefault(require("bindings"));
+const utils_1 = require("./utils");
 const { BaoLibCurl } = (0, bindings_1.default)('bao_curl_node_addon');
 var LibCurl_HTTP_VERSION;
 (function (LibCurl_HTTP_VERSION) {
     LibCurl_HTTP_VERSION[LibCurl_HTTP_VERSION["http1_1"] = 0] = "http1_1";
     LibCurl_HTTP_VERSION[LibCurl_HTTP_VERSION["http2"] = 1] = "http2";
 })(LibCurl_HTTP_VERSION = exports.LibCurl_HTTP_VERSION || (exports.LibCurl_HTTP_VERSION = {}));
-const httpCookiesToArray = (cookies) => {
-    const stringBooleanToJsBoolean = (e) => {
-        switch (e) {
-            case 'TRUE':
-                return true;
-            case 'FALSE':
-                return false;
-            default:
-                throw new Error(`unkonw type ${e}`);
-        }
-    };
-    const cookies_ = [];
-    for (const it of cookies.split('\n')) {
-        if (!it) {
-            continue;
-        }
-        const [domain, secure, path, cors, timestamp, name, value] = it.split('\t');
-        cookies_.push([domain, stringBooleanToJsBoolean(secure), path, stringBooleanToJsBoolean(cors), parseInt(timestamp), name, value]);
-    }
-    return cookies_;
-};
-const cookieOptFilter = (cookieOpt) => {
-    return (e) => {
-        if (cookieOpt) {
-            if (cookieOpt.domain) {
-                if (cookieOpt.domain != e[0])
-                    return false;
-            }
-            if (cookieOpt.path) {
-                if (cookieOpt.path != e[2])
-                    return false;
-            }
-        }
-        return true;
-    };
-};
 class LibCurlError extends Error {
     constructor(e) {
         super(e);
@@ -73,15 +38,32 @@ class LibCurl {
     }
     setRequestHeaders(headers) {
         this.checkSending();
-        this.m_libCurl_impl_.setRequestHeaders(headers);
-    }
-    setProxy(proxy, username, password) {
-        this.checkSending();
-        if (username && password) {
-            this.m_libCurl_impl_.setProxy(proxy, username, password);
+        if (!headers) {
+            return;
+        }
+        if (headers instanceof Map) {
+            headers.forEach((value, key) => this.m_libCurl_impl_.setRequestHeader(key, value));
+        }
+        else if (typeof headers == 'string') {
+            this.m_libCurl_impl_.setRequestHeaders(headers);
+        }
+        else if (typeof headers == 'object') {
+            Object.keys(headers).forEach((key) => {
+                const value = headers[key];
+                this.m_libCurl_impl_.setRequestHeader(key, value);
+            });
         }
         else {
-            this.m_libCurl_impl_.setProxy(proxy);
+            throw new TypeError('unkown type');
+        }
+    }
+    setProxy(proxyOpt) {
+        this.checkSending();
+        if (typeof proxyOpt == 'string') {
+            this.m_libCurl_impl_.setProxy(proxyOpt);
+        }
+        else {
+            this.m_libCurl_impl_.setProxy(proxyOpt.proxy, proxyOpt.username, proxyOpt.password);
         }
     }
     setTimeout(connectTime, sendTime) {
@@ -102,12 +84,12 @@ class LibCurl {
     getCookies(cookieOpt) {
         this.checkSending();
         const cookies_ = this.m_libCurl_impl_.getCookies();
-        return httpCookiesToArray(cookies_).filter(cookieOptFilter(cookieOpt)).map(e => `${e[5]}=${encodeURIComponent(e[6])}`).join(';');
+        return (0, utils_1.httpCookiesToArray)(cookies_).filter((0, utils_1.cookieOptFilter)(cookieOpt)).map(e => `${e[5]}=${encodeURIComponent(e[6])}`).join(';');
     }
     getCookiesMap(cookieOpt) {
         this.checkSending();
         const cookies_ = this.m_libCurl_impl_.getCookies();
-        return httpCookiesToArray(cookies_).filter(cookieOptFilter(cookieOpt)).reduce((e, t) => {
+        return (0, utils_1.httpCookiesToArray)(cookies_).filter((0, utils_1.cookieOptFilter)(cookieOpt)).reduce((e, t) => {
             e.set(t[5], {
                 domain: t[0],
                 secure: t[1],

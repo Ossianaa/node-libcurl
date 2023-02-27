@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.requests = void 0;
 const libcurl_1 = require("./libcurl");
+const utils_1 = require("./utils");
 class requestsResponse {
     constructor(curl) {
         this.curl = curl;
@@ -49,31 +50,7 @@ class requests {
         const { cookies, timeout } = option;
         const curl = (_a = this.option).instance || (_a.instance = new libcurl_1.LibCurl());
         if (cookies) {
-            const hostname = '.';
-            if (typeof cookies == 'string') {
-                cookies.replace(/\s+/g, '')
-                    .split(';')
-                    .reverse()
-                    .map(e => e.split('=', 2))
-                    .forEach(([key, value]) => {
-                    curl.setCookie({
-                        name: key,
-                        value,
-                        domain: hostname,
-                        path: '/',
-                    });
-                });
-            }
-            else {
-                Object.keys(cookies).forEach(key => {
-                    curl.setCookie({
-                        name: key,
-                        value: cookies[key],
-                        domain: hostname,
-                        path: '/',
-                    });
-                });
-            }
+            (0, utils_1.libcurlSetCookies)(curl, cookies, '.');
         }
         if (timeout) {
             curl.setTimeout(timeout, timeout);
@@ -191,19 +168,7 @@ class requests {
                 assignURLSearchParam(url_.searchParams, new URLSearchParams(params));
             }
             curl.open(method, url + '', true);
-            if (Array.isArray(headers)) {
-                headers.forEach(([key, value]) => {
-                    curl.setRequestHeader(key, value);
-                });
-            }
-            else if (typeof headers == 'object') {
-                Object.keys(headers).forEach((key) => {
-                    curl.setRequestHeader(key, headers[key]);
-                });
-            }
-            else if (typeof headers == 'string') {
-                curl.setRequestHeaders(headers);
-            }
+            curl.setRequestHeaders(headers);
             if (redirect) {
                 curl.setRedirect(true);
             }
@@ -211,13 +176,7 @@ class requests {
                 curl.setHttpVersion(httpVersion);
             }
             if (proxy) {
-                if (typeof proxy == "string") {
-                    curl.setProxy(proxy);
-                }
-                else {
-                    const { proxy: proxy_, username, password, } = proxy;
-                    curl.setProxy(proxy_, username, password);
-                }
+                curl.setProxy(proxy);
             }
             let promise;
             if (body) {

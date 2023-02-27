@@ -11,91 +11,50 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetch = void 0;
 const libcurl_1 = require("./libcurl");
+const utils_1 = require("./utils");
 function fetch(url, request = {}) {
     return __awaiter(this, void 0, void 0, function* () {
         request.instance || (request.instance = new libcurl_1.LibCurl());
         const curl = request.instance;
-        return new Promise((resolve, reject) => {
-            const { method = "GET", headers = [], redirect = false, httpVersion = 0, openInnerLog = false, proxy, body, cookies } = request;
-            curl.open(method, url + '', true);
-            if (Array.isArray(headers)) {
-                headers.forEach(([key, value]) => {
-                    curl.setRequestHeader(key, value);
-                });
-            }
-            else if (typeof headers == 'object') {
-                Object.keys(headers).forEach((key) => {
-                    curl.setRequestHeader(key, headers[key]);
-                });
-            }
-            else {
-                curl.setRequestHeaders(headers);
-            }
-            if (redirect) {
-                curl.setRedirect(true);
-            }
-            if (httpVersion) {
-                curl.setHttpVersion(httpVersion);
-            }
-            if (openInnerLog) {
-                curl.printInnerLogger();
-            }
+        const { method = "GET", headers, redirect = false, httpVersion = 0, openInnerLog = false, proxy, body, cookies } = request;
+        curl.open(method, url + '', true);
+        curl.setRequestHeaders(headers);
+        if (redirect) {
+            curl.setRedirect(true);
+        }
+        if (httpVersion) {
+            curl.setHttpVersion(httpVersion);
+        }
+        if (openInnerLog) {
+            curl.printInnerLogger();
+        }
+        if (cookies) {
+            const { hostname } = new URL(url);
             if (cookies) {
-                const { hostname } = new URL(url);
-                if (typeof cookies == 'string') {
-                    cookies.replace(/\s+/g, '')
-                        .split(';')
-                        .reverse()
-                        .map(e => e.split('=', 2))
-                        .forEach(([key, value]) => {
-                        curl.setCookie({
-                            name: key,
-                            value,
-                            domain: hostname,
-                            path: '/',
-                        });
-                    });
-                }
-                else {
-                    Object.keys(cookies).forEach(key => {
-                        curl.setCookie({
-                            name: key,
-                            value: cookies[key],
-                            domain: hostname,
-                            path: '/',
-                        });
-                    });
-                }
+                (0, utils_1.libcurlSetCookies)(curl, cookies, hostname);
             }
-            if (proxy) {
-                if (typeof proxy == "string") {
-                    curl.setProxy(proxy);
-                }
-                else {
-                    const { proxy: proxy_, username, password, } = proxy;
-                    curl.setProxy(proxy_, username, password);
-                }
-            }
-            let promise;
-            if (body) {
-                promise = curl.send(body);
-            }
-            else {
-                promise = curl.send();
-            }
-            promise.then(() => {
-                resolve({
-                    status: () => curl.getResponseStatus(),
-                    arraybuffer: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseBody().buffer; }),
-                    text: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseString(); }),
-                    json: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseJson(); }),
-                    jsonp: (callbackName) => __awaiter(this, void 0, void 0, function* () { return curl.getResponseJsonp(callbackName); }),
-                    headers: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseHeaders(); }),
-                    cookies: () => __awaiter(this, void 0, void 0, function* () { return curl.getCookies(); }),
-                    cookiesMap: () => __awaiter(this, void 0, void 0, function* () { return curl.getCookiesMap(); }),
-                });
-            });
-        });
+        }
+        if (proxy) {
+            curl.setProxy(proxy);
+        }
+        let promise;
+        if (body) {
+            promise = curl.send(body);
+        }
+        else {
+            promise = curl.send();
+        }
+        yield promise;
+        return {
+            status: () => curl.getResponseStatus(),
+            arraybuffer: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseBody().buffer; }),
+            text: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseString(); }),
+            json: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseJson(); }),
+            jsonp: (callbackName) => __awaiter(this, void 0, void 0, function* () { return curl.getResponseJsonp(callbackName); }),
+            headers: () => __awaiter(this, void 0, void 0, function* () { return curl.getResponseHeaders(); }),
+            cookies: () => __awaiter(this, void 0, void 0, function* () { return curl.getCookies(); }),
+            cookiesMap: () => __awaiter(this, void 0, void 0, function* () { return curl.getCookiesMap(); }),
+        };
     });
 }
 exports.fetch = fetch;
