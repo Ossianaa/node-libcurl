@@ -35,6 +35,7 @@ interface requestsInitOption {
     proxy?: requestsInfo;
     body?: requestsBodyInfo;
     httpVersion?: requestsHttpVersionInfo;
+    timeout?: number;
     instance?: LibCurl;
 }
 interface requestsOption {

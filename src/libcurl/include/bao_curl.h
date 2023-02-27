@@ -65,6 +65,8 @@ public:
 		http2,
 	};
 	void setHttpVersion(HttpVersion);
+	unsigned int getLastCurlCode();
+	const char *getLastCurlCodeError();
 
 private:
 	CURL *m_pCURL = NULL;
@@ -75,6 +77,8 @@ private:
 	bool m_bProxy = false;
 	bool m_bIsHttps = false;
 	bool m_verbose = false;
+	CURLcode m_lastCode;
+
 	void init();
 };
 

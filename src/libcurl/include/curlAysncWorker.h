@@ -13,4 +13,6 @@ private:
     BaoCurl &m_baoCurlInstance;
     char* m_sendBody = nullptr;
     size_t m_bodySize;
+    unsigned int m_lastCurlCode = 0;
+    const char* m_lastCurlCodeError = "";
 };

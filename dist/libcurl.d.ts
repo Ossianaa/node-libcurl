@@ -36,6 +36,9 @@ export type LibCurlCookieAttrObject = {
 };
 export type LibCurlCookiesAttr = Map<string, LibCurlCookieAttrObject>;
 export type LibCurlHeadersAttr = Map<string, string>;
+export declare class LibCurlError extends Error {
+    constructor(e: any);
+}
 export declare class LibCurl {
     private m_libCurl_impl_;
     private m_isAsync_;

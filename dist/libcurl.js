@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LibCurl = exports.LibCurl_HTTP_VERSION = void 0;
+exports.LibCurl = exports.LibCurlError = exports.LibCurl_HTTP_VERSION = void 0;
 const bindings_1 = __importDefault(require("bindings"));
 const { BaoLibCurl } = (0, bindings_1.default)('bao_curl_node_addon');
 var LibCurl_HTTP_VERSION;
@@ -47,6 +47,12 @@ const cookieOptFilter = (cookieOpt) => {
         return true;
     };
 };
+class LibCurlError extends Error {
+    constructor(e) {
+        super(e);
+    }
+}
+exports.LibCurlError = LibCurlError;
 class LibCurl {
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
@@ -160,9 +166,14 @@ class LibCurl {
         this.m_isSending_ = true;
         if (this.m_isAsync_) {
             return new Promise((resolve, reject) => {
-                const callback = () => {
+                const callback = (curlcode, curlcodeError) => {
                     this.m_isSending_ = false;
-                    resolve(void 0);
+                    if (curlcode != 0) {
+                        reject(new LibCurlError(curlcodeError));
+                    }
+                    else {
+                        resolve(void 0);
+                    }
                 };
                 if (body) {
                     this.m_libCurl_impl_.sendAsync(body, callback);

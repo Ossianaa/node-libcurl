@@ -41,7 +41,7 @@ class requests {
     constructor(option = {}) {
         var _a;
         this.option = Object.assign({}, option);
-        const { cookies } = option;
+        const { cookies, timeout } = option;
         const curl = (_a = this.option).instance || (_a.instance = new libcurl_1.LibCurl());
         if (cookies) {
             const hostname = '.';
@@ -69,6 +69,9 @@ class requests {
                     });
                 });
             }
+        }
+        if (timeout) {
+            curl.setTimeout(timeout, timeout);
         }
     }
     static session(option = {}) {
@@ -179,7 +182,12 @@ class requests {
             else {
                 promise = curl.send();
             }
-            yield promise;
+            try {
+                yield promise;
+            }
+            catch (error) {
+                throw error;
+            }
             return new requestsResponse(curl);
         });
     }

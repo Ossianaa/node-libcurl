@@ -3,6 +3,7 @@
 #define CHECK_CURLOK(e)                                          \
 	{                                                            \
 		CURLcode code = (e);                                     \
+		this->m_lastCode = code;								 \
 		if (this->m_verbose && code != CURLcode::CURLE_OK)       \
 		{                                                        \
 			printf("CURL Error:%s\n", curl_easy_strerror(code)); \
@@ -285,4 +286,14 @@ void BaoCurl::setHttpVersion(BaoCurl::HttpVersion version)
 		return;
 	}
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP_VERSION, temp));
+}
+
+unsigned int BaoCurl::getLastCurlCode()
+{
+	return this->m_lastCode;
+}
+
+const char* BaoCurl::getLastCurlCodeError()
+{
+	return curl_easy_strerror(this->m_lastCode);
 }

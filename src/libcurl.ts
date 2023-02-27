@@ -83,6 +83,12 @@ const cookieOptFilter = (cookieOpt: LibCurlGetCookiesOption) => {
     }
 }
 
+export class LibCurlError extends Error {
+    constructor(e){
+        super(e)
+    }
+}
+
 export class LibCurl {
     private m_libCurl_impl_: any;
     private m_isAsync_: boolean;
@@ -288,9 +294,13 @@ export class LibCurl {
         this.m_isSending_ = true;
         if (this.m_isAsync_) {
             return new Promise((resolve, reject) => {
-                const callback = () => {
+                const callback = (curlcode, curlcodeError) => {
                     this.m_isSending_ = false;
-                    resolve(void 0);
+                    if (curlcode != 0) {
+                        reject(new LibCurlError(curlcodeError));
+                    } else {
+                        resolve(void 0);
+                    }
                 };
                 if (body) {
                     this.m_libCurl_impl_.sendAsync(body, callback);

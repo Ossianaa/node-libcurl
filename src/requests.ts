@@ -65,6 +65,10 @@ interface requestsInitOption {
     body?: requestsBodyInfo;
     httpVersion?: requestsHttpVersionInfo;
     /**
+     * 单位(秒)
+     */
+    timeout?: number;
+    /**
      * 传入LibCurl实例可以做持久化连接
      */
     instance?: LibCurl;
@@ -80,7 +84,7 @@ export class requests {
     private option: requestsInitOption;
     constructor(option: requestsInitOption = {}) {
         this.option = { ...option };
-        const { cookies } = option;
+        const { cookies, timeout } = option;
         const curl = this.option.instance ||= new LibCurl();
 
         if (cookies) {
@@ -108,6 +112,9 @@ export class requests {
                     });
                 })
             }
+        }
+        if (timeout) {
+            curl.setTimeout(timeout,timeout);
         }
     }
 
@@ -215,7 +222,11 @@ export class requests {
         } else {
             promise = curl.send();
         }
-        await promise;
+        try {
+            await promise;
+        } catch (error) {
+            throw error;            
+        }
         return new requestsResponse(curl);
     }
 }
