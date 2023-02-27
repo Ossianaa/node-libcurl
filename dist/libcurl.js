@@ -166,7 +166,12 @@ class LibCurl {
             });
         }
         if (body) {
-            this.m_libCurl_impl_.send(body);
+            if (body instanceof URLSearchParams) {
+                this.m_libCurl_impl_.send(body + '');
+            }
+            else {
+                this.m_libCurl_impl_.send(body);
+            }
         }
         else {
             this.m_libCurl_impl_.send();

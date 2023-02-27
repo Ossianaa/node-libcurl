@@ -42,7 +42,7 @@ export type LibCurlHeadersAttr = Map<string, string>;
 export type LibCurlHeadersInfo = string | {
     [key: string]: [value: string];
 } | LibCurlHeadersAttr;
-export type LibCurlBodyInfo = string | Uint8Array | any;
+export type LibCurlBodyInfo = string | Uint8Array | URLSearchParams | any;
 export type LibCurlMethodInfo = 'GET' | 'POST' | 'HEAD' | 'PUT' | 'DELETE' | 'CONNECT' | 'OPTIONS' | 'TRACE' | 'PATCH';
 export type LibCurlProxyWithAccountInfo = {
     proxy: string;
