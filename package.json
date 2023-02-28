@@ -1,6 +1,6 @@
 {
   "name": "@ossiana/node-libcurl",
-  "version": "1.0.7-alpha-3",
+  "version": "1.0.7-alpha-5",
   "dependencies": {
     "bindings": "^1.5.0",
     "node-addon-api": "^5.0.0",
@@ -8,8 +8,16 @@
   },
   "scripts": {
     "test": "node ./test/libcurl_test.js",
-    "build:dev": "node-gyp configure --node_use_openssl=false --openssl_quic=false --node_shared_openssl=false && node-gyp -j 16 build --release",
+    "build:dev": "node-pre-gyp configure --node_use_openssl=false --openssl_quic=false --node_shared_openssl=false && node-pre-gyp -j 16 build --release",
     "unittest": "mocha"
+  },
+  "binary": {
+    "module_name": "node-libcurl",
+    "module_path": "./lib/{configuration}/{platform}-{arch}/",
+    "package_name": "{module_name}-{platform}-{arch}-release.tar.gz",
+    "host": "https://github.com/Ossianaa/node-libcurl/releases/download/v1.0.0/",
+    "module_version": "",
+    "node_version": ""
   },
   "devDependencies": {
     "@types/node": "^18.11.18",
@@ -17,11 +25,13 @@
     "chai": "^4.3.7",
     "express": "^4.18.2",
     "mocha": "^10.2.0",
+    "node-pre-gyp": "^0.17.0",
     "typescript": "^4.9.4"
   },
   "author": {
     "name": "Ossian"
   },
+  "main": "./index.js",
   "repository": {
     "type": "git",
     "url": "git@github.com/Ossianaa/node-libcurl.git"
