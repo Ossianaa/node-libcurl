@@ -164,7 +164,7 @@ class requests {
             if (params) {
                 assignURLSearchParam(url_.searchParams, new URLSearchParams(params));
             }
-            curl.open(method, url + '', true);
+            curl.open(method, url_, true);
             if (headers) {
                 curl.setRequestHeaders(headers);
             }

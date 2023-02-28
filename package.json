@@ -9,7 +9,8 @@
     "test": "node ./test/libcurl_test.js",
     "install": "node-pre-gyp install && npm run build:dev",
     "build:dev": "node-pre-gyp configure --node_use_openssl=false --openssl_quic=false --node_shared_openssl=false && node-pre-gyp -j 16 build --release",
-    "unittest": "mocha"
+    "unittest": "mocha",
+    "tsc":"tsc -p tsconfig.json"
   },
   "binary": {
     "module_name": "node-libcurl",
