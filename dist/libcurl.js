@@ -159,10 +159,10 @@ class LibCurl {
                 };
                 if (body) {
                     if (body instanceof URLSearchParams) {
-                        this.m_libCurl_impl_.sendAsync(body + '');
+                        this.m_libCurl_impl_.sendAsync(body + '', callback);
                     }
                     else {
-                        this.m_libCurl_impl_.sendAsync(body);
+                        this.m_libCurl_impl_.sendAsync(body, callback);
                     }
                 }
                 else {
