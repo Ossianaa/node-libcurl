@@ -4,3 +4,4 @@
 /src/libcurl/lib/Debug/*
 /test/*
 /dist/test/*
+/lib/*
