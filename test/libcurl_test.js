@@ -5,12 +5,15 @@ async function main() {
         httpVersion: 1,
         proxy: '127.0.0.1:8888'
     });
-    console.log((await session.get('https://www.baidu.com', {
+    console.log((await session.post('https://www.baidu.com?a=2', {
         headers: {
             'user-Agent': 'chrome'
         },
         params: new URLSearchParams({
             a: 1
+        }),
+        body: new URLSearchParams({
+            a: 2
         })
     })).status);
     debugger

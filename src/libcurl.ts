@@ -80,7 +80,7 @@ export class LibCurl {
     }
     public open(method: LibCurlMethodInfo, url: LibCurlURLInfo, async: boolean = true): void {
         this.checkSending();
-        this.m_libCurl_impl_.open(method, url+'');
+        this.m_libCurl_impl_.open(method, url + '');
         this.m_isAsync_ = async;
     }
 
@@ -294,7 +294,11 @@ export class LibCurl {
                     }
                 };
                 if (body) {
-                    this.m_libCurl_impl_.sendAsync(body, callback);
+                    if (body instanceof URLSearchParams) {
+                        this.m_libCurl_impl_.sendAsync(body + '');
+                    } else {
+                        this.m_libCurl_impl_.sendAsync(body);
+                    }
                 } else {
                     this.m_libCurl_impl_.sendAsync(callback);
                 }
@@ -326,5 +330,5 @@ export class LibCurl {
         return JSON.parse(this.getResponseString());
     }
 
-    
+
 }
