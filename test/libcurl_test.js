@@ -2,17 +2,17 @@ const { LibCurl, fetch, requests } = require('../dist/index');
 
 async function main() {
     const session = requests.session({
-        timeout: 1,
+        httpVersion: 1,
+        proxy: '127.0.0.1:8888'
     });
-    // session.setCookie('ua', '123=/1a', '.baidu.com', '/');
-    const res = await session.get('https://www.google.com', {
+    console.log((await session.get('https://www.baidu.com', {
         headers: {
-            "user-Agent": "1"
-        }
-    });
-    console.log(res.headersMap);
-    // console.log(session.getCookiesMap().get('ua'));
-
+            'user-Agent': 'chrome'
+        },
+        params: new URLSearchParams({
+            a: 1
+        })
+    })).status);
     debugger
     /*  const curl = new LibCurl();
      curl.setHttpVersion(1);
