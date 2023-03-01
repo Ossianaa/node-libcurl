@@ -10,7 +10,7 @@
     "install": "node-pre-gyp install && npm run build:dev",
     "build:dev": "node-pre-gyp configure --node_use_openssl=false --openssl_quic=false --node_shared_openssl=false && node-pre-gyp -j 16 build --release",
     "unittest": "mocha",
-    "tsc":"tsc -p tsconfig.json"
+    "tsc": "tsc -p tsconfig.json"
   },
   "binary": {
     "module_name": "node-libcurl",
@@ -26,6 +26,7 @@
     "express": "^4.18.2",
     "mocha": "^10.2.0",
     "node-gyp": "^9.3.1",
+    "node-pre-gyp": "^0.17.0",
     "typescript": "^4.9.4"
   },
   "author": {
