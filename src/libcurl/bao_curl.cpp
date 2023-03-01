@@ -122,7 +122,8 @@ void BaoCurl::setTimeout(
 
 void BaoCurl::send()
 {
-	BaoCurl::send(std::string(""));
+	std::string empty = "";
+	BaoCurl::send(empty);
 }
 
 void BaoCurl::send(std::string &data)

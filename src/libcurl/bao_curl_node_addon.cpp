@@ -109,7 +109,8 @@ Napi::Value BaoLibCurlWarp::setRequestHeader(const Napi::CallbackInfo &info)
 	{
 		REQUEST_TLS_METHOD_CHECK(env, key != "", "key and value are empty")
 		// if the value is empty then only set key;
-		this->m_curl.setRequestHeaders(key + ";");
+		key += ";";
+		this->m_curl.setRequestHeaders(key);
 		return env.Undefined();
 	}
 	this->m_curl.setRequestHeader(key, value);

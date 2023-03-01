@@ -4,14 +4,14 @@
             "target_name": "bao_curl_node_addon",
            
             "sources": [
-                "<(module_root_dir)/src/libcurl/bao_curl_node_addon.cpp",
-                "<(module_root_dir)/src/libcurl/bao_curl.cpp",
-                "<(module_root_dir)/src/libcurl/utils.cpp",
-                "<(module_root_dir)/src/libcurl/curlAsyncWorker.cpp",
+                "./src/libcurl/bao_curl_node_addon.cpp",
+                "./src/libcurl/bao_curl.cpp",
+                "./src/libcurl/utils.cpp",
+                "./src/libcurl/curlAsyncWorker.cpp",
             ],
             "include_dirs": [
                 "<!@(node -p \"require('node-addon-api').include\")",
-                "<(module_root_dir)/src/libcurl/include"
+                "./src/libcurl/include"
             ],
             'defines': ["NAPI_CPP_EXCEPTIONS",
                         "CURL_STATICLIB",
