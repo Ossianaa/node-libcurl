@@ -3,15 +3,16 @@ const { LibCurl, fetch, requests } = require('../dist/index');
 async function main() {
     const session = requests.session({
         httpVersion: 1,
-        proxy: '127.0.0.1:8888'
+        proxy: '127.0.0.1:8888',
+        redirect: true
     });
     console.log((await session.post('https://www.baidu.com?a=2', {
         headers: {
             'user-Agent': 'chrome'
         },
-        params: new URLSearchParams({
+        params: {
             a: 1
-        }),
+        },
         body: new URLSearchParams({
             a: 2
         })

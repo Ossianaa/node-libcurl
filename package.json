@@ -1,6 +1,6 @@
 {
   "name": "@ossiana/node-libcurl",
-  "version": "1.0.8-alpha-1",
+  "version": "1.0.8-alpha-2",
   "dependencies": {
     "bindings": "^1.5.0",
     "node-addon-api": "^5.0.0"
