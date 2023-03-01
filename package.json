@@ -1,7 +1,8 @@
 {
   "name": "@ossiana/node-libcurl",
-  "version": "1.0.8-alpha-3",
+  "version": "1.0.8-alpha-4",
   "dependencies": {
+    "@mapbox/node-pre-gyp": "^1.0.10",
     "bindings": "^1.5.0",
     "node-addon-api": "^5.0.0"
   },
@@ -26,7 +27,6 @@
     "express": "^4.18.2",
     "mocha": "^10.2.0",
     "node-gyp": "^9.3.1",
-    "node-pre-gyp": "^0.17.0",
     "typescript": "^4.9.4"
   },
   "author": {
