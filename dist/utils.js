@@ -23,11 +23,24 @@ const httpCookiesToArray = (cookies) => {
     return cookies_;
 };
 exports.httpCookiesToArray = httpCookiesToArray;
+const getSubdomains = (domain) => {
+    const subdomains = domain.split('.');
+    const subdomainList = [];
+    for (let i = 0; i < subdomains.length - 1; i++) {
+        const domain_ = subdomains.slice(i).join('.');
+        subdomainList.push(domain_);
+        if (!domain_.startsWith('.')) {
+            subdomainList.push(`.${domain_}`);
+        }
+    }
+    return subdomainList;
+};
 const cookieOptFilter = (cookieOpt) => {
     return (e) => {
         if (cookieOpt) {
             if (cookieOpt.domain) {
-                if (cookieOpt.domain != e[0])
+                const domainArr = getSubdomains(cookieOpt.domain);
+                if (!domainArr.find(t => e[0]))
                     return false;
             }
             if (cookieOpt.path) {

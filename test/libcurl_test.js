@@ -21,7 +21,7 @@ async function main() {
             a: 2
         })
     })).status);
-    console.log(session.getCookies());
+    console.log(session.getCookies('.codecademy.com'));
     debugger
     /*  const curl = new LibCurl();
      curl.setHttpVersion(1);
