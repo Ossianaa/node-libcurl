@@ -36,17 +36,13 @@ const getSubdomains = (domain) => {
     return subdomainList;
 };
 const cookieOptFilter = (cookieOpt) => {
+    const domainArr = (cookieOpt === null || cookieOpt === void 0 ? void 0 : cookieOpt.domain) ? getSubdomains(cookieOpt.domain) : void 0;
     return (e) => {
-        if (cookieOpt) {
-            if (cookieOpt.domain) {
-                const domainArr = getSubdomains(cookieOpt.domain);
-                if (!domainArr.find(t => e[0]))
-                    return false;
-            }
-            if (cookieOpt.path) {
-                if (cookieOpt.path != e[2])
-                    return false;
-            }
+        if (domainArr && !domainArr.find(t => e[0] === t))
+            return false;
+        if (cookieOpt === null || cookieOpt === void 0 ? void 0 : cookieOpt.path) {
+            if (cookieOpt.path != e[2])
+                return false;
         }
         return true;
     };
