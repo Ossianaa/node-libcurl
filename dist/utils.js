@@ -36,7 +36,7 @@ const getSubdomains = (domain) => {
     return subdomainList;
 };
 const cookieOptFilter = (cookieOpt) => {
-    const domainArr = (cookieOpt === null || cookieOpt === void 0 ? void 0 : cookieOpt.domain) ? getSubdomains(cookieOpt.domain) : void 0;
+    const domainArr = (cookieOpt === null || cookieOpt === void 0 ? void 0 : cookieOpt.domain) && getSubdomains(cookieOpt.domain);
     return (e) => {
         if (domainArr && !domainArr.find(t => e[0] === t))
             return false;

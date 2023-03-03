@@ -42,7 +42,7 @@ const getSubdomains = (domain: string) => {
 }
 
 export const cookieOptFilter = (cookieOpt: LibCurlGetCookiesOption) => {
-    const domainArr = cookieOpt?.domain ? getSubdomains(cookieOpt.domain) : void 0;
+    const domainArr = cookieOpt?.domain && getSubdomains(cookieOpt.domain);
     return (e: LibCurlCookieAttrArray) => {
         if (domainArr && !domainArr.find(t => e[0] === t))//设置了domain 找上级所有域名cookie 没设置就不过滤
             return false;
