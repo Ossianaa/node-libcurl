@@ -5,6 +5,11 @@ async function main() {
         httpVersion: 1,
         redirect: true
     });
+    console.log((await session.get('https://tls.peet.ws/api/clean', {
+        headers: {
+            'user-Agent': '1'
+        }
+    })).text);
     console.log((await session.post('https://www.baidu.com?a=2', {
         headers: {
             'user-Agent': 'chrome'
