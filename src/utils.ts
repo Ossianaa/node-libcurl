@@ -22,7 +22,7 @@ export const httpCookiesToArray: (cookies: string) => LibCurlCookieAttrArray[] =
             continue;
         }
         const [domain, secure, path, cors, timestamp, name, value] = it.split('\t');
-        cookies_.push([domain, stringBooleanToJsBoolean(secure), path, stringBooleanToJsBoolean(cors), parseInt(timestamp), name, value])
+        cookies_.push([domain.replace(/#HttpOnly_/i, ''), stringBooleanToJsBoolean(secure), path, stringBooleanToJsBoolean(cors), parseInt(timestamp), name, value])
     }
     return cookies_;
 }

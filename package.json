@@ -1,6 +1,6 @@
 {
   "name": "@ossiana/node-libcurl",
-  "version": "1.0.8-alpha-4",
+  "version": "1.0.9-alpha-1",
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.10",
     "bindings": "^1.5.0",
