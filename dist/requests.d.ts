@@ -29,6 +29,7 @@ interface requestsInitOption {
     proxy?: requestsProxyInfo;
     body?: requestsBodyInfo;
     httpVersion?: requestsHttpVersionInfo;
+    verbose?: boolean;
     timeout?: number;
     instance?: LibCurl;
 }
@@ -37,19 +38,22 @@ type requestsParamsInfo = URLSearchParams | string | {
 };
 interface requestsOption {
     headers?: requestsHeadersInfo;
-    body?: requestsBodyInfo;
     params?: requestsParamsInfo;
+    json?: object;
+    data?: requestsBodyInfo;
+}
+interface requestsStaticOption extends Omit<requestsInitOption, 'body' | 'instance'>, requestsOption {
 }
 export declare class requests {
     private option;
     constructor(option?: requestsInitOption);
     static session(option?: requestsInitOption): requests;
-    static get(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
-    static post(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
-    static put(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
-    static patch(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
-    static trace(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
-    static head(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
+    static get(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse>;
+    static post(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse>;
+    static put(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse>;
+    static patch(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse>;
+    static trace(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse>;
+    static head(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse>;
     get(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
     post(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
     put(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
@@ -62,5 +66,6 @@ export declare class requests {
     getCookiesMap(domain?: string, path?: string): LibCurlCookiesAttr;
     deleteCookie(key: string, domain: string, path?: string): void;
     private sendRequest;
+    private static sendRequestStaic;
 }
 export {};

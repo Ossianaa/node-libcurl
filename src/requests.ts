@@ -1,4 +1,4 @@
-import { LibCurl, LibCurlBodyInfo, LibCurlCookiesAttr, LibCurlCookiesInfo, LibCurlHeadersAttr, LibCurlHeadersInfo, LibCurlMethodInfo, LibCurlProxyInfo, LibCurlHttpVersionInfo, LibCurlURLInfo } from "./libcurl"
+import { LibCurl, LibCurlBodyInfo, LibCurlCookiesAttr, LibCurlCookiesInfo, LibCurlHeadersAttr, LibCurlHeadersInfo, LibCurlMethodInfo, LibCurlProxyInfo, LibCurlHttpVersionInfo, LibCurlURLInfo, LibCurlError } from "./libcurl"
 import { libcurlSetCookies } from "./utils";
 
 type requestsHttpVersionInfo = LibCurlHttpVersionInfo;
@@ -58,7 +58,10 @@ interface requestsInitOption {
     proxy?: requestsProxyInfo;
     body?: requestsBodyInfo;
     httpVersion?: requestsHttpVersionInfo;
-
+    /**
+     * 打印curl内部访问日志
+     */
+    verbose?: boolean;
     /**
      * 单位(秒)
      */
@@ -71,11 +74,20 @@ interface requestsInitOption {
 
 type requestsParamsInfo = URLSearchParams | string | { [key: string]: string };
 
+
 interface requestsOption {
     headers?: requestsHeadersInfo;
-    body?: requestsBodyInfo;
     params?: requestsParamsInfo;
+    json?: object;
+    data?: requestsBodyInfo;
 }
+
+
+interface requestsStaticOption
+    extends Omit<requestsInitOption, 'body' | 'instance'>, requestsOption {
+
+}
+
 
 const assignURLSearchParam = (target: URLSearchParams, source: URLSearchParams) => {
     source.forEach((value, key) => {
@@ -87,7 +99,7 @@ export class requests {
     private option: requestsInitOption;
     constructor(option: requestsInitOption = {}) {
         this.option = { ...option };
-        const { cookies, timeout } = option;
+        const { cookies, timeout, verbose } = option;
         const curl = this.option.instance ||= new LibCurl();
 
         if (cookies) {
@@ -95,6 +107,9 @@ export class requests {
         }
         if (timeout) {
             curl.setTimeout(timeout, timeout);
+        }
+        if (verbose) {
+            curl.printInnerLogger();
         }
     }
 
@@ -104,23 +119,23 @@ export class requests {
 
 
     //暂定6种常用方法
-    static async get(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return requests.session().sendRequest('GET', url, requestOpt);
+    static async get(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('GET', url, requestOpt);
     }
-    static async post(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return requests.session().sendRequest('POST', url, requestOpt);
+    static async post(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('POST', url, requestOpt);
     }
-    static async put(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return requests.session().sendRequest('PUT', url, requestOpt);
+    static async put(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('PUT', url, requestOpt);
     }
-    static async patch(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return requests.session().sendRequest('PATCH', url, requestOpt);
+    static async patch(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('PATCH', url, requestOpt);
     }
-    static async trace(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return requests.session().sendRequest('TRACE', url, requestOpt);
+    static async trace(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('TRACE', url, requestOpt);
     }
-    static async head(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return requests.session().sendRequest('HEAD', url, requestOpt);
+    static async head(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('HEAD', url, requestOpt);
     }
     async get(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('GET', url, requestOpt);
@@ -187,7 +202,10 @@ export class requests {
 
     private async sendRequest(method: requestsMethodInfo, url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
         const { instance: curl, redirect = false, proxy, httpVersion } = this.option;
-        const { headers, body, params } = requestOpt || {};
+        const { headers, data, json, params } = requestOpt || {};
+        if (data && json) {
+            throw new LibCurlError('both data and json exist');
+        }
         const url_ = new URL(url);
         if (params) {
             assignURLSearchParam(url_.searchParams, new URLSearchParams(params));
@@ -205,7 +223,58 @@ export class requests {
         if (proxy) {
             curl.setProxy(proxy);
         }
-        await curl.send(body);
+        let hasContentType = false;
+        if (data || json) {
+            //如果有传入data或json 才用的上
+            const contentTypeFilter = (e: string[]) => e.some(e => e.toLocaleLowerCase() == 'content-type');
+            if (typeof headers == 'string') {
+                hasContentType = /content-type/i.test(headers);
+            } else if (headers instanceof Map) {
+                hasContentType = contentTypeFilter([...headers.keys()]);
+            } else {
+                hasContentType = contentTypeFilter(Object.keys(headers));
+            }
+        }
+        if (json) {
+            if (!hasContentType) {
+                curl.setRequestHeader('Content-Type', 'application/json');
+            }
+            await curl.send(json);//不用序列化 cpp代码已经处理
+        } else if (data) {
+            let sendData = data;
+            if (!hasContentType) {
+                if (typeof data == 'string') {
+                    curl.setRequestHeader('Content-Type', 'text/plain');
+                } else if (data instanceof URLSearchParams) {
+                    curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                } else if (data instanceof Uint8Array) {
+                    curl.setRequestHeader('Content-Type', 'application/octet-stream');
+                } else {
+                    sendData = Object.keys(data).map((e) => {
+                        const value = data[e];
+                        const type = typeof value;
+                        if (/* value !== null && */['object', 'boolean', 'number']) {
+                            //照样处理null
+                            return [e, JSON.stringify(value)];
+                        } else if (type == 'undefined') {
+                            return [e, ''];
+                        } else if (type == 'string') {
+                            return [e, value];
+                        } else {
+                            throw new LibCurlError(`data unkown type ${type}`)
+                        }
+
+                    })
+                        .map(([key, value]: [string, string]) => `${key}=${encodeURIComponent(value)}`)
+                        .join('&');
+                }
+            }
+            await curl.send(sendData);
+        }
         return new requestsResponse(curl);
+    }
+
+    private static async sendRequestStaic(method: requestsMethodInfo, url: requestsURLInfo, requestStaticOpt?: requestsStaticOption) {
+        return requests.session(requestStaticOpt as requestsInitOption).sendRequest(method, url, requestStaticOpt);
     }
 }

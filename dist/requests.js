@@ -44,7 +44,7 @@ class requests {
     constructor(option = {}) {
         var _a;
         this.option = Object.assign({}, option);
-        const { cookies, timeout } = option;
+        const { cookies, timeout, verbose } = option;
         const curl = (_a = this.option).instance || (_a.instance = new libcurl_1.LibCurl());
         if (cookies) {
             (0, utils_1.libcurlSetCookies)(curl, cookies, '.');
@@ -52,38 +52,41 @@ class requests {
         if (timeout) {
             curl.setTimeout(timeout, timeout);
         }
+        if (verbose) {
+            curl.printInnerLogger();
+        }
     }
     static session(option = {}) {
         return new requests(option);
     }
     static get(url, requestOpt) {
         return __awaiter(this, void 0, void 0, function* () {
-            return requests.session().sendRequest('GET', url, requestOpt);
+            return requests.sendRequestStaic('GET', url, requestOpt);
         });
     }
     static post(url, requestOpt) {
         return __awaiter(this, void 0, void 0, function* () {
-            return requests.session().sendRequest('POST', url, requestOpt);
+            return requests.sendRequestStaic('POST', url, requestOpt);
         });
     }
     static put(url, requestOpt) {
         return __awaiter(this, void 0, void 0, function* () {
-            return requests.session().sendRequest('PUT', url, requestOpt);
+            return requests.sendRequestStaic('PUT', url, requestOpt);
         });
     }
     static patch(url, requestOpt) {
         return __awaiter(this, void 0, void 0, function* () {
-            return requests.session().sendRequest('PATCH', url, requestOpt);
+            return requests.sendRequestStaic('PATCH', url, requestOpt);
         });
     }
     static trace(url, requestOpt) {
         return __awaiter(this, void 0, void 0, function* () {
-            return requests.session().sendRequest('TRACE', url, requestOpt);
+            return requests.sendRequestStaic('TRACE', url, requestOpt);
         });
     }
     static head(url, requestOpt) {
         return __awaiter(this, void 0, void 0, function* () {
-            return requests.session().sendRequest('HEAD', url, requestOpt);
+            return requests.sendRequestStaic('HEAD', url, requestOpt);
         });
     }
     get(url, requestOpt) {
@@ -159,7 +162,10 @@ class requests {
     sendRequest(method, url, requestOpt) {
         return __awaiter(this, void 0, void 0, function* () {
             const { instance: curl, redirect = false, proxy, httpVersion } = this.option;
-            const { headers, body, params } = requestOpt || {};
+            const { headers, data, json, params } = requestOpt || {};
+            if (data && json) {
+                throw new libcurl_1.LibCurlError('both data and json exist');
+            }
             const url_ = new URL(url);
             if (params) {
                 assignURLSearchParam(url_.searchParams, new URLSearchParams(params));
@@ -177,8 +183,66 @@ class requests {
             if (proxy) {
                 curl.setProxy(proxy);
             }
-            yield curl.send(body);
+            let hasContentType = false;
+            if (data || json) {
+                const contentTypeFilter = (e) => e.some(e => e.toLocaleLowerCase() == 'content-type');
+                if (typeof headers == 'string') {
+                    hasContentType = /content-type/i.test(headers);
+                }
+                else if (headers instanceof Map) {
+                    hasContentType = contentTypeFilter([...headers.keys()]);
+                }
+                else {
+                    hasContentType = contentTypeFilter(Object.keys(headers));
+                }
+            }
+            if (json) {
+                if (!hasContentType) {
+                    curl.setRequestHeader('Content-Type', 'application/json');
+                }
+                yield curl.send(json);
+            }
+            else if (data) {
+                let sendData = data;
+                if (!hasContentType) {
+                    if (typeof data == 'string') {
+                        curl.setRequestHeader('Content-Type', 'text/plain');
+                    }
+                    else if (data instanceof URLSearchParams) {
+                        curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    }
+                    else if (data instanceof Uint8Array) {
+                        curl.setRequestHeader('Content-Type', 'application/octet-stream');
+                    }
+                    else {
+                        sendData = Object.keys(data).map((e) => {
+                            const value = data[e];
+                            const type = typeof value;
+                            if (['object', 'boolean', 'number']) {
+                                return [e, JSON.stringify(value)];
+                            }
+                            else if (type == 'undefined') {
+                                return [e, ''];
+                            }
+                            else if (type == 'string') {
+                                return [e, value];
+                            }
+                            else {
+                                throw new libcurl_1.LibCurlError(`data unkown type ${type}`);
+                            }
+                        })
+                            .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+                            .join('&');
+                    }
+                }
+                yield curl.send(sendData);
+            }
             return new requestsResponse(curl);
+        });
+    }
+    static sendRequestStaic(method, url, requestStaticOpt) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return requests.session(requestStaticOpt).sendRequest(method, url, requestStaticOpt);
         });
     }
 }
