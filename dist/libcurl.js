@@ -84,7 +84,7 @@ class LibCurl {
     getCookies(cookieOpt) {
         this.checkSending();
         const cookies_ = this.m_libCurl_impl_.getCookies();
-        return (0, utils_1.httpCookiesToArray)(cookies_).filter((0, utils_1.cookieOptFilter)(cookieOpt)).map(e => `${e[5]}=${encodeURIComponent(e[6])}`).join(';');
+        return (0, utils_1.httpCookiesToArray)(cookies_).filter((0, utils_1.cookieOptFilter)(cookieOpt)).map(e => `${e[5]}=${encodeURIComponent(e[6])};`).join(' ');
     }
     getCookiesMap(cookieOpt) {
         this.checkSending();

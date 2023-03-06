@@ -169,7 +169,7 @@ export class LibCurl {
     public getCookies(cookieOpt?: LibCurlGetCookiesOption): string {
         this.checkSending();
         const cookies_ = this.m_libCurl_impl_.getCookies();
-        return httpCookiesToArray(cookies_).filter(cookieOptFilter(cookieOpt)).map(e => `${e[5]}=${encodeURIComponent(e[6])}`).join(';');
+        return httpCookiesToArray(cookies_).filter(cookieOptFilter(cookieOpt)).map(e => `${e[5]}=${encodeURIComponent(e[6])};`).join(' ');
     }
 
     /**
