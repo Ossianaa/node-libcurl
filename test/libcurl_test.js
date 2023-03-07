@@ -3,13 +3,15 @@ const { LibCurl, fetch, requests } = require('../dist/index');
 async function main() {
     const session = requests.session({
         httpVersion: 1,
-        redirect: true
+        redirect: true,
+        verbose: true
     });
     console.log((await session.get('https://tls.peet.ws/api/clean', {
         headers: {
             'user-Agent': '1'
         }
     })).text);
+    return
     console.log((await session.post('https://www.baidu.com?a=2', {
         headers: {
             'user-Agent': 'chrome'

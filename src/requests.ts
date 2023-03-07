@@ -270,6 +270,8 @@ export class requests {
                 }
             }
             await curl.send(sendData);
+        } else {
+            await curl.send();
         }
         return new requestsResponse(curl);
     }

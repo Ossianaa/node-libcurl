@@ -237,6 +237,9 @@ class requests {
                 }
                 yield curl.send(sendData);
             }
+            else {
+                yield curl.send();
+            }
             return new requestsResponse(curl);
         });
     }
