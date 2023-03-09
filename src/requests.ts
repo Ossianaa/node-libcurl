@@ -249,25 +249,27 @@ export class requests {
                     curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
                 } else if (data instanceof Uint8Array) {
                     curl.setRequestHeader('Content-Type', 'application/octet-stream');
-                } else {
-                    sendData = Object.keys(data).map((e) => {
-                        const value = data[e];
-                        const type = typeof value;
-                        if (/* value !== null && */['object', 'boolean', 'number']) {
-                            //照样处理null
-                            return [e, JSON.stringify(value)];
-                        } else if (type == 'undefined') {
-                            return [e, ''];
-                        } else if (type == 'string') {
-                            return [e, value];
-                        } else {
-                            throw new LibCurlError(`data unkown type ${type}`)
-                        }
-
-                    })
-                        .map(([key, value]: [string, string]) => `${key}=${encodeURIComponent(value)}`)
-                        .join('&');
                 }
+            }
+            if (typeof data == 'object' && data != null) {
+                curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                sendData = Object.keys(data).map((e) => {
+                    const value = data[e];
+                    const type = typeof value;
+                    if (/* value !== null && */['object', 'boolean', 'number']) {
+                        //照样处理null
+                        return [e, JSON.stringify(value)];
+                    } else if (type == 'undefined') {
+                        return [e, ''];
+                    } else if (type == 'string') {
+                        return [e, value];
+                    } else {
+                        throw new LibCurlError(`data unkown type ${type}`)
+                    }
+
+                })
+                    .map(([key, value]: [string, string]) => `${key}=${encodeURIComponent(value)}`)
+                    .join('&');
             }
             await curl.send(sendData);
         } else {
