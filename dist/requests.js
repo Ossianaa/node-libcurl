@@ -184,7 +184,7 @@ class requests {
                 curl.setProxy(proxy);
             }
             let hasContentType = false;
-            if (data || json) {
+            if (headers && (data || json)) {
                 const contentTypeFilter = (e) => e.some(e => e.toLocaleLowerCase() == 'content-type');
                 if (typeof headers == 'string') {
                     hasContentType = /content-type/i.test(headers);
@@ -214,26 +214,27 @@ class requests {
                     else if (data instanceof Uint8Array) {
                         curl.setRequestHeader('Content-Type', 'application/octet-stream');
                     }
-                    else {
-                        sendData = Object.keys(data).map((e) => {
-                            const value = data[e];
-                            const type = typeof value;
-                            if (['object', 'boolean', 'number']) {
-                                return [e, JSON.stringify(value)];
-                            }
-                            else if (type == 'undefined') {
-                                return [e, ''];
-                            }
-                            else if (type == 'string') {
-                                return [e, value];
-                            }
-                            else {
-                                throw new libcurl_1.LibCurlError(`data unkown type ${type}`);
-                            }
-                        })
-                            .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-                            .join('&');
-                    }
+                }
+                if (typeof data == 'object' && data != null) {
+                    curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    sendData = Object.keys(data).map((e) => {
+                        const value = data[e];
+                        const type = typeof value;
+                        if (['object', 'boolean', 'number']) {
+                            return [e, JSON.stringify(value)];
+                        }
+                        else if (type == 'undefined') {
+                            return [e, ''];
+                        }
+                        else if (type == 'string') {
+                            return [e, value];
+                        }
+                        else {
+                            throw new libcurl_1.LibCurlError(`data unkown type ${type}`);
+                        }
+                    })
+                        .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+                        .join('&');
                 }
                 yield curl.send(sendData);
             }
