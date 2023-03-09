@@ -256,13 +256,13 @@ export class requests {
                 sendData = Object.keys(data).map((e) => {
                     const value = data[e];
                     const type = typeof value;
-                    if (/* value !== null && */['object', 'boolean', 'number'].includes(type)) {
+                    if (/* value !== null && */['object', 'boolean'].includes(type)) {
                         //照样处理null
                         return [e, JSON.stringify(value)];
                     } else if (type == 'undefined') {
                         return [e, ''];
-                    } else if (type == 'string') {
-                        return [e, value];
+                    } else if (['string', 'number'].includes(type)) {
+                        return [e, value + ''];
                     } else {
                         throw new LibCurlError(`data unkown type ${type}`)
                     }
