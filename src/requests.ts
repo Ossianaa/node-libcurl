@@ -224,7 +224,7 @@ export class requests {
             curl.setProxy(proxy);
         }
         let hasContentType = false;
-        if (data || json) {
+        if (headers && (data || json)) {
             //如果有传入data或json 才用的上
             const contentTypeFilter = (e: string[]) => e.some(e => e.toLocaleLowerCase() == 'content-type');
             if (typeof headers == 'string') {
