@@ -44,7 +44,19 @@ export type LibCurlCookiesAttr = Map<string, LibCurlCookieAttrObject>
 
 export type LibCurlHeadersAttr = Map<string, string>
 
-export type LibCurlHeadersInfo = string | { [key: string]: [value: string] } | LibCurlHeadersAttr
+interface LibCurlCommonHeaders {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
+    | 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0',
+    'Content-Type': 'application/x-www-form-urlencoded' |
+    'application/json' |
+    'application/octet-stream' |
+    'application/protobuf' |
+    'text/plain',
+    'Host': string,
+    'Referer': string,
+}
+
+export type LibCurlHeadersInfo = string | { [key: string]: [value: string] } | LibCurlHeadersAttr | LibCurlCommonHeaders;
 
 export type LibCurlBodyInfo = string | Uint8Array | URLSearchParams | object;
 
