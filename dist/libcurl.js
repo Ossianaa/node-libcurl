@@ -19,6 +19,9 @@ class LibCurlError extends Error {
 }
 exports.LibCurlError = LibCurlError;
 class LibCurl {
+    m_libCurl_impl_;
+    m_isAsync_;
+    m_isSending_;
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
     }

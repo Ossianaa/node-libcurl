@@ -1,18 +1,10 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.requests = void 0;
 const libcurl_1 = require("./libcurl");
 const utils_1 = require("./utils");
 class requestsResponse {
+    curl;
     constructor(curl) {
         this.curl = curl;
     }
@@ -41,11 +33,11 @@ const assignURLSearchParam = (target, source) => {
     });
 };
 class requests {
+    option;
     constructor(option = {}) {
-        var _a;
-        this.option = Object.assign({}, option);
+        this.option = { ...option };
         const { cookies, timeout, verbose } = option;
-        const curl = (_a = this.option).instance || (_a.instance = new libcurl_1.LibCurl());
+        const curl = this.option.instance ||= new libcurl_1.LibCurl();
         if (cookies) {
             (0, utils_1.libcurlSetCookies)(curl, cookies, '.');
         }
@@ -59,65 +51,41 @@ class requests {
     static session(option = {}) {
         return new requests(option);
     }
-    static get(url, requestOpt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return requests.sendRequestStaic('GET', url, requestOpt);
-        });
+    static async get(url, requestOpt) {
+        return requests.sendRequestStaic('GET', url, requestOpt);
     }
-    static post(url, requestOpt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return requests.sendRequestStaic('POST', url, requestOpt);
-        });
+    static async post(url, requestOpt) {
+        return requests.sendRequestStaic('POST', url, requestOpt);
     }
-    static put(url, requestOpt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return requests.sendRequestStaic('PUT', url, requestOpt);
-        });
+    static async put(url, requestOpt) {
+        return requests.sendRequestStaic('PUT', url, requestOpt);
     }
-    static patch(url, requestOpt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return requests.sendRequestStaic('PATCH', url, requestOpt);
-        });
+    static async patch(url, requestOpt) {
+        return requests.sendRequestStaic('PATCH', url, requestOpt);
     }
-    static trace(url, requestOpt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return requests.sendRequestStaic('TRACE', url, requestOpt);
-        });
+    static async trace(url, requestOpt) {
+        return requests.sendRequestStaic('TRACE', url, requestOpt);
     }
-    static head(url, requestOpt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return requests.sendRequestStaic('HEAD', url, requestOpt);
-        });
+    static async head(url, requestOpt) {
+        return requests.sendRequestStaic('HEAD', url, requestOpt);
     }
-    get(url, requestOpt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.sendRequest('GET', url, requestOpt);
-        });
+    async get(url, requestOpt) {
+        return this.sendRequest('GET', url, requestOpt);
     }
-    post(url, requestOpt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.sendRequest('POST', url, requestOpt);
-        });
+    async post(url, requestOpt) {
+        return this.sendRequest('POST', url, requestOpt);
     }
-    put(url, requestOpt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.sendRequest('PUT', url, requestOpt);
-        });
+    async put(url, requestOpt) {
+        return this.sendRequest('PUT', url, requestOpt);
     }
-    patch(url, requestOpt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.sendRequest('PATCH', url, requestOpt);
-        });
+    async patch(url, requestOpt) {
+        return this.sendRequest('PATCH', url, requestOpt);
     }
-    trace(url, requestOpt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.sendRequest('TRACE', url, requestOpt);
-        });
+    async trace(url, requestOpt) {
+        return this.sendRequest('TRACE', url, requestOpt);
     }
-    head(url, requestOpt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.sendRequest('HEAD', url, requestOpt);
-        });
+    async head(url, requestOpt) {
+        return this.sendRequest('HEAD', url, requestOpt);
     }
     setCookie(key, value, domain = '', path = '') {
         this.option.instance.setCookie({
@@ -159,95 +127,91 @@ class requests {
             path: path || "/",
         });
     }
-    sendRequest(method, url, requestOpt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { instance: curl, redirect = false, proxy, httpVersion } = this.option;
-            const { headers, data, json, params } = requestOpt || {};
-            if (data && json) {
-                throw new libcurl_1.LibCurlError('both data and json exist');
+    async sendRequest(method, url, requestOpt) {
+        const { instance: curl, redirect = false, proxy, httpVersion } = this.option;
+        const { headers, data, json, params } = requestOpt || {};
+        if (data && json) {
+            throw new libcurl_1.LibCurlError('both data and json exist');
+        }
+        const url_ = new URL(url);
+        if (params) {
+            assignURLSearchParam(url_.searchParams, new URLSearchParams(params));
+        }
+        curl.open(method, url_, true);
+        if (headers) {
+            curl.setRequestHeaders(headers);
+        }
+        if (redirect) {
+            curl.setRedirect(true);
+        }
+        if (httpVersion) {
+            curl.setHttpVersion(httpVersion);
+        }
+        if (proxy) {
+            curl.setProxy(proxy);
+        }
+        let hasContentType = false;
+        if (headers && (data || json)) {
+            const contentTypeFilter = (e) => e.some(e => e.toLocaleLowerCase() == 'content-type');
+            if (typeof headers == 'string') {
+                hasContentType = /content-type/i.test(headers);
             }
-            const url_ = new URL(url);
-            if (params) {
-                assignURLSearchParam(url_.searchParams, new URLSearchParams(params));
-            }
-            curl.open(method, url_, true);
-            if (headers) {
-                curl.setRequestHeaders(headers);
-            }
-            if (redirect) {
-                curl.setRedirect(true);
-            }
-            if (httpVersion) {
-                curl.setHttpVersion(httpVersion);
-            }
-            if (proxy) {
-                curl.setProxy(proxy);
-            }
-            let hasContentType = false;
-            if (headers && (data || json)) {
-                const contentTypeFilter = (e) => e.some(e => e.toLocaleLowerCase() == 'content-type');
-                if (typeof headers == 'string') {
-                    hasContentType = /content-type/i.test(headers);
-                }
-                else if (headers instanceof Map) {
-                    hasContentType = contentTypeFilter([...headers.keys()]);
-                }
-                else {
-                    hasContentType = contentTypeFilter(Object.keys(headers));
-                }
-            }
-            if (json) {
-                if (!hasContentType) {
-                    curl.setRequestHeader('Content-Type', 'application/json');
-                }
-                yield curl.send(json);
-            }
-            else if (data) {
-                let sendData = data;
-                if (!hasContentType) {
-                    if (typeof data == 'string') {
-                        curl.setRequestHeader('Content-Type', 'text/plain');
-                    }
-                    else if (data instanceof URLSearchParams) {
-                        curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                    }
-                    else if (data instanceof Uint8Array) {
-                        curl.setRequestHeader('Content-Type', 'application/octet-stream');
-                    }
-                }
-                if (typeof data == 'object' && data != null) {
-                    curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                    sendData = Object.keys(data).map((e) => {
-                        const value = data[e];
-                        const type = typeof value;
-                        if (['object', 'boolean', 'number']) {
-                            return [e, JSON.stringify(value)];
-                        }
-                        else if (type == 'undefined') {
-                            return [e, ''];
-                        }
-                        else if (type == 'string') {
-                            return [e, value];
-                        }
-                        else {
-                            throw new libcurl_1.LibCurlError(`data unkown type ${type}`);
-                        }
-                    })
-                        .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-                        .join('&');
-                }
-                yield curl.send(sendData);
+            else if (headers instanceof Map) {
+                hasContentType = contentTypeFilter([...headers.keys()]);
             }
             else {
-                yield curl.send();
+                hasContentType = contentTypeFilter(Object.keys(headers));
             }
-            return new requestsResponse(curl);
-        });
+        }
+        if (json) {
+            if (!hasContentType) {
+                curl.setRequestHeader('Content-Type', 'application/json');
+            }
+            await curl.send(json);
+        }
+        else if (data) {
+            let sendData = data;
+            if (!hasContentType) {
+                if (typeof data == 'string') {
+                    curl.setRequestHeader('Content-Type', 'text/plain');
+                }
+                else if (data instanceof URLSearchParams) {
+                    curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                }
+                else if (data instanceof Uint8Array) {
+                    curl.setRequestHeader('Content-Type', 'application/octet-stream');
+                }
+            }
+            if (typeof data == 'object' && data != null) {
+                curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                sendData = Object.keys(data).map((e) => {
+                    const value = data[e];
+                    const type = typeof value;
+                    if (['object', 'boolean', 'number'].includes(type)) {
+                        return [e, JSON.stringify(value)];
+                    }
+                    else if (type == 'undefined') {
+                        return [e, ''];
+                    }
+                    else if (type == 'string') {
+                        return [e, value];
+                    }
+                    else {
+                        throw new libcurl_1.LibCurlError(`data unkown type ${type}`);
+                    }
+                })
+                    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+                    .join('&');
+            }
+            await curl.send(sendData);
+        }
+        else {
+            await curl.send();
+        }
+        return new requestsResponse(curl);
     }
-    static sendRequestStaic(method, url, requestStaticOpt) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return requests.session(requestStaticOpt).sendRequest(method, url, requestStaticOpt);
-        });
+    static async sendRequestStaic(method, url, requestStaticOpt) {
+        return requests.session(requestStaticOpt).sendRequest(method, url, requestStaticOpt);
     }
 }
 exports.requests = requests;

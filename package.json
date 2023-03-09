@@ -1,6 +1,6 @@
 {
   "name": "@ossiana/node-libcurl",
-  "version": "1.1.0-alpha-2",
+  "version": "1.1.0-alpha-3",
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.10",
     "bindings": "^1.5.0",
@@ -8,8 +8,7 @@
   },
   "scripts": {
     "test": "node ./test/libcurl_test.js",
-    "install": "node-pre-gyp install && npm run build:dev",
-    "build:dev": "node-pre-gyp configure --node_use_openssl=false --openssl_quic=false --node_shared_openssl=false && node-pre-gyp -j 16 build --release",
+    "install": "node-pre-gyp install --fallback-to-build --update-binary && node-gyp rebuild --update-binary",
     "unittest": "mocha",
     "tsc": "tsc -p tsconfig.json"
   },

@@ -256,7 +256,7 @@ export class requests {
                 sendData = Object.keys(data).map((e) => {
                     const value = data[e];
                     const type = typeof value;
-                    if (/* value !== null && */['object', 'boolean', 'number']) {
+                    if (/* value !== null && */['object', 'boolean', 'number'].includes(type)) {
                         //照样处理null
                         return [e, JSON.stringify(value)];
                     } else if (type == 'undefined') {
