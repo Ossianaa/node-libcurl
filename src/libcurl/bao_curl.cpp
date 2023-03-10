@@ -181,7 +181,7 @@ void BaoCurl::sendByte(const char *data, const int len)
 
 void BaoCurl::setCookie(std::string &key, std::string &value, std::string &domain, std::string &path)
 {
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("%s\tFALSE\t%s\tFALSE\t3000000000\t%s\t%s", domain.c_str(), path.c_str(), key.c_str(), value.c_str()).c_str()));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("%s\tFALSE\t%s\tFALSE\t0\t%s\t%s", domain.c_str(), path.c_str(), key.c_str(), value.c_str()).c_str()));
 }
 
 void BaoCurl::deleteCookie(std::string &key, std::string &domain, std::string &path)
