@@ -59,8 +59,11 @@ export const libcurlSetCookies = (curl: LibCurl, cookies: LibCurlCookiesInfo, do
     if (typeof cookies == 'string') {
         cookies.replace(/\s+/g, '')
             .split(';')
-            .reverse()//保证顺序不颠倒
-            .map(e => e.split('=', 2))
+            .filter(Boolean)
+            .map(e => {
+                const pos = e.indexOf('=');
+                return [e.slice(0, pos), e.slice(pos + 1, e.length)]
+            })
             .forEach(([key, value]) => {
                 curl.setCookie({
                     name: key,
