@@ -149,7 +149,7 @@ class requests {
         if (redirect) {
             curl.setRedirect(true);
         }
-        if (httpVersion) {
+        if (typeof httpVersion != 'undefined') {
             curl.setHttpVersion(httpVersion);
         }
         if (proxy) {
