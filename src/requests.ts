@@ -211,7 +211,7 @@ export class requests {
         const url_ = new URL(url);
         if (this.needSetCookies) {
             this.needSetCookies = false;
-            libcurlSetCookies(curl, cookies, url_.hostname)
+            libcurlSetCookies(curl, cookies, url_.hostname.split('.').slice(-2).join('.'));//放到top域名里去
         }
         if (params) {
             assignURLSearchParam(url_.searchParams, new URLSearchParams(params));

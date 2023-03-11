@@ -137,7 +137,7 @@ class requests {
         const url_ = new URL(url);
         if (this.needSetCookies) {
             this.needSetCookies = false;
-            (0, utils_1.libcurlSetCookies)(curl, cookies, url_.hostname);
+            (0, utils_1.libcurlSetCookies)(curl, cookies, url_.hostname.split('.').slice(-2).join('.'));
         }
         if (params) {
             assignURLSearchParam(url_.searchParams, new URLSearchParams(params));
