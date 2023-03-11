@@ -50,10 +50,14 @@ const cookieOptFilter = (cookieOpt) => {
 exports.cookieOptFilter = cookieOptFilter;
 const libcurlSetCookies = (curl, cookies, domain) => {
     if (typeof cookies == 'string') {
-        cookies.replace(/\s+/g, '')
+        cookies
+            .replace(/\s+/g, '')
             .split(';')
-            .reverse()
-            .map(e => e.split('=', 2))
+            .filter(Boolean)
+            .map(e => {
+            const pos = e.indexOf('=');
+            return [e.slice(0, pos), e.slice(pos + 1, e.length)];
+        })
             .forEach(([key, value]) => {
             curl.setCookie({
                 name: key,

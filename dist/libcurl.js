@@ -106,7 +106,7 @@ class LibCurl {
     }
     getCookie(cookieOpt) {
         this.checkSending();
-        return this.m_libCurl_impl_.getCookie(cookieOpt.name, cookieOpt.domain || "", cookieOpt.path || "");
+        return this.m_libCurl_impl_.getCookie(cookieOpt.name, cookieOpt.domain || ".", cookieOpt.path || "/");
     }
     getResponseHeaders() {
         this.checkSending();

@@ -57,7 +57,8 @@ export const cookieOptFilter = (cookieOpt: LibCurlGetCookiesOption) => {
 
 export const libcurlSetCookies = (curl: LibCurl, cookies: LibCurlCookiesInfo, domain: string) => {
     if (typeof cookies == 'string') {
-        cookies.replace(/\s+/g, '')
+        cookies
+            .replace(/\s+/g, '')
             .split(';')
             .filter(Boolean)
             .map(e => {
