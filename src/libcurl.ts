@@ -186,7 +186,7 @@ export class LibCurl {
 
     /**
      * @param {LibCurlGetCookiesOption}cookieOpt
-     * @returns 返回所有Cookie的Map
+     * @returns 返回所有Cookie的Map 如果有相同的键 则后键覆盖前键
      */
     public getCookiesMap(cookieOpt?: LibCurlGetCookiesOption): LibCurlCookiesAttr {
         this.checkSending();
