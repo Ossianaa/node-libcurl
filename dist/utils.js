@@ -61,7 +61,7 @@ const libcurlSetCookies = (curl, cookies, domain) => {
             .forEach(([key, value]) => {
             curl.setCookie({
                 name: key,
-                value,
+                value: decodeURIComponent(value),
                 domain,
                 path: '/',
             });

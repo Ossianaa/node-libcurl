@@ -70,7 +70,7 @@ export const libcurlSetCookies = (curl: LibCurl, cookies: LibCurlCookiesInfo, do
             .forEach(([key, value]) => {
                 curl.setCookie({
                     name: key,
-                    value,
+                    value: decodeURIComponent(value),
                     domain,
                     path: '/',
                 })
