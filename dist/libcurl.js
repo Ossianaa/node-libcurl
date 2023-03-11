@@ -95,7 +95,7 @@ class LibCurl {
         return (0, utils_1.httpCookiesToArray)(cookies_).filter((0, utils_1.cookieOptFilter)(cookieOpt)).reduce((e, t) => {
             e.set(t[5], {
                 domain: t[0],
-                includeDomain: t[1],
+                subDomain: t[1],
                 path: t[2],
                 secure: t[3],
                 timestamp: t[4],

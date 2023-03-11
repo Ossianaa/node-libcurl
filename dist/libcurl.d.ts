@@ -22,7 +22,7 @@ export type LibCurlGetCookieOption = {
 };
 export type LibCurlCookieAttrArray = [
     domain: string,
-    includeDomain: boolean,
+    subDomain: boolean,
     path: string,
     secure: boolean,
     timestamp: number,
@@ -31,7 +31,7 @@ export type LibCurlCookieAttrArray = [
 ];
 export type LibCurlCookieAttrObject = {
     domain: string;
-    includeDomain: boolean;
+    subDomain: boolean;
     path: string;
     secure: boolean;
     timestamp: number;
