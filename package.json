@@ -18,7 +18,7 @@
     "module_path": "./lib/{configuration}/{platform}-{arch}/",
     "package_name": "{module_name}-{platform}-{arch}-release.tar.gz",
     "host": "https://ossianaa.github.io/static/github/release/node-libcurl/",
-    "remote_path": "v1.0.0"
+    "remote_path": "v1.0.1"
   },
   "devDependencies": {
     "@types/node": "^18.11.18",
