@@ -61,7 +61,7 @@ export declare class requests {
     patch(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
     trace(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
     head(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
-    setCookie(key: string, value: string, domain?: string, path?: string): void;
+    setCookie(key: string, value: string, domain: string, path?: string): void;
     getCookie(key: string, domain?: string, path?: string): string;
     getCookies(domain?: string, path?: string): string;
     getCookiesMap(domain?: string, path?: string): LibCurlCookiesAttr;

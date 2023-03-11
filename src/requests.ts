@@ -157,7 +157,7 @@ export class requests {
         return this.sendRequest('HEAD', url, requestOpt);
     }
 
-    setCookie(key: string, value: string, domain: string = '', path: string = '') {
+    setCookie(key: string, value: string, domain: string, path: string = '') {
         this.option.instance.setCookie({
             name: key,
             value,

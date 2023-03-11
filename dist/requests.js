@@ -88,7 +88,7 @@ class requests {
     async head(url, requestOpt) {
         return this.sendRequest('HEAD', url, requestOpt);
     }
-    setCookie(key, value, domain = '', path = '') {
+    setCookie(key, value, domain, path = '') {
         this.option.instance.setCookie({
             name: key,
             value,
