@@ -7,3 +7,4 @@
 /lib/*
 /*.tgz
 /src/*.ts
+/tsconfig.json
