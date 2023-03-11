@@ -3,7 +3,7 @@
 #define CHECK_CURLOK(e)                                          \
 	{                                                            \
 		CURLcode code = (e);                                     \
-		this->m_lastCode = code;								 \
+		this->m_lastCode = code;                                 \
 		if (this->m_verbose && code != CURLcode::CURLE_OK)       \
 		{                                                        \
 			printf("CURL Error:%s\n", curl_easy_strerror(code)); \
@@ -179,14 +179,22 @@ void BaoCurl::sendByte(const char *data, const int len)
 	this->m_pHeaders = NULL;
 }
 
+/* Hostname */
+/* Include subdomains */
+/* Path */
+/* Secure */
+/* Expiry in epoch time format. 0 == Session */
+/* Name */
+/* Value */
 void BaoCurl::setCookie(std::string &key, std::string &value, std::string &domain, std::string &path)
 {
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("%s\tFALSE\t%s\tFALSE\t0\t%s\t%s", domain.c_str(), path.c_str(), key.c_str(), value.c_str()).c_str()));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("%s\tTRUE\t%s\tFALSE\t0\t%s\t%s", domain.c_str(), path.c_str(), key.c_str(), value.c_str()).c_str()));
+	// CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("Set-Cookie: %s=%s; domain=%s; path=%s;", key.c_str(), value.c_str(), domain.c_str(), path.c_str()).c_str()));
 }
 
 void BaoCurl::deleteCookie(std::string &key, std::string &domain, std::string &path)
 {
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("%s\tFALSE\t%s\tFALSE\t1600000000\t%s\t%s", domain.c_str(), path.c_str(), key.c_str(), "").c_str()));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("%s\tTURE\t%s\tFALSE\t1600000000\t%s\t%s", domain.c_str(), path.c_str(), key.c_str(), "").c_str()));
 }
 
 std::string BaoCurl::getCookies()
@@ -294,7 +302,7 @@ unsigned int BaoCurl::getLastCurlCode()
 	return this->m_lastCode;
 }
 
-const char* BaoCurl::getLastCurlCodeError()
+const char *BaoCurl::getLastCurlCodeError()
 {
 	return curl_easy_strerror(this->m_lastCode);
 }

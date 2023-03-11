@@ -2,24 +2,14 @@ const { LibCurl, fetch, requests } = require('../dist/index');
 
 async function main() {
     const session = requests.session({
-        httpVersion: 1,
+        // httpVersion: 1,
         redirect: true,
         verbose: true,
-        // cookies: 'authToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRBZGRyZXNzIjoiMHgwYTZmMzg5NmY2MGIzMGY4MTc2MmJkZGI2NDBhODAwZmJjZDgzYTI5Iiwic2lnbmF0dXJlIjoiMHhlNjg5YWI4ZjEwYTAwMWZlOTM3N2VmZTIzNzExNjE2N2M1ZTEwZDU4YTFmYjFlMmY0M2ZhZjI5ODhhZjBlZDY2MGEzNTVlN2Y0MjYzN2ZjZjdlOGZkYTI1N2QyNDEzY2NiOTI4YWM5NzQ2ZGEwOTMwNjg4MWFlN2E0Y2Q4MTVkODFiIiwiaWF0IjoxNjc2MzgwNzgxLCJleHAiOjE2Nzg5NzI3ODF9.AK49sn_0p9X0P5FOKsHUkuCVUCYDKtELk97Msq7aHZs',
+        cookies: 'authToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRBZGRyZXNzIjoiMHgwYTZmMzg5NmY2MGIzMGY4MTc2MmJkZGI2NDBhODAwZmJjZDgzYTI5Iiwic2lnbmF0dXJlIjoiMHhlNjg5YWI4ZjEwYTAwMWZlOTM3N2VmZTIzNzExNjE2N2M1ZTEwZDU4YTFmYjFlMmY0M2ZhZjI5ODhhZjBlZDY2MGEzNTVlN2Y0MjYzN2ZjZjdlOGZkYTI1N2QyNDEzY2NiOTI4YWM5NzQ2ZGEwOTMwNjg4MWFlN2E0Y2Q4MTVkODFiIiwiaWF0IjoxNjc2MzgwNzgxLCJleHAiOjE2Nzg5NzI3ODF9.AK49sn_0p9X0P5FOKsHUkuCVUCYDKtELk97Msq7aHZs',
     });
-
-    console.log((await session.get('https://tls.peet.ws/api/clean', {
+    session.setCookie('a', 'b', '.baidu.com', '/');
+    console.log((await session.get('https://www.baidu.com/', {
         headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36',
-            'Content-Type': 'text/plain',
-            'Referer': '',
-            'sa': '1'
-        }
-    })).text);
-    debugger
-    console.log((await session.get('https://tls.peet.ws/api/clean', {
-        headers: {
-            'user-Agent': '1'
         }
     })).text);
     return

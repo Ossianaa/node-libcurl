@@ -33,11 +33,11 @@ export type LibCurlGetCookieOption = {
 }
 
 export type LibCurlCookieAttrArray = [
-    domain: string, secure: boolean, path: string, cors: boolean, timestamp: number, name: string, value: string
+    domain: string, includeDomain: boolean, path: string, secure: boolean, timestamp: number, name: string, value: string
 ]
 
 export type LibCurlCookieAttrObject = {
-    domain: string, secure: boolean, path: string, cors: boolean, timestamp: number, value: string
+    domain: string, includeDomain: boolean, path: string, secure: boolean, timestamp: number, value: string
 }
 
 export type LibCurlCookiesAttr = Map<string, LibCurlCookieAttrObject>
@@ -194,9 +194,9 @@ export class LibCurl {
         return httpCookiesToArray(cookies_).filter(cookieOptFilter(cookieOpt)).reduce((e: LibCurlCookiesAttr, t: LibCurlCookieAttrArray) => {
             e.set(t[5], {
                 domain: t[0],
-                secure: t[1],
+                includeDomain: t[1],
                 path: t[2],
-                cors: t[3],
+                secure: t[3],
                 timestamp: t[4],
                 value: t[6],
             } as LibCurlCookieAttrObject)

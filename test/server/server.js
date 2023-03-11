@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 
 app.use(bodyParser.raw({
     inflate: true,
@@ -9,11 +10,16 @@ app.use(bodyParser.raw({
 }));
 app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
+app.use(cookieParser())
 
 const port = 51053;
 app.get('/unittest/getRawHeaders', (req, res) => {
     console.log(req.headers);
     res.send(req.headers)
+})
+app.get('/unittest/getCookies', (req, res) => {
+    console.log(req.cookies);
+    res.send(req.cookies)
 })
 
 
