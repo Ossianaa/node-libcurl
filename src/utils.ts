@@ -11,11 +11,13 @@ export const httpCookiesToArray: (cookies: string) => LibCurlCookieAttrArray[] =
                 throw new Error(`unkonw type ${e}`)
         }
     }
-    /*
-     *          Domain         Secure  Path    CORS    TimeStamp       Name    Value
-     * sample: .127.0.0.1      TRUE    /       FALSE   3000000000      a       b
-     *         .127.0.0.1      TRUE    /api    FALSE   3000000000      c       d
-     */
+    /* Hostname */
+    /* Include subdomains */
+    /* Path */
+    /* Secure */
+    /* Expiry in epoch time format. 0 == Session */
+    /* Name */
+    /* Value */
     const cookies_ = [];
     for (const it of cookies.split('\n')) {
         if (!it) {
