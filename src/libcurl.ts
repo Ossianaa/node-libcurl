@@ -10,7 +10,7 @@ export enum LibCurlHttpVersionInfo {
 
 //Domain         Secure  Path    CORS    TimeStamp       Name    Value
 export type LibCurlSetCookieOption = {
-    domain?: string;
+    domain: string;
     // secure?: boolean;
     path?: string;
     // cors?: boolean;

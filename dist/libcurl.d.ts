@@ -3,7 +3,7 @@ export declare enum LibCurlHttpVersionInfo {
     http2 = 1
 }
 export type LibCurlSetCookieOption = {
-    domain?: string;
+    domain: string;
     path?: string;
     name: string;
     value: string;
