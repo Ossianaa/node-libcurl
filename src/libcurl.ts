@@ -212,7 +212,7 @@ export class LibCurl {
      */
     public getCookie(cookieOpt: LibCurlGetCookieOption): string {
         this.checkSending();
-        return this.m_libCurl_impl_.getCookie(cookieOpt.name, cookieOpt.domain || "", cookieOpt.path || "");
+        return this.m_libCurl_impl_.getCookie(cookieOpt.name, cookieOpt.domain || ".", cookieOpt.path || "/");
     }
 
     /**
