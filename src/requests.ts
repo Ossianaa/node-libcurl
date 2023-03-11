@@ -97,13 +97,14 @@ const assignURLSearchParam = (target: URLSearchParams, source: URLSearchParams) 
 
 export class requests {
     private option: requestsInitOption;
+    private needSetCookies: boolean;
     constructor(option: requestsInitOption = {}) {
         this.option = { ...option };
         const { cookies, timeout, verbose } = option;
         const curl = this.option.instance ||= new LibCurl();
 
         if (cookies) {
-            libcurlSetCookies(curl, cookies, '.');
+            this.needSetCookies = !!cookies;
         }
         if (timeout) {
             curl.setTimeout(timeout, timeout);
@@ -201,12 +202,17 @@ export class requests {
     }
 
     private async sendRequest(method: requestsMethodInfo, url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        const { instance: curl, redirect = false, proxy, httpVersion } = this.option;
+        const { instance: curl, redirect = false, proxy, httpVersion, cookies } = this.option;
         const { headers, data, json, params } = requestOpt || {};
+
         if (data && json) {
             throw new LibCurlError('both data and json exist');
         }
         const url_ = new URL(url);
+        if (this.needSetCookies) {
+            this.needSetCookies = false;
+            libcurlSetCookies(curl, cookies, url_.hostname)
+        }
         if (params) {
             assignURLSearchParam(url_.searchParams, new URLSearchParams(params));
         }
