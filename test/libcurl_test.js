@@ -2,15 +2,20 @@ const { LibCurl, fetch, requests } = require('../dist/index');
 
 async function main() {
     const session = requests.session({
-        // httpVersion: 1,
+        httpVersion: 1,
         redirect: true,
         verbose: true,
     });
     session.setCookie('__Host-1', '1', 'localhost', '/');
-    console.log((await session.get('http://localhost:51053/unittest/getCookies', {
-        headers: {
-        }
-    })).text);
+    for (let i = 0; i < 3; i++) {
+        const json = ((await session.get('https://tls.peet.ws/api/all', {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
+            }
+        })).json);
+        debugger
+    }
+
     return
     console.log((await session.post('https://www.baidu.com?a=2', {
         headers: {
