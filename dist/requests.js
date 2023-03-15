@@ -186,9 +186,11 @@ class requests {
                 else if (data instanceof Uint8Array) {
                     curl.setRequestHeader('Content-Type', 'application/octet-stream');
                 }
+                else {
+                    curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                }
             }
             if (typeof data == 'object' && data != null) {
-                curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
                 sendData = Object.keys(data).map((e) => {
                     const value = data[e];
                     const type = typeof value;
