@@ -40,7 +40,7 @@ private:
 	Napi::Value setRedirect(const Napi::CallbackInfo &info);
 	Napi::Value printInnerLogger(const Napi::CallbackInfo &info);
 	Napi::Value setHttpVersion(const Napi::CallbackInfo &info);
-	Napi::Value setInterface(const Napi::CallbackInfo &info);
+	Napi::Value setDnsInterface(const Napi::CallbackInfo &info);
 	Napi::Value send(const Napi::CallbackInfo &info);
 	Napi::Value sendAsync(const Napi::CallbackInfo &info);
 	Napi::Value getResponseBody(const Napi::CallbackInfo &info);
@@ -57,7 +57,7 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
 		InstanceMethod<&BaoLibCurlWarp::getResponseString>("getResponseString", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::sendAsync>("sendAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::getResponseHeaders>("getResponseHeaders", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-		InstanceMethod<&BaoLibCurlWarp::setInterface>("setInterface", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::setDnsInterface>("setDnsInterface", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		// StaticMethod<&BaoLibCurlWarp::CreateNewItem>("CreateNewItem", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 	};
 	Napi::Function func = DefineClass(env, "BaoLibCurl", methodList);
@@ -316,16 +316,16 @@ Napi::Value BaoLibCurlWarp::setHttpVersion(const Napi::CallbackInfo &info)
 }
 
 /*
-	setInterface(double)
+	setDnsInterface(double)
 */
-Napi::Value BaoLibCurlWarp::setInterface(const Napi::CallbackInfo &info)
+Napi::Value BaoLibCurlWarp::setDnsInterface(const Napi::CallbackInfo &info)
 {
 	Napi::Env env = info.Env();
 	size_t argsLen = info.Length();
-	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setInterface", 1, argsLen);
+	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setDnsInterface", 1, argsLen);
 	REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
 	std::string network = info[0].As<Napi::String>().Utf8Value();
-	this->m_curl.setInterface(network);
+	this->m_curl.setDnsInterface(network);
 
 	return env.Undefined();
 }

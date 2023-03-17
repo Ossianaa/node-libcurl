@@ -307,7 +307,7 @@ const char *BaoCurl::getLastCurlCodeError()
 	return curl_easy_strerror(this->m_lastCode);
 }
 
-void BaoCurl::setInterface(std::string& network)
+void BaoCurl::setDnsInterface(std::string& network)
 {
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_INTERFACE, network.c_str()));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_DNS_INTERFACE, network.c_str()));
 }

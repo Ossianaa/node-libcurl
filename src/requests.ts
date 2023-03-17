@@ -117,7 +117,7 @@ export class requests {
             curl.printInnerLogger();
         }
         if (interface_) {
-            curl.setInterface(interface_);
+            curl.setDnsInterface(interface_);
         }
     }
 

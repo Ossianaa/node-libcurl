@@ -5,6 +5,7 @@ async function main() {
         httpVersion: 1,
         redirect: true,
         verbose: true,
+        interface: 'eth0',
         cookies: "clientid=3; soft_did=1619580708547; didv=1672905504494; did=web_3dfd672741201eac0b0a53ea7ea55ead; userId=2274726791; kuaishou.web.cp.api_st=ChZrdWFpc2hvdS53ZWIuY3AuYXBpLnN0EqABgYwF2a0BFvaHRDwOGLq0klhBfMMWjV7wyZmN8Z59-sXln68jwvtyhxZzn892vDHH1dzOwA2yG0o8DzMbqCTvR263CrjWAGRRJe_KJuP-tBvP2IyXuU_a0hSwbyuFs2w7yZq_5DcIbWW9K8cnD64z6I6-n4muQk6tzeF_re1F-dV5U_aHf-fAjiWzMMxAUqJgM5n0wmPPTRczBkztOByfWBoSaE3EqfmqkMz_szxZl-DeEj5lIiBX_WXo6QXlZSCtMiMSdrILE-8QjLBdh-7bxvchVE6-kigFMAE; kuaishou.web.cp.api_ph=845048d01d87bcab624601688ae0cfcc2633"
     });
     const resp = await session.post('https://cp.kuaishou.com/rest/v2/creator/pc/notification/unReadCount?__NS_sig3=f0e0a7976871acc7c6adaeaf8b66c247759139d5b1b1b3b3bcbdbea4', {

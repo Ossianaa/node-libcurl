@@ -84,7 +84,7 @@ export declare class LibCurl {
     setRedirect(isAllow: boolean): void;
     printInnerLogger(): void;
     setHttpVersion(version: LibCurlHttpVersionInfo): void;
-    setInterface(network: LibCurlInterfaceInfo): void;
+    setDnsInterface(network: LibCurlInterfaceInfo): void;
     send(body?: LibCurlBodyInfo): Promise<undefined> | undefined;
     getResponseBody(): Uint8Array;
     getResponseString(): string;

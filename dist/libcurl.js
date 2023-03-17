@@ -146,9 +146,9 @@ class LibCurl {
         this.checkSending();
         this.m_libCurl_impl_.setHttpVersion(version);
     }
-    setInterface(network) {
+    setDnsInterface(network) {
         this.checkSending();
-        this.m_libCurl_impl_.setInterface(network);
+        this.m_libCurl_impl_.setDnsInterface(network);
     }
     send(body) {
         this.checkSending();

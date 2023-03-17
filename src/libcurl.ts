@@ -293,9 +293,9 @@ export class LibCurl {
      * 指定网卡访问
      * @param network 
      */
-    public setInterface(network: LibCurlInterfaceInfo): void {
+    public setDnsInterface(network: LibCurlInterfaceInfo): void {
         this.checkSending();
-        this.m_libCurl_impl_.setInterface(network);
+        this.m_libCurl_impl_.setDnsInterface(network);
     }
 
     /**
