@@ -146,6 +146,10 @@ class LibCurl {
         this.checkSending();
         this.m_libCurl_impl_.setHttpVersion(version);
     }
+    setInterface(network) {
+        this.checkSending();
+        this.m_libCurl_impl_.setInterface(network);
+    }
     send(body) {
         this.checkSending();
         this.m_isSending_ = true;

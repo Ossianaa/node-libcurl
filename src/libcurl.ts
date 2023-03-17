@@ -44,6 +44,8 @@ export type LibCurlCookiesAttr = Map<string, LibCurlCookieAttrObject>
 
 export type LibCurlHeadersAttr = Map<string, string>
 
+export type LibCurlInterfaceInfo = string;
+
 interface LibCurlCommonHeaders {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
     | 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0',
@@ -285,6 +287,15 @@ export class LibCurl {
     public setHttpVersion(version: LibCurlHttpVersionInfo): void {
         this.checkSending();
         this.m_libCurl_impl_.setHttpVersion(version);
+    }
+
+    /**
+     * 指定网卡访问
+     * @param network 
+     */
+    public setInterface(network: LibCurlInterfaceInfo): void {
+        this.checkSending();
+        this.m_libCurl_impl_.setInterface(network);
     }
 
     /**

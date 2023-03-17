@@ -58,6 +58,7 @@ public:
 	long getResponseStatus();
 	void setRedirect(bool isAllow); // 重定向
 	void printInnerLogger();		// 打印内部日志
+	void setInterface(std::string& network);//指定网卡访问
 
 	enum HttpVersion
 	{

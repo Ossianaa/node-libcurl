@@ -67,6 +67,10 @@ interface requestsInitOption {
      */
     timeout?: number;
     /**
+     * 指定网卡访问 
+     */
+    interface?: string;
+    /**
      * 传入LibCurl实例可以做持久化连接
      */
     instance?: LibCurl;
@@ -100,7 +104,7 @@ export class requests {
     private needSetCookies: boolean;
     constructor(option: requestsInitOption = {}) {
         this.option = { ...option };
-        const { cookies, timeout, verbose } = option;
+        const { cookies, timeout, verbose, interface: interface_ } = option;
         const curl = this.option.instance ||= new LibCurl();
 
         if (cookies) {
@@ -111,6 +115,9 @@ export class requests {
         }
         if (verbose) {
             curl.printInnerLogger();
+        }
+        if (interface_) {
+            curl.setInterface(interface_);
         }
     }
 

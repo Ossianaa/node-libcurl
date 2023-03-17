@@ -37,7 +37,7 @@ class requests {
     needSetCookies;
     constructor(option = {}) {
         this.option = { ...option };
-        const { cookies, timeout, verbose } = option;
+        const { cookies, timeout, verbose, interface: interface_ } = option;
         const curl = this.option.instance ||= new libcurl_1.LibCurl();
         if (cookies) {
             this.needSetCookies = !!cookies;
@@ -47,6 +47,9 @@ class requests {
         }
         if (verbose) {
             curl.printInnerLogger();
+        }
+        if (interface_) {
+            curl.setInterface(interface_);
         }
     }
     static session(option = {}) {

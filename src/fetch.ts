@@ -1,4 +1,4 @@
-import { LibCurl, LibCurlBodyInfo, LibCurlMethodInfo, LibCurlHeadersInfo, LibCurlCookiesAttr, LibCurlHttpVersionInfo, LibCurlProxyInfo, LibCurlCookiesInfo } from "./libcurl";
+import { LibCurl, LibCurlBodyInfo, LibCurlMethodInfo, LibCurlHeadersInfo, LibCurlCookiesAttr, LibCurlHttpVersionInfo, LibCurlProxyInfo, LibCurlCookiesInfo, LibCurlInterfaceInfo } from "./libcurl";
 import { libcurlSetCookies } from "./utils";
 
 interface LibCurlRequestInfo {
@@ -10,6 +10,7 @@ interface LibCurlRequestInfo {
     httpVersion?: LibCurlHttpVersionInfo;
     openInnerLog?: boolean;
     proxy?: LibCurlProxyInfo;
+    interface?: LibCurlInterfaceInfo;
     /**
      * 传入LibCurl实例可以做持久化连接
      */
@@ -31,7 +32,9 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
     const curl = request.instance;
     const { method = "GET",
         headers, redirect = false, httpVersion = 0,
-        openInnerLog = false, proxy, body, cookies } = request;
+        openInnerLog = false, proxy, body, cookies,
+        interface: interface_,
+    } = request;
     curl.open(method, url + '', true);
     if (headers) {
         curl.setRequestHeaders(headers);
@@ -41,6 +44,9 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
     }
     if (httpVersion) {
         curl.setHttpVersion(httpVersion);
+    }
+    if (interface_) {
+        curl.setInterface(interface_);
     }
     if (openInnerLog) {
         curl.printInnerLogger();

@@ -1,4 +1,4 @@
-import { LibCurl, LibCurlBodyInfo, LibCurlMethodInfo, LibCurlHeadersInfo, LibCurlCookiesAttr, LibCurlHttpVersionInfo, LibCurlProxyInfo, LibCurlCookiesInfo } from "./libcurl";
+import { LibCurl, LibCurlBodyInfo, LibCurlMethodInfo, LibCurlHeadersInfo, LibCurlCookiesAttr, LibCurlHttpVersionInfo, LibCurlProxyInfo, LibCurlCookiesInfo, LibCurlInterfaceInfo } from "./libcurl";
 interface LibCurlRequestInfo {
     method?: LibCurlMethodInfo;
     headers?: LibCurlHeadersInfo;
@@ -8,6 +8,7 @@ interface LibCurlRequestInfo {
     httpVersion?: LibCurlHttpVersionInfo;
     openInnerLog?: boolean;
     proxy?: LibCurlProxyInfo;
+    interface?: LibCurlInterfaceInfo;
     instance?: LibCurl;
 }
 interface LibCurlResponseInfo {

@@ -6,7 +6,7 @@ const utils_1 = require("./utils");
 async function fetch(url, request = {}) {
     request.instance ||= new libcurl_1.LibCurl();
     const curl = request.instance;
-    const { method = "GET", headers, redirect = false, httpVersion = 0, openInnerLog = false, proxy, body, cookies } = request;
+    const { method = "GET", headers, redirect = false, httpVersion = 0, openInnerLog = false, proxy, body, cookies, interface: interface_, } = request;
     curl.open(method, url + '', true);
     if (headers) {
         curl.setRequestHeaders(headers);
@@ -16,6 +16,9 @@ async function fetch(url, request = {}) {
     }
     if (httpVersion) {
         curl.setHttpVersion(httpVersion);
+    }
+    if (interface_) {
+        curl.setInterface(interface_);
     }
     if (openInnerLog) {
         curl.printInnerLogger();

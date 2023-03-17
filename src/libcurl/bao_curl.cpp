@@ -306,3 +306,8 @@ const char *BaoCurl::getLastCurlCodeError()
 {
 	return curl_easy_strerror(this->m_lastCode);
 }
+
+void BaoCurl::setInterface(std::string& network)
+{
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_INTERFACE, network.c_str()));
+}

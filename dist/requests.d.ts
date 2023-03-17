@@ -31,6 +31,7 @@ interface requestsInitOption {
     httpVersion?: requestsHttpVersionInfo;
     verbose?: boolean;
     timeout?: number;
+    interface?: string;
     instance?: LibCurl;
 }
 type requestsParamsInfo = URLSearchParams | string | {

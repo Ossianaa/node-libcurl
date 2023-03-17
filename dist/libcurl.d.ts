@@ -39,6 +39,7 @@ export type LibCurlCookieAttrObject = {
 };
 export type LibCurlCookiesAttr = Map<string, LibCurlCookieAttrObject>;
 export type LibCurlHeadersAttr = Map<string, string>;
+export type LibCurlInterfaceInfo = string;
 interface LibCurlCommonHeaders {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36' | 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0';
     'Content-Type': 'application/x-www-form-urlencoded' | 'application/json' | 'application/octet-stream' | 'application/protobuf' | 'text/plain';
@@ -83,6 +84,7 @@ export declare class LibCurl {
     setRedirect(isAllow: boolean): void;
     printInnerLogger(): void;
     setHttpVersion(version: LibCurlHttpVersionInfo): void;
+    setInterface(network: LibCurlInterfaceInfo): void;
     send(body?: LibCurlBodyInfo): Promise<undefined> | undefined;
     getResponseBody(): Uint8Array;
     getResponseString(): string;

@@ -40,6 +40,7 @@ private:
 	Napi::Value setRedirect(const Napi::CallbackInfo &info);
 	Napi::Value printInnerLogger(const Napi::CallbackInfo &info);
 	Napi::Value setHttpVersion(const Napi::CallbackInfo &info);
+	Napi::Value setInterface(const Napi::CallbackInfo &info);
 	Napi::Value send(const Napi::CallbackInfo &info);
 	Napi::Value sendAsync(const Napi::CallbackInfo &info);
 	Napi::Value getResponseBody(const Napi::CallbackInfo &info);
@@ -56,6 +57,7 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
 		InstanceMethod<&BaoLibCurlWarp::getResponseString>("getResponseString", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::sendAsync>("sendAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::getResponseHeaders>("getResponseHeaders", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::setInterface>("setInterface", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		// StaticMethod<&BaoLibCurlWarp::CreateNewItem>("CreateNewItem", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 	};
 	Napi::Function func = DefineClass(env, "BaoLibCurl", methodList);
@@ -192,7 +194,7 @@ Napi::Value BaoLibCurlWarp::setCookie(const Napi::CallbackInfo &info)
 	string value = info[1].As<Napi::String>().Utf8Value();
 	string domain = info[2].As<Napi::String>().Utf8Value();
 	string path = info[3].As<Napi::String>().Utf8Value();
-	this->m_curl.setCookie(key, value, domain,path);
+	this->m_curl.setCookie(key, value, domain, path);
 	return env.Undefined();
 }
 
@@ -309,6 +311,21 @@ Napi::Value BaoLibCurlWarp::setHttpVersion(const Napi::CallbackInfo &info)
 	{
 		REQUEST_TLS_METHOD_THROW(env, "BaoCurl", "setHttpVersion", "Version Not Support.")
 	}
+
+	return env.Undefined();
+}
+
+/*
+	setInterface(double)
+*/
+Napi::Value BaoLibCurlWarp::setInterface(const Napi::CallbackInfo &info)
+{
+	Napi::Env env = info.Env();
+	size_t argsLen = info.Length();
+	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setInterface", 1, argsLen);
+	REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
+	std::string network = info[0].As<Napi::String>().Utf8Value();
+	this->m_curl.setInterface(network);
 
 	return env.Undefined();
 }
