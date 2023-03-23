@@ -273,13 +273,14 @@ export class requests {
                 sendData = Object.keys(data).map((e) => {
                     const value = data[e];
                     const type = typeof value;
+                    const urlEncodeKey = encodeURIComponent(e);
                     if (/* value !== null && */['object', 'boolean'].includes(type)) {
                         //照样处理null
-                        return [e, JSON.stringify(value)];
+                        return [urlEncodeKey, JSON.stringify(value)];
                     } else if (type == 'undefined') {
-                        return [e, ''];
+                        return [urlEncodeKey, ''];
                     } else if (['string', 'number'].includes(type)) {
-                        return [e, value + ''];
+                        return [urlEncodeKey, value + ''];
                     } else {
                         throw new LibCurlError(`data unkown type ${type}`)
                     }

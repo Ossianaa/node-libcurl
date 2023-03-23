@@ -198,14 +198,15 @@ class requests {
                 sendData = Object.keys(data).map((e) => {
                     const value = data[e];
                     const type = typeof value;
+                    const urlEncodeKey = encodeURIComponent(e);
                     if (['object', 'boolean'].includes(type)) {
-                        return [e, JSON.stringify(value)];
+                        return [urlEncodeKey, JSON.stringify(value)];
                     }
                     else if (type == 'undefined') {
-                        return [e, ''];
+                        return [urlEncodeKey, ''];
                     }
                     else if (['string', 'number'].includes(type)) {
-                        return [e, value + ''];
+                        return [urlEncodeKey, value + ''];
                     }
                     else {
                         throw new libcurl_1.LibCurlError(`data unkown type ${type}`);
