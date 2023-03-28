@@ -56,9 +56,10 @@ public:
 	std::string getResponseHeaders() { return this->m_stream.header; };
 	std::string getResponseBody() { return this->m_stream.responseText; };
 	long getResponseStatus();
-	void setRedirect(bool isAllow); // 重定向
-	void printInnerLogger();		// 打印内部日志
-	void setDnsInterface(std::string& network);//指定网卡访问
+	void setRedirect(bool isAllow);				// 重定向
+	void printInnerLogger();					// 打印内部日志
+	void setDnsInterface(std::string &network); // 指定网卡访问
+	void setJA3Fingerprint(int tls_version, std::string &cipher,std::string &tls13_cipher, std::string &extensions, std::string &support_groups, int ec_point_formats);
 
 	enum HttpVersion
 	{
@@ -68,6 +69,7 @@ public:
 	void setHttpVersion(HttpVersion);
 	unsigned int getLastCurlCode();
 	const char *getLastCurlCodeError();
+	curl_off_t getResponseContentLength();
 
 private:
 	CURL *m_pCURL = NULL;

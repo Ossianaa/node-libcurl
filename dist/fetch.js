@@ -35,6 +35,7 @@ async function fetch(url, request = {}) {
     await curl.send(body);
     return {
         status: () => curl.getResponseStatus(),
+        contentLength: () => curl.getResponseContentLength(),
         arraybuffer: async () => curl.getResponseBody().buffer,
         text: async () => curl.getResponseString(),
         json: async () => curl.getResponseJson(),

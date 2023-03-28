@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LibCurl = exports.LibCurlError = exports.LibCurlHttpVersionInfo = void 0;
+exports.LibCurl = exports.LibCurlError = exports.LibCurlJA3EcPointFormat = exports.LibCurlJA3SupportGroup = exports.LibCurlJA3Cipher = exports.LibCurlJA3TlsVersion = exports.LibCurlHttpVersionInfo = void 0;
 const bindings_1 = __importDefault(require("bindings"));
 const utils_1 = require("./utils");
 const { BaoLibCurl } = (0, bindings_1.default)('bao_curl_node_addon');
@@ -12,6 +12,53 @@ var LibCurlHttpVersionInfo;
     LibCurlHttpVersionInfo[LibCurlHttpVersionInfo["http1_1"] = 0] = "http1_1";
     LibCurlHttpVersionInfo[LibCurlHttpVersionInfo["http2"] = 1] = "http2";
 })(LibCurlHttpVersionInfo = exports.LibCurlHttpVersionInfo || (exports.LibCurlHttpVersionInfo = {}));
+var LibCurlJA3TlsVersion;
+(function (LibCurlJA3TlsVersion) {
+    LibCurlJA3TlsVersion[LibCurlJA3TlsVersion["TLSv1_2"] = 771] = "TLSv1_2";
+    LibCurlJA3TlsVersion[LibCurlJA3TlsVersion["TLSv1_3"] = 772] = "TLSv1_3";
+})(LibCurlJA3TlsVersion = exports.LibCurlJA3TlsVersion || (exports.LibCurlJA3TlsVersion = {}));
+var LibCurlJA3Cipher;
+(function (LibCurlJA3Cipher) {
+    LibCurlJA3Cipher[LibCurlJA3Cipher["NULL-SHA"] = 2] = "NULL-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["DES-CBC3-SHA"] = 10] = "DES-CBC3-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["AES128-SHA"] = 47] = "AES128-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["AES256-SHA"] = 53] = "AES256-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["PSK-AES128-CBC-SHA"] = 140] = "PSK-AES128-CBC-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["PSK-AES256-CBC-SHA"] = 141] = "PSK-AES256-CBC-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["AES128-GCM-SHA256"] = 156] = "AES128-GCM-SHA256";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["AES256-GCM-SHA384"] = 157] = "AES256-GCM-SHA384";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["TLS_AES_128_GCM_SHA256"] = 4865] = "TLS_AES_128_GCM_SHA256";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["TLS_AES_256_GCM_SHA384"] = 4866] = "TLS_AES_256_GCM_SHA384";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["TLS_CHACHA20_POLY1305_SHA256"] = 4867] = "TLS_CHACHA20_POLY1305_SHA256";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-ECDSA-AES128-SHA"] = 49161] = "ECDHE-ECDSA-AES128-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-ECDSA-AES256-SHA"] = 49162] = "ECDHE-ECDSA-AES256-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-RSA-AES128-SHA"] = 49171] = "ECDHE-RSA-AES128-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-RSA-AES256-SHA"] = 49172] = "ECDHE-RSA-AES256-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-ECDSA-AES128-GCM-SHA256"] = 49195] = "ECDHE-ECDSA-AES128-GCM-SHA256";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-ECDSA-AES256-GCM-SHA384"] = 49196] = "ECDHE-ECDSA-AES256-GCM-SHA384";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-RSA-AES128-GCM-SHA256"] = 49199] = "ECDHE-RSA-AES128-GCM-SHA256";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-RSA-AES256-GCM-SHA384"] = 49200] = "ECDHE-RSA-AES256-GCM-SHA384";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-PSK-AES128-CBC-SHA"] = 49205] = "ECDHE-PSK-AES128-CBC-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-PSK-AES256-CBC-SHA"] = 49206] = "ECDHE-PSK-AES256-CBC-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-RSA-CHACHA20-POLY1305"] = 52392] = "ECDHE-RSA-CHACHA20-POLY1305";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-ECDSA-CHACHA20-POLY1305"] = 52393] = "ECDHE-ECDSA-CHACHA20-POLY1305";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-PSK-CHACHA20-POLY1305"] = 52396] = "ECDHE-PSK-CHACHA20-POLY1305";
+})(LibCurlJA3Cipher = exports.LibCurlJA3Cipher || (exports.LibCurlJA3Cipher = {}));
+var LibCurlJA3SupportGroup;
+(function (LibCurlJA3SupportGroup) {
+    LibCurlJA3SupportGroup[LibCurlJA3SupportGroup["P-256"] = 23] = "P-256";
+    LibCurlJA3SupportGroup[LibCurlJA3SupportGroup["P-384"] = 24] = "P-384";
+    LibCurlJA3SupportGroup[LibCurlJA3SupportGroup["P-521"] = 25] = "P-521";
+    LibCurlJA3SupportGroup[LibCurlJA3SupportGroup["ffdhe2048"] = 256] = "ffdhe2048";
+    LibCurlJA3SupportGroup[LibCurlJA3SupportGroup["ffdhe3072"] = 257] = "ffdhe3072";
+    LibCurlJA3SupportGroup[LibCurlJA3SupportGroup["X25519"] = 29] = "X25519";
+})(LibCurlJA3SupportGroup = exports.LibCurlJA3SupportGroup || (exports.LibCurlJA3SupportGroup = {}));
+var LibCurlJA3EcPointFormat;
+(function (LibCurlJA3EcPointFormat) {
+    LibCurlJA3EcPointFormat[LibCurlJA3EcPointFormat["uncompressed"] = 0] = "uncompressed";
+    LibCurlJA3EcPointFormat[LibCurlJA3EcPointFormat["compressed_fixed"] = 1] = "compressed_fixed";
+    LibCurlJA3EcPointFormat[LibCurlJA3EcPointFormat["compressed_variable"] = 2] = "compressed_variable";
+})(LibCurlJA3EcPointFormat = exports.LibCurlJA3EcPointFormat || (exports.LibCurlJA3EcPointFormat = {}));
 class LibCurlError extends Error {
     constructor(e) {
         super(e);
@@ -130,6 +177,10 @@ class LibCurl {
         this.checkSending();
         return this.m_libCurl_impl_.getResponseStatus();
     }
+    getResponseContentLength() {
+        this.checkSending();
+        return this.m_libCurl_impl_.getResponseContentLength();
+    }
     reset() {
         this.checkSending();
         this.m_libCurl_impl_.reset();
@@ -149,6 +200,37 @@ class LibCurl {
     setDnsInterface(network) {
         this.checkSending();
         this.m_libCurl_impl_.setDnsInterface(network);
+    }
+    setJA3Fingerprint(ja3) {
+        this.checkSending();
+        const ja3Arr = ja3.split(',');
+        if (ja3Arr.length != 5) {
+            throw new LibCurlError('ja3 fingerprint error');
+        }
+        const tlsVersion = ja3Arr.at(0);
+        if (!LibCurlJA3TlsVersion[ja3Arr.at(0)]) {
+            throw new LibCurlError('ja3 fingerprint tlsVersion no support');
+        }
+        let tls13_ciphers = [];
+        const cipherArr = ja3Arr.at(1).split('-').map((key) => {
+            const cipher = LibCurlJA3Cipher[key];
+            if (!cipher) {
+                throw new LibCurlError(`ja3 fingerprint cipher ${key} no support`);
+            }
+            if (['4865', '4866', '4867'].includes(key)) {
+                tls13_ciphers.push(cipher);
+                return '';
+            }
+            return cipher;
+        }).filter(Boolean);
+        const supportGroups = ja3Arr.at(3).split('-').map((key) => {
+            if (!LibCurlJA3SupportGroup[key]) {
+                throw new LibCurlError(`ja3 fingerprint supportGroup ${key} no support`);
+            }
+            return LibCurlJA3SupportGroup[key];
+        });
+        console.log(parseInt(tlsVersion), cipherArr.join(':'), tls13_ciphers.join(':'), "", supportGroups.join(':'), 0);
+        this.m_libCurl_impl_.setJA3Fingerprint(parseInt(tlsVersion), cipherArr.join(':'), tls13_ciphers.join(':'), "", supportGroups.join(':'), 0);
     }
     send(body) {
         this.checkSending();

@@ -17,6 +17,7 @@ interface requestsResponseImp {
     readonly headers: string;
     readonly headersMap: LibCurlHeadersAttr;
     readonly status: number;
+    readonly contentLength: number;
 }
 
 class requestsResponse implements requestsResponseImp {
@@ -47,6 +48,10 @@ class requestsResponse implements requestsResponseImp {
 
     public get status(): number {
         return this.curl.getResponseStatus();
+    }
+   
+    public get contentLength(): number {
+        return this.curl.getResponseContentLength();
     }
 
 

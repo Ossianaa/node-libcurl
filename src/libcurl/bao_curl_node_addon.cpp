@@ -41,23 +41,32 @@ private:
 	Napi::Value printInnerLogger(const Napi::CallbackInfo &info);
 	Napi::Value setHttpVersion(const Napi::CallbackInfo &info);
 	Napi::Value setDnsInterface(const Napi::CallbackInfo &info);
+	Napi::Value setJA3Fingerprint(const Napi::CallbackInfo &info);
 	Napi::Value send(const Napi::CallbackInfo &info);
 	Napi::Value sendAsync(const Napi::CallbackInfo &info);
 	Napi::Value getResponseBody(const Napi::CallbackInfo &info);
 	Napi::Value getResponseString(const Napi::CallbackInfo &info);
 	Napi::Value getResponseHeaders(const Napi::CallbackInfo &info);
+	Napi::Value getResponseContentLength(const Napi::CallbackInfo &info);
 };
 
 Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
 {
 	// This method is used to hook the accessor and method callbacks
 	std::vector<Napi::ClassPropertyDescriptor<BaoLibCurlWarp>> methodList = {
-		InstanceMethod<&BaoLibCurlWarp::open>("open", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setRequestHeader>("setRequestHeader", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setRequestHeaders>("setRequestHeaders", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setProxy>("setProxy", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setTimeout>("setTimeout", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setCookie>("setCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::deleteCookie>("deleteCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getCookies>("getCookies", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getCookie>("getCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getResponseStatus>("getResponseStatus", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::reset>("reset", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setRedirect>("setRedirect", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::printInnerLogger>("printInnerLogger", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setHttpVersion>("setHttpVersion", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::send>("send", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::open>("open", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::setRequestHeader>("setRequestHeader", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::setRequestHeaders>("setRequestHeaders", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setProxy>("setProxy", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setTimeout>("setTimeout", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setCookie>("setCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::deleteCookie>("deleteCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getCookies>("getCookies", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getCookie>("getCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getResponseStatus>("getResponseStatus", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::reset>("reset", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setRedirect>("setRedirect", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::printInnerLogger>("printInnerLogger", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::setHttpVersion>("setHttpVersion", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::send>("send", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::getResponseBody>("getResponseBody", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::getResponseString>("getResponseString", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::sendAsync>("sendAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::getResponseHeaders>("getResponseHeaders", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::getResponseContentLength>("getResponseContentLength", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::setDnsInterface>("setDnsInterface", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::setJA3Fingerprint>("setJA3Fingerprint", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		// StaticMethod<&BaoLibCurlWarp::CreateNewItem>("CreateNewItem", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 	};
 	Napi::Function func = DefineClass(env, "BaoLibCurl", methodList);
@@ -253,6 +262,17 @@ Napi::Value BaoLibCurlWarp::getResponseStatus(const Napi::CallbackInfo &info)
 }
 
 /*
+	getResponseContentLength()
+*/
+Napi::Value BaoLibCurlWarp::getResponseContentLength(const Napi::CallbackInfo &info)
+{
+	Napi::Env env = info.Env();
+	// size_t argsLen = info.Length();
+
+	return Napi::Number::New(env, this->m_curl.getResponseContentLength());
+}
+
+/*
 	reset()
 */
 Napi::Value BaoLibCurlWarp::reset(const Napi::CallbackInfo &info)
@@ -326,6 +346,38 @@ Napi::Value BaoLibCurlWarp::setDnsInterface(const Napi::CallbackInfo &info)
 	REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
 	std::string network = info[0].As<Napi::String>().Utf8Value();
 	this->m_curl.setDnsInterface(network);
+
+	return env.Undefined();
+}
+
+/*
+	setJA3Fingerprint(number,string,string,string,number)
+*/
+Napi::Value BaoLibCurlWarp::setJA3Fingerprint(const Napi::CallbackInfo &info)
+{
+	Napi::Env env = info.Env();
+	size_t argsLen = info.Length();
+	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setJA3Fingerprint", 6, argsLen);
+	REQUEST_TLS_METHOD_CHECK(env, info[0].IsNumber(), "argument 0 is not a number")
+	int tlsVersion = info[0].As<Napi::Number>().Int32Value();
+	REQUEST_TLS_METHOD_CHECK(env, info[1].IsString(), "argument 1 is not a string")
+	std::string ciphers = info[1].As<Napi::String>().Utf8Value();
+	REQUEST_TLS_METHOD_CHECK(env, info[2].IsString(), "argument 2 is not a string")
+	std::string tls13_ciphers = info[2].As<Napi::String>().Utf8Value();
+	REQUEST_TLS_METHOD_CHECK(env, info[3].IsString(), "argument 3 is not a string")
+	std::string extensions = info[3].As<Napi::String>().Utf8Value();
+	REQUEST_TLS_METHOD_CHECK(env, info[4].IsString(), "argument 4 is not a string")
+	std::string supportGroups = info[4].As<Napi::String>().Utf8Value();
+	REQUEST_TLS_METHOD_CHECK(env, info[5].IsNumber(), "argument 5 is not a number")
+	int ecPointFormat = info[5].As<Napi::Number>().Int32Value();
+	this->m_curl.setJA3Fingerprint(
+		tlsVersion,
+		ciphers,
+		tls13_ciphers,
+		extensions,
+		supportGroups,
+		ecPointFormat
+	);
 
 	return env.Undefined();
 }

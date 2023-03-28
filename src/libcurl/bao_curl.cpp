@@ -10,6 +10,8 @@
 		}                                                        \
 	}
 
+std::vector<std::string> TLS_SUPPORT_CIPHERS = {"4865", "4866", "4867", "49195", "49199", "49196", "49200", "52393", "52392", "49171", "49172", "156", "157", "47", "53", "158", "159", "51", "57", "10", "49324", "49328", "4868", "4869", "49326", "4865"};
+
 size_t write_func(void *ptr, size_t size, size_t nmemb, std::string &stream)
 {
 	const size_t resize = size * nmemb;
@@ -37,7 +39,6 @@ void BaoCurl::init()
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_VERIFYHOST, 0L));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_CIPHER_LIST, "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:DH-RSA-AES128-GCM-SHA256:AES128-SHA:AES256-SHA"));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_EC_CURVES, "X25519:P-256:P-384"));
-	// CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_, "X25519:P-256:P-384"));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_ACCEPT_ENCODING, ""));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIEFILE, NULL));
@@ -307,7 +308,27 @@ const char *BaoCurl::getLastCurlCodeError()
 	return curl_easy_strerror(this->m_lastCode);
 }
 
-void BaoCurl::setDnsInterface(std::string& network)
+curl_off_t BaoCurl::getResponseContentLength()
+{
+	curl_off_t size;
+	CHECK_CURLOK(curl_easy_getinfo(this->m_pCURL, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &size));
+	return size;
+}
+
+void BaoCurl::setDnsInterface(std::string &network)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_DNS_INTERFACE, network.c_str()));
+}
+
+void BaoCurl::setJA3Fingerprint(
+	int tls_version, std::string &cipher, std::string &tls13_cipher, std::string &extensions, std::string &support_groups, int ec_point_formats)
+{
+	// const int version = tls_version == 771 ? CURL_SSLVERSION_TLSv1_2 : CURL_SSLVERSION_TLSv1_3;
+	// CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSLVERSION, version /* CURL_SSLVERSION_TLSv1_3 */));
+
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_CIPHER_LIST, cipher.c_str() /* "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:DH-RSA-AES128-GCM-SHA256:AES128-SHA:AES256-SHA" */));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXY_TLS13_CIPHERS, tls13_cipher.c_str()));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_EC_CURVES, support_groups.c_str() /*  "X25519:P-256:P-384" */));
+	// extensions unsupport
+	// ec_point_formats unsupport
 }

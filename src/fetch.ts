@@ -19,6 +19,7 @@ interface LibCurlRequestInfo {
 
 interface LibCurlResponseInfo {
     status: () => number;
+    contentLength: () => number;
     arraybuffer: () => Promise<ArrayBuffer>;
     text: () => Promise<string>;
     json: () => Promise<object>;
@@ -63,6 +64,7 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
     await curl.send(body);
     return {
         status: () => curl.getResponseStatus(),
+        contentLength: () => curl.getResponseContentLength(),
         arraybuffer: async () => curl.getResponseBody().buffer,
         text: async () => curl.getResponseString(),
         json: async () => curl.getResponseJson(),

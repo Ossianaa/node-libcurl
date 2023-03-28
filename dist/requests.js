@@ -26,6 +26,9 @@ class requestsResponse {
     get status() {
         return this.curl.getResponseStatus();
     }
+    get contentLength() {
+        return this.curl.getResponseContentLength();
+    }
 }
 const assignURLSearchParam = (target, source) => {
     source.forEach((value, key) => {

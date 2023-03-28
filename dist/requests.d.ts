@@ -12,6 +12,7 @@ interface requestsResponseImp {
     readonly headers: string;
     readonly headersMap: LibCurlHeadersAttr;
     readonly status: number;
+    readonly contentLength: number;
 }
 declare class requestsResponse implements requestsResponseImp {
     private curl;
@@ -22,6 +23,7 @@ declare class requestsResponse implements requestsResponseImp {
     get headers(): string;
     get headersMap(): LibCurlHeadersAttr;
     get status(): number;
+    get contentLength(): number;
 }
 interface requestsInitOption {
     redirect?: boolean;

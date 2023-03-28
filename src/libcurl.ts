@@ -46,6 +46,56 @@ export type LibCurlHeadersAttr = Map<string, string>
 
 export type LibCurlInterfaceInfo = string;
 
+export type LibCurlJA3FingerPrintInfo = string;
+
+export enum LibCurlJA3TlsVersion {
+    TLSv1_2 = 771,
+    TLSv1_3 = 772,
+}
+
+export enum LibCurlJA3Cipher {
+    'NULL-SHA' = 0x0002,
+    'DES-CBC3-SHA' = 0x000A,
+    'AES128-SHA' = 0x002F,
+    'AES256-SHA' = 0x0035,
+    'PSK-AES128-CBC-SHA' = 0x008C,
+    'PSK-AES256-CBC-SHA' = 0x008D,
+    'AES128-GCM-SHA256' = 0x009C,
+    'AES256-GCM-SHA384' = 0x009D,
+    'TLS_AES_128_GCM_SHA256' = 0x1301,
+    'TLS_AES_256_GCM_SHA384' = 0x1302,
+    'TLS_CHACHA20_POLY1305_SHA256' = 0x1303,
+    'ECDHE-ECDSA-AES128-SHA' = 0xC009,
+    'ECDHE-ECDSA-AES256-SHA' = 0xC00A,
+    'ECDHE-RSA-AES128-SHA' = 0xC013,
+    'ECDHE-RSA-AES256-SHA' = 0xC014,
+    'ECDHE-ECDSA-AES128-GCM-SHA256' = 0xC02B,
+    'ECDHE-ECDSA-AES256-GCM-SHA384' = 0xC02C,
+    'ECDHE-RSA-AES128-GCM-SHA256' = 0xC02F,
+    'ECDHE-RSA-AES256-GCM-SHA384' = 0xC030,
+    'ECDHE-PSK-AES128-CBC-SHA' = 0xC035,
+    'ECDHE-PSK-AES256-CBC-SHA' = 0xC036,
+    'ECDHE-RSA-CHACHA20-POLY1305' = 0xCCA8,
+    'ECDHE-ECDSA-CHACHA20-POLY1305' = 0xCCA9,
+    'ECDHE-PSK-CHACHA20-POLY1305' = 0xCCAC
+}
+
+export enum LibCurlJA3SupportGroup {
+    "P-256" = 23,
+    "P-384" = 24,
+    "P-521" = 25,
+    ffdhe2048 = 256,
+    ffdhe3072 = 257,
+    X25519 = 29,
+}
+
+export enum LibCurlJA3EcPointFormat {
+    uncompressed = 0,
+    compressed_fixed = 1,
+    compressed_variable = 2,
+}
+
+
 interface LibCurlCommonHeaders {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
     | 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0',
@@ -86,6 +136,9 @@ export class LibCurl {
     private m_isSending_: boolean;
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
+        /* this.setJA3Fingerprint(
+            '771,4866-4865-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,27-51-17513-35-45-16-13-0-10-23-18-43-11-5-65281-21-41,29-23-24,0'
+        ) */
     }
     private checkSending(): void {
         if (this.m_isSending_) {
@@ -253,6 +306,15 @@ export class LibCurl {
         this.checkSending();
         return this.m_libCurl_impl_.getResponseStatus();
     }
+    
+    /**
+     * 
+     * @returns 返回正文长度
+     */
+    public getResponseContentLength(): number {
+        this.checkSending();
+        return this.m_libCurl_impl_.getResponseContentLength();
+    }
 
     /**
      * 重置curl 包括之前的所有设定
@@ -296,6 +358,63 @@ export class LibCurl {
     public setDnsInterface(network: LibCurlInterfaceInfo): void {
         this.checkSending();
         this.m_libCurl_impl_.setDnsInterface(network);
+    }
+
+    /**
+     * 指定网卡访问
+     * @param network 
+     */
+    public setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo): void {
+        this.checkSending();
+        const ja3Arr = ja3.split(',');
+        if (ja3Arr.length != 5) {
+            throw new LibCurlError('ja3 fingerprint error')
+        }
+        const tlsVersion = ja3Arr.at(0);
+        if (!LibCurlJA3TlsVersion[ja3Arr.at(0)]) {
+            throw new LibCurlError('ja3 fingerprint tlsVersion no support')
+        }
+        let tls13_ciphers = [];
+        const cipherArr = ja3Arr.at(1).split('-').map((key) => {
+            const cipher = LibCurlJA3Cipher[key];
+            if (!cipher) {
+                throw new LibCurlError(`ja3 fingerprint cipher ${key} no support`)
+            }
+            if (['4865','4866','4867'].includes(key)) {
+                tls13_ciphers.push(cipher);
+                return ''
+            }
+            return cipher;
+        }).filter(Boolean);
+
+        // const extensions = ja3Arr.at(2).split('-')
+
+        const supportGroups = ja3Arr.at(3).split('-').map((key) => {
+            if (!LibCurlJA3SupportGroup[key]) {
+                throw new LibCurlError(`ja3 fingerprint supportGroup ${key} no support`)
+            }
+            return LibCurlJA3SupportGroup[key];
+        });
+
+        /*  const ecPointFormat = LibCurlJA3EcPointFormat[ja3Arr.at(4)];
+         if (!ecPointFormat) {
+             throw new LibCurlError('ja3 fingerprint ecPointFormat no support')
+         } */
+        console.log(parseInt(tlsVersion),
+            cipherArr.join(':'),
+            tls13_ciphers.join(':'),
+            "",
+            supportGroups.join(':'),
+            0,);
+
+        this.m_libCurl_impl_.setJA3Fingerprint(
+            parseInt(tlsVersion),
+            cipherArr.join(':'),
+            tls13_ciphers.join(':'),
+            "",
+            supportGroups.join(':'),
+            0,
+        );
     }
 
     /**

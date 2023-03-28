@@ -13,6 +13,7 @@ interface LibCurlRequestInfo {
 }
 interface LibCurlResponseInfo {
     status: () => number;
+    contentLength: () => number;
     arraybuffer: () => Promise<ArrayBuffer>;
     text: () => Promise<string>;
     json: () => Promise<object>;
