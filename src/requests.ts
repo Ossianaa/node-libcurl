@@ -271,7 +271,11 @@ export class requests {
                     curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
                 }
             }
-            if (
+
+            if (data instanceof Uint8Array) {
+                //直接发送
+            }
+            else if (
                 !(data instanceof URLSearchParams) &&
                 typeof data == 'object' && data != null
             ) {

@@ -196,7 +196,9 @@ class requests {
                     curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
                 }
             }
-            if (!(data instanceof URLSearchParams) &&
+            if (data instanceof Uint8Array) {
+            }
+            else if (!(data instanceof URLSearchParams) &&
                 typeof data == 'object' && data != null) {
                 sendData = Object.keys(data).map((e) => {
                     const value = data[e];
