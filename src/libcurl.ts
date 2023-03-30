@@ -80,13 +80,46 @@ export enum LibCurlJA3Cipher {
     'ECDHE-PSK-CHACHA20-POLY1305' = 0xCCAC
 }
 
+export enum LibCurlJA3Extension {
+    TLSEXT_TYPE_server_name = 0,
+    TLSEXT_TYPE_status_request = 5,
+    TLSEXT_TYPE_ec_point_formats = 11,
+    TLSEXT_TYPE_signature_algorithms = 13,
+    TLSEXT_TYPE_srtp = 14,
+    TLSEXT_TYPE_application_layer_protocol_negotiation = 16,
+    TLSEXT_TYPE_padding = 21,
+    TLSEXT_TYPE_extended_master_secret = 23,
+    TLSEXT_TYPE_quic_transport_parameters_legacy = 0xffa5,
+    TLSEXT_TYPE_quic_transport_parameters = 57,
+    TLSEXT_TYPE_cert_compression = 27,
+    TLSEXT_TYPE_session_ticket = 35,
+    TLSEXT_TYPE_supported_groups = 10,
+    TLSEXT_TYPE_pre_shared_key = 41,
+    TLSEXT_TYPE_early_data = 42,
+    TLSEXT_TYPE_supported_versions = 43,
+    TLSEXT_TYPE_cookie = 44,
+    TLSEXT_TYPE_psk_key_exchange_modes = 45,
+    TLSEXT_TYPE_certificate_authorities = 47,
+    TLSEXT_TYPE_signature_algorithms_cert = 50,
+    TLSEXT_TYPE_key_share = 51,
+    TLSEXT_TYPE_renegotiate = 0xff01,
+    TLSEXT_TYPE_delegated_credential = 0x22,
+    TLSEXT_TYPE_application_settings = 17513,
+    TLSEXT_TYPE_encrypted_client_hello = 0xfe0d,
+    TLSEXT_TYPE_ech_outer_extensions = 0xfd00,
+    TLSEXT_TYPE_certificate_timestamp = 18,
+    TLSEXT_TYPE_next_proto_neg = 13172,
+    TLSEXT_TYPE_channel_id = 30032,
+    TLSEXT_TYPE_record_size_limit = 28,
+}
+
 export enum LibCurlJA3SupportGroup {
     "P-256" = 23,
     "P-384" = 24,
     "P-521" = 25,
+    X25519 = 29,
     ffdhe2048 = 256,
     ffdhe3072 = 257,
-    X25519 = 29,
 }
 
 export enum LibCurlJA3EcPointFormat {
@@ -94,6 +127,35 @@ export enum LibCurlJA3EcPointFormat {
     compressed_fixed = 1,
     compressed_variable = 2,
 }
+
+const LibCurlBoringSSLExtensionPermutation: LibCurlJA3Extension[] = [
+    LibCurlJA3Extension.TLSEXT_TYPE_server_name,
+    LibCurlJA3Extension.TLSEXT_TYPE_encrypted_client_hello,
+    LibCurlJA3Extension.TLSEXT_TYPE_extended_master_secret,
+    LibCurlJA3Extension.TLSEXT_TYPE_renegotiate,
+    LibCurlJA3Extension.TLSEXT_TYPE_supported_groups,
+    LibCurlJA3Extension.TLSEXT_TYPE_ec_point_formats,
+    LibCurlJA3Extension.TLSEXT_TYPE_session_ticket,
+    LibCurlJA3Extension.TLSEXT_TYPE_application_layer_protocol_negotiation,
+    LibCurlJA3Extension.TLSEXT_TYPE_status_request,
+    LibCurlJA3Extension.TLSEXT_TYPE_signature_algorithms,
+    LibCurlJA3Extension.TLSEXT_TYPE_next_proto_neg,
+    LibCurlJA3Extension.TLSEXT_TYPE_certificate_timestamp,
+    LibCurlJA3Extension.TLSEXT_TYPE_channel_id,
+    LibCurlJA3Extension.TLSEXT_TYPE_srtp,
+    LibCurlJA3Extension.TLSEXT_TYPE_key_share,
+    LibCurlJA3Extension.TLSEXT_TYPE_psk_key_exchange_modes,
+    LibCurlJA3Extension.TLSEXT_TYPE_early_data,
+    LibCurlJA3Extension.TLSEXT_TYPE_supported_versions,
+    LibCurlJA3Extension.TLSEXT_TYPE_cookie,
+    LibCurlJA3Extension.TLSEXT_TYPE_quic_transport_parameters,
+    LibCurlJA3Extension.TLSEXT_TYPE_quic_transport_parameters_legacy,
+    LibCurlJA3Extension.TLSEXT_TYPE_cert_compression,
+    LibCurlJA3Extension.TLSEXT_TYPE_delegated_credential,
+    LibCurlJA3Extension.TLSEXT_TYPE_application_settings,
+    LibCurlJA3Extension.TLSEXT_TYPE_record_size_limit,//firefox兼容
+
+]
 
 
 interface LibCurlCommonHeaders {
@@ -306,7 +368,7 @@ export class LibCurl {
         this.checkSending();
         return this.m_libCurl_impl_.getResponseStatus();
     }
-    
+
     /**
      * 
      * @returns 返回正文长度
@@ -366,7 +428,7 @@ export class LibCurl {
      */
     public setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo): void {
         this.checkSending();
-        const ja3Arr = ja3.split(',');
+        const ja3Arr = ja3.replaceAll('\s','').split(',');
         if (ja3Arr.length != 5) {
             throw new LibCurlError('ja3 fingerprint error')
         }
@@ -380,15 +442,31 @@ export class LibCurl {
             if (!cipher) {
                 throw new LibCurlError(`ja3 fingerprint cipher ${key} no support`)
             }
-            if (['4865','4866','4867'].includes(key)) {
-                tls13_ciphers.push(cipher);
-                return ''
+            if (cipher.startsWith('TLS_')) {
+                const pos = ['4865', '4866', '4867'].indexOf(key);
+                if (pos == -1) {
+                    throw new LibCurlError(`ja3 fingerprint TLSv1.3 cipher ${key} no support`)
+                }
+                tls13_ciphers.push(pos + 1);
+                return
             }
             return cipher;
         }).filter(Boolean);
 
-        // const extensions = ja3Arr.at(2).split('-')
 
+        LibCurlBoringSSLExtensionPermutation
+
+        const extensions = ja3Arr.at(2).split('-').filter((extension) => {
+            return !['21', '41'].includes(extension)
+        }).map(e => parseInt(e));
+        const extension_permutation = extensions.map((extension) => {
+            const pos = LibCurlBoringSSLExtensionPermutation.indexOf(extension);
+            if (pos == -1) {
+                throw new LibCurlError(`ja3 fingerprint extension ${extension} no support`)
+            }
+            return pos + 1
+        }
+        );
         const supportGroups = ja3Arr.at(3).split('-').map((key) => {
             if (!LibCurlJA3SupportGroup[key]) {
                 throw new LibCurlError(`ja3 fingerprint supportGroup ${key} no support`)
@@ -400,18 +478,11 @@ export class LibCurl {
          if (!ecPointFormat) {
              throw new LibCurlError('ja3 fingerprint ecPointFormat no support')
          } */
-        console.log(parseInt(tlsVersion),
-            cipherArr.join(':'),
-            tls13_ciphers.join(':'),
-            "",
-            supportGroups.join(':'),
-            0,);
-
         this.m_libCurl_impl_.setJA3Fingerprint(
             parseInt(tlsVersion),
             cipherArr.join(':'),
-            tls13_ciphers.join(':'),
-            "",
+            String.fromCharCode(...tls13_ciphers, 0),
+            String.fromCharCode(...extension_permutation, 0),
             supportGroups.join(':'),
             0,
         );

@@ -71,13 +71,45 @@ export declare enum LibCurlJA3Cipher {
     'ECDHE-ECDSA-CHACHA20-POLY1305' = 52393,
     'ECDHE-PSK-CHACHA20-POLY1305' = 52396
 }
+export declare enum LibCurlJA3Extension {
+    TLSEXT_TYPE_server_name = 0,
+    TLSEXT_TYPE_status_request = 5,
+    TLSEXT_TYPE_ec_point_formats = 11,
+    TLSEXT_TYPE_signature_algorithms = 13,
+    TLSEXT_TYPE_srtp = 14,
+    TLSEXT_TYPE_application_layer_protocol_negotiation = 16,
+    TLSEXT_TYPE_padding = 21,
+    TLSEXT_TYPE_extended_master_secret = 23,
+    TLSEXT_TYPE_quic_transport_parameters_legacy = 65445,
+    TLSEXT_TYPE_quic_transport_parameters = 57,
+    TLSEXT_TYPE_cert_compression = 27,
+    TLSEXT_TYPE_session_ticket = 35,
+    TLSEXT_TYPE_supported_groups = 10,
+    TLSEXT_TYPE_pre_shared_key = 41,
+    TLSEXT_TYPE_early_data = 42,
+    TLSEXT_TYPE_supported_versions = 43,
+    TLSEXT_TYPE_cookie = 44,
+    TLSEXT_TYPE_psk_key_exchange_modes = 45,
+    TLSEXT_TYPE_certificate_authorities = 47,
+    TLSEXT_TYPE_signature_algorithms_cert = 50,
+    TLSEXT_TYPE_key_share = 51,
+    TLSEXT_TYPE_renegotiate = 65281,
+    TLSEXT_TYPE_delegated_credential = 34,
+    TLSEXT_TYPE_application_settings = 17513,
+    TLSEXT_TYPE_encrypted_client_hello = 65037,
+    TLSEXT_TYPE_ech_outer_extensions = 64768,
+    TLSEXT_TYPE_certificate_timestamp = 18,
+    TLSEXT_TYPE_next_proto_neg = 13172,
+    TLSEXT_TYPE_channel_id = 30032,
+    TLSEXT_TYPE_record_size_limit = 28
+}
 export declare enum LibCurlJA3SupportGroup {
     "P-256" = 23,
     "P-384" = 24,
     "P-521" = 25,
+    X25519 = 29,
     ffdhe2048 = 256,
-    ffdhe3072 = 257,
-    X25519 = 29
+    ffdhe3072 = 257
 }
 export declare enum LibCurlJA3EcPointFormat {
     uncompressed = 0,

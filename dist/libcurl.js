@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LibCurl = exports.LibCurlError = exports.LibCurlJA3EcPointFormat = exports.LibCurlJA3SupportGroup = exports.LibCurlJA3Cipher = exports.LibCurlJA3TlsVersion = exports.LibCurlHttpVersionInfo = void 0;
+exports.LibCurl = exports.LibCurlError = exports.LibCurlJA3EcPointFormat = exports.LibCurlJA3SupportGroup = exports.LibCurlJA3Extension = exports.LibCurlJA3Cipher = exports.LibCurlJA3TlsVersion = exports.LibCurlHttpVersionInfo = void 0;
 const bindings_1 = __importDefault(require("bindings"));
 const utils_1 = require("./utils");
 const { BaoLibCurl } = (0, bindings_1.default)('bao_curl_node_addon');
@@ -44,14 +44,47 @@ var LibCurlJA3Cipher;
     LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-ECDSA-CHACHA20-POLY1305"] = 52393] = "ECDHE-ECDSA-CHACHA20-POLY1305";
     LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-PSK-CHACHA20-POLY1305"] = 52396] = "ECDHE-PSK-CHACHA20-POLY1305";
 })(LibCurlJA3Cipher = exports.LibCurlJA3Cipher || (exports.LibCurlJA3Cipher = {}));
+var LibCurlJA3Extension;
+(function (LibCurlJA3Extension) {
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_server_name"] = 0] = "TLSEXT_TYPE_server_name";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_status_request"] = 5] = "TLSEXT_TYPE_status_request";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_ec_point_formats"] = 11] = "TLSEXT_TYPE_ec_point_formats";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_signature_algorithms"] = 13] = "TLSEXT_TYPE_signature_algorithms";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_srtp"] = 14] = "TLSEXT_TYPE_srtp";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_application_layer_protocol_negotiation"] = 16] = "TLSEXT_TYPE_application_layer_protocol_negotiation";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_padding"] = 21] = "TLSEXT_TYPE_padding";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_extended_master_secret"] = 23] = "TLSEXT_TYPE_extended_master_secret";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_quic_transport_parameters_legacy"] = 65445] = "TLSEXT_TYPE_quic_transport_parameters_legacy";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_quic_transport_parameters"] = 57] = "TLSEXT_TYPE_quic_transport_parameters";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_cert_compression"] = 27] = "TLSEXT_TYPE_cert_compression";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_session_ticket"] = 35] = "TLSEXT_TYPE_session_ticket";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_supported_groups"] = 10] = "TLSEXT_TYPE_supported_groups";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_pre_shared_key"] = 41] = "TLSEXT_TYPE_pre_shared_key";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_early_data"] = 42] = "TLSEXT_TYPE_early_data";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_supported_versions"] = 43] = "TLSEXT_TYPE_supported_versions";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_cookie"] = 44] = "TLSEXT_TYPE_cookie";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_psk_key_exchange_modes"] = 45] = "TLSEXT_TYPE_psk_key_exchange_modes";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_certificate_authorities"] = 47] = "TLSEXT_TYPE_certificate_authorities";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_signature_algorithms_cert"] = 50] = "TLSEXT_TYPE_signature_algorithms_cert";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_key_share"] = 51] = "TLSEXT_TYPE_key_share";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_renegotiate"] = 65281] = "TLSEXT_TYPE_renegotiate";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_delegated_credential"] = 34] = "TLSEXT_TYPE_delegated_credential";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_application_settings"] = 17513] = "TLSEXT_TYPE_application_settings";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_encrypted_client_hello"] = 65037] = "TLSEXT_TYPE_encrypted_client_hello";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_ech_outer_extensions"] = 64768] = "TLSEXT_TYPE_ech_outer_extensions";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_certificate_timestamp"] = 18] = "TLSEXT_TYPE_certificate_timestamp";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_next_proto_neg"] = 13172] = "TLSEXT_TYPE_next_proto_neg";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_channel_id"] = 30032] = "TLSEXT_TYPE_channel_id";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_record_size_limit"] = 28] = "TLSEXT_TYPE_record_size_limit";
+})(LibCurlJA3Extension = exports.LibCurlJA3Extension || (exports.LibCurlJA3Extension = {}));
 var LibCurlJA3SupportGroup;
 (function (LibCurlJA3SupportGroup) {
     LibCurlJA3SupportGroup[LibCurlJA3SupportGroup["P-256"] = 23] = "P-256";
     LibCurlJA3SupportGroup[LibCurlJA3SupportGroup["P-384"] = 24] = "P-384";
     LibCurlJA3SupportGroup[LibCurlJA3SupportGroup["P-521"] = 25] = "P-521";
+    LibCurlJA3SupportGroup[LibCurlJA3SupportGroup["X25519"] = 29] = "X25519";
     LibCurlJA3SupportGroup[LibCurlJA3SupportGroup["ffdhe2048"] = 256] = "ffdhe2048";
     LibCurlJA3SupportGroup[LibCurlJA3SupportGroup["ffdhe3072"] = 257] = "ffdhe3072";
-    LibCurlJA3SupportGroup[LibCurlJA3SupportGroup["X25519"] = 29] = "X25519";
 })(LibCurlJA3SupportGroup = exports.LibCurlJA3SupportGroup || (exports.LibCurlJA3SupportGroup = {}));
 var LibCurlJA3EcPointFormat;
 (function (LibCurlJA3EcPointFormat) {
@@ -59,6 +92,33 @@ var LibCurlJA3EcPointFormat;
     LibCurlJA3EcPointFormat[LibCurlJA3EcPointFormat["compressed_fixed"] = 1] = "compressed_fixed";
     LibCurlJA3EcPointFormat[LibCurlJA3EcPointFormat["compressed_variable"] = 2] = "compressed_variable";
 })(LibCurlJA3EcPointFormat = exports.LibCurlJA3EcPointFormat || (exports.LibCurlJA3EcPointFormat = {}));
+const LibCurlBoringSSLExtensionPermutation = [
+    LibCurlJA3Extension.TLSEXT_TYPE_server_name,
+    LibCurlJA3Extension.TLSEXT_TYPE_encrypted_client_hello,
+    LibCurlJA3Extension.TLSEXT_TYPE_extended_master_secret,
+    LibCurlJA3Extension.TLSEXT_TYPE_renegotiate,
+    LibCurlJA3Extension.TLSEXT_TYPE_supported_groups,
+    LibCurlJA3Extension.TLSEXT_TYPE_ec_point_formats,
+    LibCurlJA3Extension.TLSEXT_TYPE_session_ticket,
+    LibCurlJA3Extension.TLSEXT_TYPE_application_layer_protocol_negotiation,
+    LibCurlJA3Extension.TLSEXT_TYPE_status_request,
+    LibCurlJA3Extension.TLSEXT_TYPE_signature_algorithms,
+    LibCurlJA3Extension.TLSEXT_TYPE_next_proto_neg,
+    LibCurlJA3Extension.TLSEXT_TYPE_certificate_timestamp,
+    LibCurlJA3Extension.TLSEXT_TYPE_channel_id,
+    LibCurlJA3Extension.TLSEXT_TYPE_srtp,
+    LibCurlJA3Extension.TLSEXT_TYPE_key_share,
+    LibCurlJA3Extension.TLSEXT_TYPE_psk_key_exchange_modes,
+    LibCurlJA3Extension.TLSEXT_TYPE_early_data,
+    LibCurlJA3Extension.TLSEXT_TYPE_supported_versions,
+    LibCurlJA3Extension.TLSEXT_TYPE_cookie,
+    LibCurlJA3Extension.TLSEXT_TYPE_quic_transport_parameters,
+    LibCurlJA3Extension.TLSEXT_TYPE_quic_transport_parameters_legacy,
+    LibCurlJA3Extension.TLSEXT_TYPE_cert_compression,
+    LibCurlJA3Extension.TLSEXT_TYPE_delegated_credential,
+    LibCurlJA3Extension.TLSEXT_TYPE_application_settings,
+    LibCurlJA3Extension.TLSEXT_TYPE_record_size_limit,
+];
 class LibCurlError extends Error {
     constructor(e) {
         super(e);
@@ -203,7 +263,7 @@ class LibCurl {
     }
     setJA3Fingerprint(ja3) {
         this.checkSending();
-        const ja3Arr = ja3.split(',');
+        const ja3Arr = ja3.replaceAll('\s', '').split(',');
         if (ja3Arr.length != 5) {
             throw new LibCurlError('ja3 fingerprint error');
         }
@@ -217,20 +277,34 @@ class LibCurl {
             if (!cipher) {
                 throw new LibCurlError(`ja3 fingerprint cipher ${key} no support`);
             }
-            if (['4865', '4866', '4867'].includes(key)) {
-                tls13_ciphers.push(cipher);
-                return '';
+            if (cipher.startsWith('TLS_')) {
+                const pos = ['4865', '4866', '4867'].indexOf(key);
+                if (pos == -1) {
+                    throw new LibCurlError(`ja3 fingerprint TLSv1.3 cipher ${key} no support`);
+                }
+                tls13_ciphers.push(pos + 1);
+                return;
             }
             return cipher;
         }).filter(Boolean);
+        LibCurlBoringSSLExtensionPermutation;
+        const extensions = ja3Arr.at(2).split('-').filter((extension) => {
+            return !['21', '41'].includes(extension);
+        }).map(e => parseInt(e));
+        const extension_permutation = extensions.map((extension) => {
+            const pos = LibCurlBoringSSLExtensionPermutation.indexOf(extension);
+            if (pos == -1) {
+                throw new LibCurlError(`ja3 fingerprint extension ${extension} no support`);
+            }
+            return pos + 1;
+        });
         const supportGroups = ja3Arr.at(3).split('-').map((key) => {
             if (!LibCurlJA3SupportGroup[key]) {
                 throw new LibCurlError(`ja3 fingerprint supportGroup ${key} no support`);
             }
             return LibCurlJA3SupportGroup[key];
         });
-        console.log(parseInt(tlsVersion), cipherArr.join(':'), tls13_ciphers.join(':'), "", supportGroups.join(':'), 0);
-        this.m_libCurl_impl_.setJA3Fingerprint(parseInt(tlsVersion), cipherArr.join(':'), tls13_ciphers.join(':'), "", supportGroups.join(':'), 0);
+        this.m_libCurl_impl_.setJA3Fingerprint(parseInt(tlsVersion), cipherArr.join(':'), String.fromCharCode(...tls13_ciphers, 0), String.fromCharCode(...extension_permutation, 0), supportGroups.join(':'), 0);
     }
     send(body) {
         this.checkSending();

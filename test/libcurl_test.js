@@ -19,24 +19,28 @@ async function main() {
     //     })
     //     console.log(resp.json);
     //     debugger
-    // const curl = new LibCurl();
-    // curl
-    // curl.setJA3Fingerprint(
-    //     '771,4865-4866-4867-49195-49196-49200-52393-52392-49171-49172-156-157-47-53,27-51-17513-35-45-16-13-0-10-23-18-43-11-5-65281-21-41,23-24-29,0'
-    // );
-    // curl.setHttpVersion(1);
-    // curl.open('GET', 'https://tls.peet.ws/api/all')
-    // curl.setRequestHeader('user-Agent', 'chrome')
-    // await curl.send();
-    // console.log(curl.getResponseBody().length, curl.getDownloadSizeBeforeCompress(), curl.getResponseHeaders());
-    {
+    
+    const curl = new LibCurl();
+    curl.printInnerLogger()
+    /* curl.setJA3Fingerprint(
+        '771,4865-4866-49199-49195-49196-49200-52393-52392-49171-49172-156-157-47-53,0-35-16-5-23-65281-10-11-13-18-51-45-43-27-17513-21,29-23-24,0'
+    ); */
+    curl.setJA3Fingerprint(
+        '771,4865-4867-4866-49195-49199-52393-52392-49196-49200-49162-49161-49171-49172-156-157-47-53,0-23-65281-10-11-16-5-34-51-43-13-45-28-41,29-23-24-25-256-257,0'
+    );
+    curl.setHttpVersion(1);
+    curl.open('GET', 'https://tls.peet.ws/api/clean')
+    curl.setRequestHeader('user-Agent', 'chrome')
+    await curl.send();
+    console.log(curl.getResponseString());
+    /* {
         const curl = new LibCurl();
-
+        curl.printInnerLogger()
         curl.open('GET', 'https://curl.se/favicon.ico')
         curl.setRequestHeader('user-Agent', 'chrome')
         await curl.send();
         console.log(curl.getResponseBody().length, curl.getResponseContentLength());
-    }
+    } */
 
     // curl.open('GET', 'https://tls.peet.ws/api/clean')
     // curl.setRequestHeader('user-Agent', 'chrome')
