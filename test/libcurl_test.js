@@ -1,6 +1,27 @@
 const { LibCurl, fetch, requests } = require('../dist/index');
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36';
 async function main() {
+    {
+        const session = requests.session({
+            
+        });
+        let resp = await session.get('https://tls.peet.ws/api/clean',{
+            headers:{
+                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
+            }
+        });
+        console.log(resp.text);
+
+        resp = await session.get('https://tls.peet.ws/api/clean',{
+            headers:{
+                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
+            }
+        });
+        console.log(resp.text);
+    }
+
+
+    return;
     //     const session = requests.session({
     //         httpVersion: 1,
     //         redirect: true,
@@ -20,24 +41,24 @@ async function main() {
     //     console.log(resp.json);
     //     debugger
     
-    const curl = new LibCurl();
-    // curl.printInnerLogger()
+    // const curl = new LibCurl();
+    // // curl.printInnerLogger()
    
-    /* curl.setJA3Fingerprint(
-        '771,4865-4867-4866-49195-49199-52393-52392-49196-49200-49162-49161-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-34-51-43-13-45-28-21-41,29-23-24-25-256-257,0'
-    ); */
-    curl.setJA3Fingerprint(
-        '771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,35-23-43-51-45-5-13-65281-17513-10-16-18-0-11-27-21-41,29-23-24,0'
-    );
-    curl.setHttpVersion(1);
-    curl.open('GET', 'https://tls.peet.ws/api/clean')
-    curl.setRequestHeader('user-Agent', USER_AGENT)
-    await curl.send();
-    console.log(curl.getResponseString());
-    curl.open('GET', 'https://tls.peet.ws/api/clean')
-    curl.setRequestHeader('user-Agent', USER_AGENT)
-    await curl.send();
-    console.log(curl.getResponseString());
+    // /* curl.setJA3Fingerprint(
+    //     '771,4865-4867-4866-49195-49199-52393-52392-49196-49200-49162-49161-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-34-51-43-13-45-28-21-41,29-23-24-25-256-257,0'
+    // ); */
+    // curl.setJA3Fingerprint(
+    //     '771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,35-23-43-51-45-5-13-65281-17513-10-16-18-0-11-27-21-41,29-23-24,0'
+    // );
+    // curl.setHttpVersion(1);
+    // curl.open('GET', 'https://tls.peet.ws/api/clean')
+    // curl.setRequestHeader('user-Agent', USER_AGENT)
+    // await curl.send();
+    // console.log(curl.getResponseString());
+    // curl.open('GET', 'https://tls.peet.ws/api/clean')
+    // curl.setRequestHeader('user-Agent', USER_AGENT)
+    // await curl.send();
+    // console.log(curl.getResponseString());
    
     
     return
