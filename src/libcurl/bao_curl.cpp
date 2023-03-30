@@ -340,6 +340,6 @@ void BaoCurl::setJA3Fingerprint(
 		tmp2[i] = i+1;
 	} */
 	// tmp2[25]=0;
-
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, (CURLoption)10316 /*CURLOPT_TLS_EXTENSION_PERMUTATION*/, extensions.c_str()));
+	
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION/* 10316 */, extensions.c_str()));
 }
