@@ -2,3 +2,4 @@ import { LibCurl, LibCurlCookieAttrArray, LibCurlCookiesInfo, LibCurlGetCookiesO
 export declare const httpCookiesToArray: (cookies: string) => LibCurlCookieAttrArray[];
 export declare const cookieOptFilter: (cookieOpt: LibCurlGetCookiesOption) => (e: LibCurlCookieAttrArray) => boolean;
 export declare const libcurlSetCookies: (curl: LibCurl, cookies: LibCurlCookiesInfo, domain: string) => void;
+export declare const libcurlRandomJA3Fingerprint: () => string;

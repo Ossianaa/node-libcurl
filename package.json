@@ -21,7 +21,7 @@
     "remote_path": "v1.0.2"
   },
   "devDependencies": {
-    "@types/node": "^18.11.18",
+    "@types/node": "^18.15.11",
     "body-parser": "^1.20.1",
     "chai": "^4.3.7",
     "cookie-parser": "^1.4.6",
