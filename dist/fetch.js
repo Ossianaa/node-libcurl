@@ -6,7 +6,7 @@ const utils_1 = require("./utils");
 async function fetch(url, request = {}) {
     request.instance ||= new libcurl_1.LibCurl();
     const curl = request.instance;
-    const { method = "GET", headers, redirect = false, httpVersion = 0, openInnerLog = false, proxy, body, cookies, interface: interface_, } = request;
+    const { method = "GET", headers, redirect = false, httpVersion = 0, openInnerLog = false, proxy, body, cookies, interface: interface_, ja3, } = request;
     curl.open(method, url + '', true);
     if (headers) {
         curl.setRequestHeaders(headers);
@@ -31,6 +31,9 @@ async function fetch(url, request = {}) {
     }
     if (proxy) {
         curl.setProxy(proxy);
+    }
+    if (ja3) {
+        curl.setJA3Fingerprint(ja3);
     }
     await curl.send(body);
     return {

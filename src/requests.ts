@@ -1,4 +1,4 @@
-import { LibCurl, LibCurlBodyInfo, LibCurlCookiesAttr, LibCurlCookiesInfo, LibCurlHeadersAttr, LibCurlHeadersInfo, LibCurlMethodInfo, LibCurlProxyInfo, LibCurlHttpVersionInfo, LibCurlURLInfo, LibCurlError } from "./libcurl"
+import { LibCurl, LibCurlBodyInfo, LibCurlCookiesAttr, LibCurlCookiesInfo, LibCurlHeadersAttr, LibCurlHeadersInfo, LibCurlMethodInfo, LibCurlProxyInfo, LibCurlHttpVersionInfo, LibCurlURLInfo, LibCurlError, LibCurlJA3FingerPrintInfo } from "./libcurl"
 import { libcurlSetCookies } from "./utils";
 
 type requestsHttpVersionInfo = LibCurlHttpVersionInfo;
@@ -49,7 +49,7 @@ class requestsResponse implements requestsResponseImp {
     public get status(): number {
         return this.curl.getResponseStatus();
     }
-   
+
     public get contentLength(): number {
         return this.curl.getResponseContentLength();
     }
@@ -79,6 +79,8 @@ interface requestsInitOption {
      * 传入LibCurl实例可以做持久化连接
      */
     instance?: LibCurl;
+
+    ja3?: LibCurlJA3FingerPrintInfo;
 }
 
 type requestsParamsInfo = URLSearchParams | string | { [key: string]: string };
@@ -109,7 +111,7 @@ export class requests {
     private needSetCookies: boolean;
     constructor(option: requestsInitOption = {}) {
         this.option = { ...option };
-        const { cookies, timeout, verbose, interface: interface_ } = option;
+        const { cookies, timeout, verbose, interface: interface_, ja3 } = option;
         const curl = this.option.instance ||= new LibCurl();
 
         if (cookies) {
@@ -123,6 +125,9 @@ export class requests {
         }
         if (interface_) {
             curl.setDnsInterface(interface_);
+        }
+        if (ja3) {
+            curl.setJA3Fingerprint(ja3);
         }
     }
 

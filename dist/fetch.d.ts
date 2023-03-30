@@ -1,4 +1,4 @@
-import { LibCurl, LibCurlBodyInfo, LibCurlMethodInfo, LibCurlHeadersInfo, LibCurlCookiesAttr, LibCurlHttpVersionInfo, LibCurlProxyInfo, LibCurlCookiesInfo, LibCurlInterfaceInfo } from "./libcurl";
+import { LibCurl, LibCurlBodyInfo, LibCurlMethodInfo, LibCurlHeadersInfo, LibCurlCookiesAttr, LibCurlHttpVersionInfo, LibCurlProxyInfo, LibCurlCookiesInfo, LibCurlInterfaceInfo, LibCurlJA3FingerPrintInfo } from "./libcurl";
 interface LibCurlRequestInfo {
     method?: LibCurlMethodInfo;
     headers?: LibCurlHeadersInfo;
@@ -10,6 +10,7 @@ interface LibCurlRequestInfo {
     proxy?: LibCurlProxyInfo;
     interface?: LibCurlInterfaceInfo;
     instance?: LibCurl;
+    ja3?: LibCurlJA3FingerPrintInfo;
 }
 interface LibCurlResponseInfo {
     status: () => number;

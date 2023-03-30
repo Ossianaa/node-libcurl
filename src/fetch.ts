@@ -1,4 +1,4 @@
-import { LibCurl, LibCurlBodyInfo, LibCurlMethodInfo, LibCurlHeadersInfo, LibCurlCookiesAttr, LibCurlHttpVersionInfo, LibCurlProxyInfo, LibCurlCookiesInfo, LibCurlInterfaceInfo } from "./libcurl";
+import { LibCurl, LibCurlBodyInfo, LibCurlMethodInfo, LibCurlHeadersInfo, LibCurlCookiesAttr, LibCurlHttpVersionInfo, LibCurlProxyInfo, LibCurlCookiesInfo, LibCurlInterfaceInfo, LibCurlJA3FingerPrintInfo } from "./libcurl";
 import { libcurlSetCookies } from "./utils";
 
 interface LibCurlRequestInfo {
@@ -15,6 +15,7 @@ interface LibCurlRequestInfo {
      * 传入LibCurl实例可以做持久化连接
      */
     instance?: LibCurl;
+    ja3?: LibCurlJA3FingerPrintInfo;
 }
 
 interface LibCurlResponseInfo {
@@ -34,7 +35,7 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
     const { method = "GET",
         headers, redirect = false, httpVersion = 0,
         openInnerLog = false, proxy, body, cookies,
-        interface: interface_,
+        interface: interface_, ja3,
     } = request;
     curl.open(method, url + '', true);
     if (headers) {
@@ -60,6 +61,9 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
     }
     if (proxy) {
         curl.setProxy(proxy);
+    }
+    if (ja3) {
+        curl.setJA3Fingerprint(ja3);
     }
     await curl.send(body);
     return {

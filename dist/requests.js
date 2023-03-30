@@ -40,7 +40,7 @@ class requests {
     needSetCookies;
     constructor(option = {}) {
         this.option = { ...option };
-        const { cookies, timeout, verbose, interface: interface_ } = option;
+        const { cookies, timeout, verbose, interface: interface_, ja3 } = option;
         const curl = this.option.instance ||= new libcurl_1.LibCurl();
         if (cookies) {
             this.needSetCookies = !!cookies;
@@ -53,6 +53,9 @@ class requests {
         }
         if (interface_) {
             curl.setDnsInterface(interface_);
+        }
+        if (ja3) {
+            curl.setJA3Fingerprint(ja3);
         }
     }
     static session(option = {}) {

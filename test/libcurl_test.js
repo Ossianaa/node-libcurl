@@ -29,7 +29,7 @@ async function main() {
     curl.setJA3Fingerprint(
         '771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,35-23-43-51-45-5-13-65281-17513-10-16-18-0-11-27-21-41,29-23-24,0'
     );
-    // curl.setHttpVersion(1);
+    curl.setHttpVersion(1);
     curl.open('GET', 'https://tls.peet.ws/api/clean')
     curl.setRequestHeader('user-Agent', USER_AGENT)
     await curl.send();

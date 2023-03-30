@@ -1,4 +1,4 @@
-import { LibCurl, LibCurlBodyInfo, LibCurlCookiesAttr, LibCurlCookiesInfo, LibCurlHeadersAttr, LibCurlHeadersInfo, LibCurlProxyInfo, LibCurlHttpVersionInfo, LibCurlURLInfo } from "./libcurl";
+import { LibCurl, LibCurlBodyInfo, LibCurlCookiesAttr, LibCurlCookiesInfo, LibCurlHeadersAttr, LibCurlHeadersInfo, LibCurlProxyInfo, LibCurlHttpVersionInfo, LibCurlURLInfo, LibCurlJA3FingerPrintInfo } from "./libcurl";
 type requestsHttpVersionInfo = LibCurlHttpVersionInfo;
 type requestsHeadersInfo = LibCurlHeadersInfo;
 type requestsBodyInfo = LibCurlBodyInfo;
@@ -35,6 +35,7 @@ interface requestsInitOption {
     timeout?: number;
     interface?: string;
     instance?: LibCurl;
+    ja3?: LibCurlJA3FingerPrintInfo;
 }
 type requestsParamsInfo = URLSearchParams | string | {
     [key: string]: string;
