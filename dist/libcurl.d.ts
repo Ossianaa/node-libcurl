@@ -101,7 +101,8 @@ export declare enum LibCurlJA3Extension {
     TLSEXT_TYPE_certificate_timestamp = 18,
     TLSEXT_TYPE_next_proto_neg = 13172,
     TLSEXT_TYPE_channel_id = 30032,
-    TLSEXT_TYPE_record_size_limit = 28
+    TLSEXT_TYPE_record_size_limit = 28,
+    TLSEXT_TYPE_delegated_credentials = 34
 }
 export declare enum LibCurlJA3SupportGroup {
     "P-256" = 23,

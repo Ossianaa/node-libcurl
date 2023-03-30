@@ -1,5 +1,5 @@
 const { LibCurl, fetch, requests } = require('../dist/index');
-
+const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36';
 async function main() {
     //     const session = requests.session({
     //         httpVersion: 1,
@@ -21,31 +21,25 @@ async function main() {
     //     debugger
     
     const curl = new LibCurl();
-    curl.printInnerLogger()
+    // curl.printInnerLogger()
+   
     /* curl.setJA3Fingerprint(
-        '771,4865-4866-49199-49195-49196-49200-52393-52392-49171-49172-156-157-47-53,0-35-16-5-23-65281-10-11-13-18-51-45-43-27-17513-21,29-23-24,0'
+        '771,4865-4867-4866-49195-49199-52393-52392-49196-49200-49162-49161-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-34-51-43-13-45-28-21-41,29-23-24-25-256-257,0'
     ); */
     curl.setJA3Fingerprint(
-        '771,4865-4867-4866-49195-49199-52393-52392-49196-49200-49162-49161-49171-49172-156-157-47-53,0-23-65281-10-11-16-5-34-51-43-13-45-28-41,29-23-24-25-256-257,0'
+        '771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,35-23-43-51-45-5-13-65281-17513-10-16-18-0-11-27-21-41,29-23-24,0'
     );
-    curl.setHttpVersion(1);
+    // curl.setHttpVersion(1);
     curl.open('GET', 'https://tls.peet.ws/api/clean')
-    curl.setRequestHeader('user-Agent', 'chrome')
+    curl.setRequestHeader('user-Agent', USER_AGENT)
     await curl.send();
     console.log(curl.getResponseString());
-    /* {
-        const curl = new LibCurl();
-        curl.printInnerLogger()
-        curl.open('GET', 'https://curl.se/favicon.ico')
-        curl.setRequestHeader('user-Agent', 'chrome')
-        await curl.send();
-        console.log(curl.getResponseBody().length, curl.getResponseContentLength());
-    } */
-
-    // curl.open('GET', 'https://tls.peet.ws/api/clean')
-    // curl.setRequestHeader('user-Agent', 'chrome')
-    // await curl.send();
-    // console.log(curl.getResponseString());
+    curl.open('GET', 'https://tls.peet.ws/api/clean')
+    curl.setRequestHeader('user-Agent', USER_AGENT)
+    await curl.send();
+    console.log(curl.getResponseString());
+   
+    
     return
     // curl.open('GET', 'http://127.0.0.1:51053/unittest/getRawHeaders')
     // curl.setRequestHeader('user-Agent', 'chrome')

@@ -76,6 +76,7 @@ var LibCurlJA3Extension;
     LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_next_proto_neg"] = 13172] = "TLSEXT_TYPE_next_proto_neg";
     LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_channel_id"] = 30032] = "TLSEXT_TYPE_channel_id";
     LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_record_size_limit"] = 28] = "TLSEXT_TYPE_record_size_limit";
+    LibCurlJA3Extension[LibCurlJA3Extension["TLSEXT_TYPE_delegated_credentials"] = 34] = "TLSEXT_TYPE_delegated_credentials";
 })(LibCurlJA3Extension = exports.LibCurlJA3Extension || (exports.LibCurlJA3Extension = {}));
 var LibCurlJA3SupportGroup;
 (function (LibCurlJA3SupportGroup) {
@@ -118,6 +119,7 @@ const LibCurlBoringSSLExtensionPermutation = [
     LibCurlJA3Extension.TLSEXT_TYPE_delegated_credential,
     LibCurlJA3Extension.TLSEXT_TYPE_application_settings,
     LibCurlJA3Extension.TLSEXT_TYPE_record_size_limit,
+    LibCurlJA3Extension.TLSEXT_TYPE_pre_shared_key,
 ];
 class LibCurlError extends Error {
     constructor(e) {
@@ -287,9 +289,8 @@ class LibCurl {
             }
             return cipher;
         }).filter(Boolean);
-        LibCurlBoringSSLExtensionPermutation;
         const extensions = ja3Arr.at(2).split('-').filter((extension) => {
-            return !['21', '41'].includes(extension);
+            return extension != '21';
         }).map(e => parseInt(e));
         const extension_permutation = extensions.map((extension) => {
             const pos = LibCurlBoringSSLExtensionPermutation.indexOf(extension);
