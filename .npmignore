@@ -8,3 +8,4 @@
 /*.tgz
 /src/*.ts
 /tsconfig.json
+/static/*
