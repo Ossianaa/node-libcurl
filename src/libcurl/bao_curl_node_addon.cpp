@@ -268,7 +268,6 @@ Napi::Value BaoLibCurlWarp::getResponseContentLength(const Napi::CallbackInfo &i
 {
 	Napi::Env env = info.Env();
 	// size_t argsLen = info.Length();
-
 	return Napi::Number::New(env, this->m_curl.getResponseContentLength());
 }
 

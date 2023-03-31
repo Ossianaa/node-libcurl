@@ -311,7 +311,7 @@ const char *BaoCurl::getLastCurlCodeError()
 curl_off_t BaoCurl::getResponseContentLength()
 {
 	curl_off_t size;
-	CHECK_CURLOK(curl_easy_getinfo(this->m_pCURL, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &size));
+	CHECK_CURLOK(curl_easy_getinfo(this->m_pCURL, CURLINFO_SIZE_DOWNLOAD_T, &size));
 	return size;
 }
 
