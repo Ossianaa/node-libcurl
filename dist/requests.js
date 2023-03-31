@@ -38,6 +38,7 @@ const assignURLSearchParam = (target, source) => {
 class requests {
     option;
     needSetCookies;
+    ja3;
     constructor(option = {}) {
         this.option = { ...option };
         const { cookies, timeout, verbose, interface: interface_, ja3 } = option;
@@ -54,7 +55,8 @@ class requests {
         if (interface_) {
             curl.setDnsInterface(interface_);
         }
-        curl.setJA3Fingerprint(ja3 || (0, utils_1.libcurlRandomJA3Fingerprint)());
+        this.ja3 = ja3 || (0, utils_1.libcurlRandomJA3Fingerprint)();
+        curl.setJA3Fingerprint(this.ja3);
     }
     static session(option = {}) {
         return new requests(option);
@@ -134,6 +136,12 @@ class requests {
             domain: domain,
             path: path || "/",
         });
+    }
+    getJA3Fingerprint() {
+        return {
+            ja3: this.ja3,
+            ja3_hash: (0, utils_1.md5)(this.ja3),
+        };
     }
     async sendRequest(method, url, requestOpt) {
         const { instance: curl, redirect = false, proxy, httpVersion, cookies } = this.option;

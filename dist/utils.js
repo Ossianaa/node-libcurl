@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.libcurlRandomJA3Fingerprint = exports.libcurlSetCookies = exports.cookieOptFilter = exports.httpCookiesToArray = void 0;
+exports.md5 = exports.libcurlRandomJA3Fingerprint = exports.libcurlSetCookies = exports.cookieOptFilter = exports.httpCookiesToArray = void 0;
 const node_crypto_1 = __importDefault(require("node:crypto"));
 const httpCookiesToArray = (cookies) => {
     const stringBooleanToJsBoolean = (e) => {
@@ -93,4 +93,10 @@ const libcurlRandomJA3Fingerprint = () => {
     return `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${extensions.join('-')},29-23-24,0`;
 };
 exports.libcurlRandomJA3Fingerprint = libcurlRandomJA3Fingerprint;
+const md5 = (e) => {
+    const hasher = node_crypto_1.default.createHash('md5');
+    hasher.update(e);
+    return hasher.digest('hex');
+};
+exports.md5 = md5;
 //# sourceMappingURL=utils.js.map

@@ -51,6 +51,7 @@ interface requestsStaticOption extends Omit<requestsInitOption, 'body' | 'instan
 export declare class requests {
     private option;
     private needSetCookies;
+    private ja3;
     constructor(option?: requestsInitOption);
     static session(option?: requestsInitOption): requests;
     static get(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse>;
@@ -70,6 +71,10 @@ export declare class requests {
     getCookies(domain?: string, path?: string): string;
     getCookiesMap(domain?: string, path?: string): LibCurlCookiesAttr;
     deleteCookie(key: string, domain: string, path?: string): void;
+    getJA3Fingerprint(): {
+        ja3: string;
+        ja3_hash: string;
+    };
     private sendRequest;
     private static sendRequestStaic;
 }
