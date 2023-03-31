@@ -1,5 +1,5 @@
 import { LibCurl, LibCurlBodyInfo, LibCurlCookiesAttr, LibCurlCookiesInfo, LibCurlHeadersAttr, LibCurlHeadersInfo, LibCurlMethodInfo, LibCurlProxyInfo, LibCurlHttpVersionInfo, LibCurlURLInfo, LibCurlError, LibCurlJA3FingerPrintInfo } from "./libcurl"
-import { libcurlRandomJA3Fingerprint, libcurlSetCookies } from "./utils";
+import { libcurlRandomJA3Fingerprint, libcurlSetCookies, md5 } from "./utils";
 
 type requestsHttpVersionInfo = LibCurlHttpVersionInfo;
 type requestsHeadersInfo = LibCurlHeadersInfo;
@@ -109,6 +109,7 @@ const assignURLSearchParam = (target: URLSearchParams, source: URLSearchParams) 
 export class requests {
     private option: requestsInitOption;
     private needSetCookies: boolean;
+    private ja3: LibCurlJA3FingerPrintInfo;
     constructor(option: requestsInitOption = {}) {
         this.option = { ...option };
         const { cookies, timeout, verbose, interface: interface_, ja3 } = option;
@@ -126,7 +127,8 @@ export class requests {
         if (interface_) {
             curl.setDnsInterface(interface_);
         }
-        curl.setJA3Fingerprint(ja3 || libcurlRandomJA3Fingerprint());
+        this.ja3 = ja3 || libcurlRandomJA3Fingerprint();
+        curl.setJA3Fingerprint(this.ja3);
     }
 
     static session(option: requestsInitOption = {}): requests {
@@ -214,6 +216,13 @@ export class requests {
             domain: domain,
             path: path || "/",
         })
+    }
+
+    getJA3Fingerprint() {
+        return {
+            ja3: this.ja3,
+            ja3_hash: md5(this.ja3),
+        };
     }
 
     private async sendRequest(method: requestsMethodInfo, url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {

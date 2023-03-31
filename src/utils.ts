@@ -98,3 +98,9 @@ export const libcurlRandomJA3Fingerprint: () => string = () => {
     }
     return `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${extensions.join('-')},29-23-24,0`
 }
+
+export const md5 = (e:string) => {
+    const hasher = crypto.createHash('md5');
+    hasher.update(e);
+    return hasher.digest('hex');
+}
