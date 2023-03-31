@@ -1,5 +1,5 @@
 import { LibCurl, LibCurlCookieAttrArray, LibCurlCookiesInfo, LibCurlGetCookiesOption } from "./libcurl";
-import crypto from 'crypto'
+import crypto from 'node:crypto'
 
 export const httpCookiesToArray: (cookies: string) => LibCurlCookieAttrArray[] = (cookies) => {
     const stringBooleanToJsBoolean = (e: string) => {

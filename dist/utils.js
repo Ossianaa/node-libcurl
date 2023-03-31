@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.libcurlRandomJA3Fingerprint = exports.libcurlSetCookies = exports.cookieOptFilter = exports.httpCookiesToArray = void 0;
-const crypto_1 = __importDefault(require("crypto"));
+const node_crypto_1 = __importDefault(require("node:crypto"));
 const httpCookiesToArray = (cookies) => {
     const stringBooleanToJsBoolean = (e) => {
         switch (e) {
@@ -85,7 +85,7 @@ const libcurlSetCookies = (curl, cookies, domain) => {
 exports.libcurlSetCookies = libcurlSetCookies;
 const libcurlRandomJA3Fingerprint = () => {
     const extensions = '0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-21-41'.split('-');
-    const randomBytes = crypto_1.default.getRandomValues(new Uint32Array(extensions.length));
+    const randomBytes = node_crypto_1.default.getRandomValues(new Uint32Array(extensions.length));
     for (let i = randomBytes.length - 1; i >= 0; i--) {
         const pos = randomBytes[i] % (i + 1);
         [extensions[i], extensions[pos]] = [extensions[pos], extensions[i]];

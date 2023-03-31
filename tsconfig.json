@@ -9,7 +9,8 @@
     "rootDir": "src",
     "outDir": "dist",
     "typeRoots": [
-      "./typings"
+      "./typings",
+      "./node_modules/@types"
     ],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
