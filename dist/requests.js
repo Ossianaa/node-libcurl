@@ -144,8 +144,8 @@ class requests {
         };
     }
     async sendRequest(method, url, requestOpt) {
-        const { instance: curl, redirect = false, proxy, httpVersion, cookies } = this.option;
-        const { headers, data, json, params } = requestOpt || {};
+        const { instance: curl, redirect = false, proxy, httpVersion, cookies, timeout: timeoutOpt } = this.option;
+        const { headers, data, json, params, timeout } = requestOpt || {};
         if (data && json) {
             throw new libcurl_1.LibCurlError('both data and json exist');
         }
@@ -169,6 +169,12 @@ class requests {
         }
         if (proxy) {
             curl.setProxy(proxy);
+        }
+        if (timeout) {
+            curl.setTimeout(timeout, timeout);
+        }
+        else if (timeoutOpt) {
+            curl.setTimeout(timeoutOpt, timeoutOpt);
         }
         let hasContentType = false;
         if (headers && (data || json)) {

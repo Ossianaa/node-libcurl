@@ -45,6 +45,7 @@ interface requestsOption {
     params?: requestsParamsInfo;
     json?: object;
     data?: requestsBodyInfo;
+    timeout?: number;
 }
 interface requestsStaticOption extends Omit<requestsInitOption, 'body' | 'instance'>, requestsOption {
 }

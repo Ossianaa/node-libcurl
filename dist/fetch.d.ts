@@ -8,6 +8,7 @@ interface LibCurlRequestInfo {
     httpVersion?: LibCurlHttpVersionInfo;
     openInnerLog?: boolean;
     proxy?: LibCurlProxyInfo;
+    timeout?: number;
     interface?: LibCurlInterfaceInfo;
     instance?: LibCurl;
     ja3?: LibCurlJA3FingerPrintInfo;

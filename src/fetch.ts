@@ -10,6 +10,7 @@ interface LibCurlRequestInfo {
     httpVersion?: LibCurlHttpVersionInfo;
     openInnerLog?: boolean;
     proxy?: LibCurlProxyInfo;
+    timeout?: number;
     interface?: LibCurlInterfaceInfo;
     /**
      * 传入LibCurl实例可以做持久化连接
@@ -34,7 +35,7 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
     const curl = request.instance;
     const { method = "GET",
         headers, redirect = false, httpVersion = 0,
-        openInnerLog = false, proxy, body, cookies,
+        openInnerLog = false, proxy, body, cookies,timeout,
         interface: interface_, ja3,
     } = request;
     curl.open(method, url + '', true);
@@ -61,6 +62,9 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
     }
     if (proxy) {
         curl.setProxy(proxy);
+    }
+    if (timeout) {
+        curl.setTimeout(timeout,timeout);
     }
     curl.setJA3Fingerprint(ja3 || libcurlRandomJA3Fingerprint());
     await curl.send(body);

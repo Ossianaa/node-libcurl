@@ -91,6 +91,7 @@ interface requestsOption {
     params?: requestsParamsInfo;
     json?: object;
     data?: requestsBodyInfo;
+    timeout?: number;
 }
 
 
@@ -110,11 +111,11 @@ export class requests {
     private option: requestsInitOption;
     private needSetCookies: boolean;
     private ja3: LibCurlJA3FingerPrintInfo;
+
     constructor(option: requestsInitOption = {}) {
         this.option = { ...option };
         const { cookies, timeout, verbose, interface: interface_, ja3 } = option;
         const curl = this.option.instance ||= new LibCurl();
-
         if (cookies) {
             this.needSetCookies = !!cookies;
         }
@@ -226,8 +227,8 @@ export class requests {
     }
 
     private async sendRequest(method: requestsMethodInfo, url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        const { instance: curl, redirect = false, proxy, httpVersion, cookies } = this.option;
-        const { headers, data, json, params } = requestOpt || {};
+        const { instance: curl, redirect = false, proxy, httpVersion, cookies,timeout:timeoutOpt } = this.option;
+        const { headers, data, json, params, timeout } = requestOpt || {};
 
         if (data && json) {
             throw new LibCurlError('both data and json exist');
@@ -252,6 +253,11 @@ export class requests {
         }
         if (proxy) {
             curl.setProxy(proxy);
+        }
+        if (timeout) {
+            curl.setTimeout(timeout,timeout);
+        } else if (timeoutOpt) {
+            curl.setTimeout(timeoutOpt,timeoutOpt);
         }
         let hasContentType = false;
         if (headers && (data || json)) {
