@@ -114,7 +114,7 @@ export class requests {
 
     constructor(option: requestsInitOption = {}) {
         this.option = { ...option };
-        const { cookies, timeout, verbose, interface: interface_, ja3 } = option;
+        const { cookies, timeout, verbose,redirect = false, proxy, httpVersion, interface: interface_, ja3 } = option;
         const curl = this.option.instance ||= new LibCurl();
         if (cookies) {
             this.needSetCookies = !!cookies;
@@ -127,6 +127,16 @@ export class requests {
         }
         if (interface_) {
             curl.setDnsInterface(interface_);
+        }
+        if (typeof httpVersion != 'undefined') {
+            curl.setHttpVersion(httpVersion);
+        }
+        if (redirect) {
+            curl.setRedirect(true);
+        }
+
+        if (proxy) {
+            curl.setProxy(proxy);
         }
         this.ja3 = ja3 || libcurlRandomJA3Fingerprint();
         curl.setJA3Fingerprint(this.ja3);
@@ -227,7 +237,7 @@ export class requests {
     }
 
     private async sendRequest(method: requestsMethodInfo, url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        const { instance: curl, redirect = false, proxy, httpVersion, cookies,timeout:timeoutOpt } = this.option;
+        const { instance: curl,  cookies, timeout: timeoutOpt } = this.option;
         const { headers, data, json, params, timeout } = requestOpt || {};
 
         if (data && json) {
@@ -245,19 +255,11 @@ export class requests {
         if (headers) {
             curl.setRequestHeaders(headers);
         }
-        if (redirect) {
-            curl.setRedirect(true);
-        }
-        if (typeof httpVersion != 'undefined') {
-            curl.setHttpVersion(httpVersion);
-        }
-        if (proxy) {
-            curl.setProxy(proxy);
-        }
+        
         if (timeout) {
-            curl.setTimeout(timeout,timeout);
+            curl.setTimeout(timeout, timeout);
         } else if (timeoutOpt) {
-            curl.setTimeout(timeoutOpt,timeoutOpt);
+            curl.setTimeout(timeoutOpt, timeoutOpt);
         }
         let hasContentType = false;
         if (headers && (data || json)) {

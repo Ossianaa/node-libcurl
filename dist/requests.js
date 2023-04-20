@@ -41,7 +41,7 @@ class requests {
     ja3;
     constructor(option = {}) {
         this.option = { ...option };
-        const { cookies, timeout, verbose, interface: interface_, ja3 } = option;
+        const { cookies, timeout, verbose, redirect = false, proxy, httpVersion, interface: interface_, ja3 } = option;
         const curl = this.option.instance ||= new libcurl_1.LibCurl();
         if (cookies) {
             this.needSetCookies = !!cookies;
@@ -54,6 +54,15 @@ class requests {
         }
         if (interface_) {
             curl.setDnsInterface(interface_);
+        }
+        if (typeof httpVersion != 'undefined') {
+            curl.setHttpVersion(httpVersion);
+        }
+        if (redirect) {
+            curl.setRedirect(true);
+        }
+        if (proxy) {
+            curl.setProxy(proxy);
         }
         this.ja3 = ja3 || (0, utils_1.libcurlRandomJA3Fingerprint)();
         curl.setJA3Fingerprint(this.ja3);
@@ -144,7 +153,7 @@ class requests {
         };
     }
     async sendRequest(method, url, requestOpt) {
-        const { instance: curl, redirect = false, proxy, httpVersion, cookies, timeout: timeoutOpt } = this.option;
+        const { instance: curl, cookies, timeout: timeoutOpt } = this.option;
         const { headers, data, json, params, timeout } = requestOpt || {};
         if (data && json) {
             throw new libcurl_1.LibCurlError('both data and json exist');
@@ -160,15 +169,6 @@ class requests {
         curl.open(method, url_, true);
         if (headers) {
             curl.setRequestHeaders(headers);
-        }
-        if (redirect) {
-            curl.setRedirect(true);
-        }
-        if (typeof httpVersion != 'undefined') {
-            curl.setHttpVersion(httpVersion);
-        }
-        if (proxy) {
-            curl.setProxy(proxy);
         }
         if (timeout) {
             curl.setTimeout(timeout, timeout);
