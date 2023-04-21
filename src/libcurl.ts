@@ -500,7 +500,7 @@ export class LibCurl {
         this.m_isSending_ = true;
         if (this.m_isAsync_) {
             return new Promise((resolve, reject) => {
-                const callStack = new Error().stack.slice(10);
+                const callStack = '\n    ' + new Error().stack.slice(10);
                 const callback = (curlcode: number, curlcodeError: string) => {
                     this.m_isSending_ = false;
                     if (curlcode != 0) {
