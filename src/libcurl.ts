@@ -189,8 +189,11 @@ export type LibCurlProxyInfo = string | LibCurlProxyWithAccountInfo;
 export type LibCurlURLInfo = string | URL;
 
 export class LibCurlError extends Error {
-    constructor(e: string) {
-        super(e)
+    constructor(message: string, stack?: string) {
+        super(message)
+        if (stack) {
+            this.stack += stack;
+        }
     }
 }
 
@@ -430,7 +433,7 @@ export class LibCurl {
      */
     public setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo): void {
         this.checkSending();
-        const ja3Arr = ja3.replaceAll('\s','').split(',');
+        const ja3Arr = ja3.replaceAll('\s', '').split(',');
         if (ja3Arr.length != 5) {
             throw new LibCurlError('ja3 fingerprint error')
         }
@@ -497,10 +500,11 @@ export class LibCurl {
         this.m_isSending_ = true;
         if (this.m_isAsync_) {
             return new Promise((resolve, reject) => {
+                const callStack = new Error().stack.slice(10);
                 const callback = (curlcode: number, curlcodeError: string) => {
                     this.m_isSending_ = false;
                     if (curlcode != 0) {
-                        reject(new LibCurlError(curlcodeError));
+                        reject(new LibCurlError(curlcodeError, callStack));
                     } else {
                         resolve(void 0);
                     }

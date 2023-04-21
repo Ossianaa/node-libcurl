@@ -122,8 +122,11 @@ const LibCurlBoringSSLExtensionPermutation = [
     LibCurlJA3Extension.TLSEXT_TYPE_pre_shared_key,
 ];
 class LibCurlError extends Error {
-    constructor(e) {
-        super(e);
+    constructor(message, stack) {
+        super(message);
+        if (stack) {
+            this.stack += stack;
+        }
     }
 }
 exports.LibCurlError = LibCurlError;
@@ -312,10 +315,11 @@ class LibCurl {
         this.m_isSending_ = true;
         if (this.m_isAsync_) {
             return new Promise((resolve, reject) => {
+                const callStack = new Error().stack.slice(10);
                 const callback = (curlcode, curlcodeError) => {
                     this.m_isSending_ = false;
                     if (curlcode != 0) {
-                        reject(new LibCurlError(curlcodeError));
+                        reject(new LibCurlError(curlcodeError, callStack));
                     }
                     else {
                         resolve(void 0);
