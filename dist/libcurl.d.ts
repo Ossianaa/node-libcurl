@@ -162,7 +162,7 @@ export declare class LibCurl {
     setRedirect(isAllow: boolean): void;
     printInnerLogger(): void;
     setHttpVersion(version: LibCurlHttpVersionInfo): void;
-    setDnsInterface(network: LibCurlInterfaceInfo): void;
+    setInterface(network: LibCurlInterfaceInfo): void;
     setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo): void;
     send(body?: LibCurlBodyInfo): Promise<undefined> | undefined;
     getResponseBody(): Uint8Array;

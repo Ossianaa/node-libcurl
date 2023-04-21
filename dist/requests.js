@@ -53,7 +53,7 @@ class requests {
             curl.printInnerLogger();
         }
         if (interface_) {
-            curl.setDnsInterface(interface_);
+            curl.setInterface(interface_);
         }
         if (typeof httpVersion != 'undefined') {
             curl.setHttpVersion(httpVersion);

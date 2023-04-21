@@ -422,14 +422,14 @@ export class LibCurl {
      * 指定网卡访问
      * @param network 
      */
-    public setDnsInterface(network: LibCurlInterfaceInfo): void {
+    public setInterface(network: LibCurlInterfaceInfo): void {
         this.checkSending();
-        this.m_libCurl_impl_.setDnsInterface(network);
+        this.m_libCurl_impl_.setInterface(network);
     }
 
     /**
-     * 指定网卡访问
-     * @param network 
+     * 设置JA3指纹
+     * @param ja3 
      */
     public setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo): void {
         this.checkSending();

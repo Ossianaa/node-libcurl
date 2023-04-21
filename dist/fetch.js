@@ -18,7 +18,7 @@ async function fetch(url, request = {}) {
         curl.setHttpVersion(httpVersion);
     }
     if (interface_) {
-        curl.setDnsInterface(interface_);
+        curl.setInterface(interface_);
     }
     if (openInnerLog) {
         curl.printInnerLogger();

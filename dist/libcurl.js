@@ -262,9 +262,9 @@ class LibCurl {
         this.checkSending();
         this.m_libCurl_impl_.setHttpVersion(version);
     }
-    setDnsInterface(network) {
+    setInterface(network) {
         this.checkSending();
-        this.m_libCurl_impl_.setDnsInterface(network);
+        this.m_libCurl_impl_.setInterface(network);
     }
     setJA3Fingerprint(ja3) {
         this.checkSending();

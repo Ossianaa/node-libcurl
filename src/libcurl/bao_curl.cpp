@@ -277,6 +277,7 @@ void BaoCurl::setRedirect(bool isAllow)
 }
 void BaoCurl::printInnerLogger()
 {
+	this->m_verbose = true;
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_VERBOSE, 1L));
 }
 
@@ -315,9 +316,9 @@ curl_off_t BaoCurl::getResponseContentLength()
 	return size;
 }
 
-void BaoCurl::setDnsInterface(std::string &network)
+void BaoCurl::setInterface(std::string &network)
 {
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_DNS_INTERFACE, network.c_str()));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_INTERFACE, network.c_str()));
 }
 
 void BaoCurl::setJA3Fingerprint(
