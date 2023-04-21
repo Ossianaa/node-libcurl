@@ -21,7 +21,11 @@ void curlAsyncWorker::Execute()
 {
     this->m_baoCurlInstance.sendByte(this->m_sendBody, this->m_bodySize);
     this->m_lastCurlCode = this->m_baoCurlInstance.getLastCurlCode();
-    this->m_lastCurlCodeError = this->m_baoCurlInstance.getLastCurlCodeError();
+    if (this->m_lastCurlCode != 0)
+    {
+        this->m_lastCurlCodeError = this->m_baoCurlInstance.getLastCurlCodeError();
+    }
+    
 }
 
 // Executed when the async work is complete
