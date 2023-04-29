@@ -140,12 +140,11 @@ export declare class LibCurlError extends Error {
 }
 export declare class LibCurl {
     private m_libCurl_impl_;
-    private m_isAsync_;
     private m_isSending_;
     constructor();
     private static multiExecute;
     private checkSending;
-    open(method: LibCurlMethodInfo, url: LibCurlURLInfo, async?: boolean): void;
+    open(method: LibCurlMethodInfo, url: LibCurlURLInfo): void;
     setRequestHeader(key: string, value: string): void;
     setRequestHeaders(headers: LibCurlHeadersInfo): void;
     setProxy(proxyOpt: LibCurlProxyInfo): void;

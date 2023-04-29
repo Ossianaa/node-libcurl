@@ -205,7 +205,6 @@ export class LibCurlError extends Error {
 
 export class LibCurl {
     private m_libCurl_impl_: any;
-    private m_isAsync_: boolean;
     private m_isSending_: boolean;
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
@@ -221,10 +220,9 @@ export class LibCurl {
             throw new Error('the last request is sending, don\'t send one more request on one instance!')
         }
     }
-    public open(method: LibCurlMethodInfo, url: LibCurlURLInfo, async: boolean = true): void {
+    public open(method: LibCurlMethodInfo, url: LibCurlURLInfo): void {
         this.checkSending();
         this.m_libCurl_impl_.open(method, url + '');
-        this.m_isAsync_ = async;
     }
 
     public setRequestHeader(key: string, value: string): void {
@@ -507,46 +505,21 @@ export class LibCurl {
     public send(body?: LibCurlBodyInfo): Promise<undefined> | undefined {
         this.checkSending();
         this.m_isSending_ = true;
-        if (this.m_isAsync_) {
-            return this.m_libCurl_impl_.sendAsync(() => { }).finally(() => {
-                this.m_isSending_ = false;
-            })
-            /* .catch(() => {
-                debugger
-            }).finally(() => {
-                debugger
-            }); */
-
-            return new Promise((resolve, reject) => {
-                const callStack = '\n    ' + new Error().stack.slice(10);
-                const callback = (curlcode: number, curlcodeError: string) => {
-                    this.m_isSending_ = false;
-                    if (curlcode != 0) {
-                        reject(new LibCurlError(curlcodeError, callStack));
-                    } else {
-                        resolve(void 0);
-                    }
-                };
-                if (body) {
-                    if (body instanceof URLSearchParams) {
-                        this.m_libCurl_impl_.sendAsync(body + '', callback);
-                    } else {
-                        this.m_libCurl_impl_.sendAsync(body, callback);
-                    }
-                } else {
-                    this.m_libCurl_impl_.sendAsync(callback);
-                }
-            })
-        }
+        let promise;
         if (body) {
+            let sendData;
             if (body instanceof URLSearchParams) {
-                this.m_libCurl_impl_.send(body + '');
+                sendData = body + '';
             } else {
-                this.m_libCurl_impl_.send(body);
+                sendData = body;
             }
+            promise = this.m_libCurl_impl_.sendAsync(sendData)
         } else {
-            this.m_libCurl_impl_.send();
+            promise = this.m_libCurl_impl_.sendAsync();
         }
+        return promise.finally(() => {
+            this.m_isSending_ = false;
+        })
     }
 
     public getResponseBody(): Uint8Array {
