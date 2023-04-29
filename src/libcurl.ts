@@ -3,6 +3,12 @@ import { httpCookiesToArray, cookieOptFilter } from './utils';
 
 const { BaoLibCurl } = bindings('bao_curl_node_addon');
 
+BaoLibCurl.globalInit();
+
+process.on('exit', () => {
+    BaoLibCurl.globalCleanup();
+})
+
 export enum LibCurlHttpVersionInfo {
     http1_1,
     http2,
@@ -206,6 +212,9 @@ export class LibCurl {
         /* this.setJA3Fingerprint(
             '771,4866-4865-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,27-51-17513-35-45-16-13-0-10-23-18-43-11-5-65281-21-41,29-23-24,0'
         ) */
+    }
+    private static multiExecute() {
+
     }
     private checkSending(): void {
         if (this.m_isSending_) {
@@ -499,6 +508,15 @@ export class LibCurl {
         this.checkSending();
         this.m_isSending_ = true;
         if (this.m_isAsync_) {
+            return this.m_libCurl_impl_.sendAsync(() => { }).finally(() => {
+                this.m_isSending_ = false;
+            })
+            /* .catch(() => {
+                debugger
+            }).finally(() => {
+                debugger
+            }); */
+
             return new Promise((resolve, reject) => {
                 const callStack = '\n    ' + new Error().stack.slice(10);
                 const callback = (curlcode: number, curlcodeError: string) => {

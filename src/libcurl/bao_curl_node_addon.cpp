@@ -2,17 +2,22 @@
 #include <iostream>
 #include "bao_curl.h"
 #include "request_tls_utils.h"
-#include "curlAysncWorker.h"
 
 using namespace std;
+using namespace bao;
+
+BaoCurlMulti *g_curlMulti = nullptr;
 
 void initLibCurl()
 {
 	curl_global_init(CURL_GLOBAL_ALL);
+	g_curlMulti = new BaoCurlMulti();
+	g_curlMulti->startThread();
 }
 
 void uninitLibCurl()
 {
+	delete g_curlMulti;
 	curl_global_cleanup();
 }
 
@@ -48,6 +53,10 @@ private:
 	Napi::Value getResponseString(const Napi::CallbackInfo &info);
 	Napi::Value getResponseHeaders(const Napi::CallbackInfo &info);
 	Napi::Value getResponseContentLength(const Napi::CallbackInfo &info);
+
+	// static Napi::Value multiExecute(const Napi::CallbackInfo &info);
+	static Napi::Value globalInit(const Napi::CallbackInfo &info);
+	static Napi::Value globalCleanup(const Napi::CallbackInfo &info);
 };
 
 Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
@@ -67,6 +76,9 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
 		InstanceMethod<&BaoLibCurlWarp::getResponseContentLength>("getResponseContentLength", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::setInterface>("setInterface", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::setJA3Fingerprint>("setJA3Fingerprint", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		// StaticMethod<&BaoLibCurlWarp::multiExecute>("multiExecute", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		StaticMethod<&BaoLibCurlWarp::globalInit>("globalInit", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		StaticMethod<&BaoLibCurlWarp::globalCleanup>("globalCleanup", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		// StaticMethod<&BaoLibCurlWarp::CreateNewItem>("CreateNewItem", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 	};
 	Napi::Function func = DefineClass(env, "BaoLibCurl", methodList);
@@ -79,8 +91,6 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
 BaoLibCurlWarp::BaoLibCurlWarp(const Napi::CallbackInfo &info)
 	: Napi::ObjectWrap<BaoLibCurlWarp>(info)
 {
-	// cout << "BaoLibCurlWarp Initilaze" << endl;
-	// this->m_curl.printInnerLogger();
 }
 
 BaoLibCurlWarp::~BaoLibCurlWarp()
@@ -389,7 +399,7 @@ Napi::Value BaoLibCurlWarp::send(const Napi::CallbackInfo &info)
 	size_t argsLen = info.Length();
 	if (argsLen == 0 || info[0].IsNull())
 	{
-		this->m_curl.send();
+		this->m_curl.sendByte(nullptr, 0);
 		return env.Undefined();
 	}
 	REQUEST_TLS_METHOD_ARGS_TOO_MUCH_CHECK(env, "BaoCurl", "send", 1, argsLen)
@@ -403,12 +413,12 @@ Napi::Value BaoLibCurlWarp::send(const Napi::CallbackInfo &info)
 	if (info[0].IsString())
 	{
 		string str = info[0].As<Napi::String>().Utf8Value();
-		this->m_curl.send(str);
+		this->m_curl.sendByte(str.data(), str.size());
 		return env.Undefined();
 	}
 	vector<Napi::Value> argsList{info[0].As<Napi::Value>()};
 	string jsonStr = env.Global().Get("JSON").As<Napi::Object>().Get("stringify").As<Napi::Function>().Call(argsList).As<Napi::String>().Utf8Value();
-	this->m_curl.send(jsonStr);
+	this->m_curl.sendByte(jsonStr.data(), jsonStr.size());
 	return env.Undefined();
 }
 
@@ -419,19 +429,63 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 {
 	Napi::Env env = info.Env();
 	size_t argsLen = info.Length();
-	curlAsyncWorker *workerPtr;
-	if (argsLen == 1 || info[0].IsFunction())
+	Napi::Promise::Deferred deferred = Napi::Promise::Deferred::New(env);
+
+	Napi::ThreadSafeFunction *tsfn = new Napi::ThreadSafeFunction;
+	*tsfn = Napi::ThreadSafeFunction::New(
+		env,
+		Napi::Function::New(env, [env, deferred](const Napi::CallbackInfo &info)
+							{
+									bool success = info[0].As<Napi::Boolean>().Value();
+									 		if (success)
+											{
+												deferred.Resolve(env.Undefined());
+											} else {
+												Napi::String errMsg = info[1].As<Napi::String>();
+												deferred.Reject(errMsg);
+											} }),
+		"Test", 0, 1, [tsfn](Napi::Env env)
+		{ delete tsfn; });
+	auto &callbackPtr =
+		std::make_shared<std::function<void(bool, std::string)>>([tsfn](bool success, std::string errMsg)
+																 { tsfn->NonBlockingCall(
+																	   [tsfn, success, errMsg](Napi::Env env, Napi::Function jsCallback)
+																	   {
+																		   tsfn->Unref(env);
+																		   jsCallback.Call({Napi::Boolean::New(env, success), Napi::String::New(env, errMsg.c_str())});
+																	   }); });
+
+	this->m_curl.setOnPublishCallback(callbackPtr);
+
+	if (argsLen > 0)
 	{
-		workerPtr = new curlAsyncWorker(info[0].As<Napi::Function>(), this->m_curl, nullptr, 0);
-		workerPtr->Queue();
-		return env.Undefined();
+		if (info[0].IsTypedArray())
+		{
+			Napi::Uint8Array u8Arr = info[0].As<Napi::Uint8Array>();
+			this->m_curl.sendByte(reinterpret_cast<const char *>(u8Arr.Data()), u8Arr.ByteLength());
+		}
+		else if (info[0].IsString())
+		{
+			string str = info[0].As<Napi::String>().Utf8Value();
+			size_t strLen = str.size();
+			this->m_curl.sendByte(str.data(), strLen);
+		}
+		else
+		{
+			vector<Napi::Value> argsList{info[0].As<Napi::Value>()};
+			string jsonStr = env.Global().Get("JSON").As<Napi::Object>().Get("stringify").As<Napi::Function>().Call(argsList).As<Napi::String>().Utf8Value();
+			size_t strLen = jsonStr.size();
+			this->m_curl.sendByte(jsonStr.data(), strLen);
+		}
 	}
-	if (argsLen > 2)
+	else
 	{
-		REQUEST_TLS_METHOD_ARGS_TOO_MUCH_CHECK(env, "BaoCurl", "send", 2, argsLen)
+		this->m_curl.sendByte(nullptr, 0);
 	}
 
-	if (info[0].IsTypedArray())
+	g_curlMulti->pushQueue(this->m_curl);
+	return deferred.Promise();
+	/* if (info[0].IsTypedArray())
 	{
 		Napi::Uint8Array u8Arr = info[0].As<Napi::Uint8Array>();
 		workerPtr = new curlAsyncWorker(info[1].As<Napi::Function>(), this->m_curl, (const char *)u8Arr.Data(), u8Arr.ElementLength());
@@ -455,7 +509,7 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 	Napi::Uint8Array u8buffer = Napi::Uint8Array::New(env, strLen);
 	memcpy(u8buffer.Data(), jsonStr.c_str(), strLen);
 	workerPtr = new curlAsyncWorker(info[1].As<Napi::Function>(), this->m_curl, (const char *)u8buffer.Data(), u8buffer.ElementLength());
-	workerPtr->Queue();
+	workerPtr->Queue(); */
 	return env.Undefined();
 }
 
@@ -492,11 +546,23 @@ Napi::Value BaoLibCurlWarp::getResponseString(const Napi::CallbackInfo &info)
 	return Napi::String::New(env, this->m_curl.getResponseBody());
 }
 
+Napi::Value BaoLibCurlWarp::globalInit(const Napi::CallbackInfo &info)
+{
+	initLibCurl();
+	return info.Env().Undefined();
+}
+
+Napi::Value BaoLibCurlWarp::globalCleanup(const Napi::CallbackInfo &info)
+{
+	uninitLibCurl();
+	return info.Env().Undefined();
+}
+
 // Initialize native add-on
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
-	initLibCurl();
+
 	BaoLibCurlWarp::Init(env, exports);
 	return exports;
 }
-NODE_API_MODULE(requests_tls, Init)
+NODE_API_MODULE(bao_curl_node_addon, Init)

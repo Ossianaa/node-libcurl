@@ -7,6 +7,10 @@ exports.LibCurl = exports.LibCurlError = exports.LibCurlJA3EcPointFormat = expor
 const bindings_1 = __importDefault(require("bindings"));
 const utils_1 = require("./utils");
 const { BaoLibCurl } = (0, bindings_1.default)('bao_curl_node_addon');
+BaoLibCurl.globalInit();
+process.on('exit', () => {
+    BaoLibCurl.globalCleanup();
+});
 var LibCurlHttpVersionInfo;
 (function (LibCurlHttpVersionInfo) {
     LibCurlHttpVersionInfo[LibCurlHttpVersionInfo["http1_1"] = 0] = "http1_1";
@@ -136,6 +140,8 @@ class LibCurl {
     m_isSending_;
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
+    }
+    static multiExecute() {
     }
     checkSending() {
         if (this.m_isSending_) {
@@ -314,6 +320,9 @@ class LibCurl {
         this.checkSending();
         this.m_isSending_ = true;
         if (this.m_isAsync_) {
+            return this.m_libCurl_impl_.sendAsync(() => { }).finally(() => {
+                this.m_isSending_ = false;
+            });
             return new Promise((resolve, reject) => {
                 const callStack = '\n    ' + new Error().stack.slice(10);
                 const callback = (curlcode, curlcodeError) => {

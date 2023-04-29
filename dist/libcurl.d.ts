@@ -143,6 +143,7 @@ export declare class LibCurl {
     private m_isAsync_;
     private m_isSending_;
     constructor();
+    private static multiExecute;
     private checkSending;
     open(method: LibCurlMethodInfo, url: LibCurlURLInfo, async?: boolean): void;
     setRequestHeader(key: string, value: string): void;

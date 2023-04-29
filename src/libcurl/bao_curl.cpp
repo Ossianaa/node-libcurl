@@ -10,12 +10,21 @@
 		}                                                        \
 	}
 
-std::vector<std::string> TLS_SUPPORT_CIPHERS = {"4865", "4866", "4867", "49195", "49199", "49196", "49200", "52393", "52392", "49171", "49172", "156", "157", "47", "53", "158", "159", "51", "57", "10", "49324", "49328", "4868", "4869", "49326", "4865"};
+#define CHECK_CURLSHOK(e)                                          \
+	{                                                            \
+		CURLSHcode code = (e);                                     \
+		if (this->m_verbose && code != CURLcode::CURLE_OK)       \
+		{                                                        \
+			printf("CURL Error:%s\n", curl_share_strerror(code)); \
+		}                                                        \
+	}
 
-size_t write_func(void *ptr, size_t size, size_t nmemb, std::string &stream)
+NAMESPACE_BAO_START
+
+size_t write_func(void* ptr, size_t size, size_t nmemb, std::string& stream)
 {
 	const size_t resize = size * nmemb;
-	std::string html_data(reinterpret_cast<const char *>(ptr), size * nmemb);
+	std::string html_data(reinterpret_cast<const char*>(ptr), size * nmemb);
 	stream += html_data;
 	return resize;
 }
@@ -28,6 +37,11 @@ BaoCurl::BaoCurl()
 BaoCurl::~BaoCurl()
 {
 	assert(this->m_pCURL);
+	if (this->m_pHeaders)
+	{
+		curl_slist_free_all(this->m_pHeaders);
+		this->m_pHeaders = NULL;
+	}
 	curl_easy_cleanup(this->m_pCURL);
 }
 
@@ -35,6 +49,7 @@ void BaoCurl::init()
 {
 	this->m_pCURL = curl_easy_init();
 	assert(this->m_pCURL);
+	CHECK_CURLSHOK(curl_share_setopt(this->m_pCURL, CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_VERIFYPEER, 0L));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_VERIFYHOST, 0L));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_CIPHER_LIST, "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:DH-RSA-AES128-GCM-SHA256:AES128-SHA:AES256-SHA"));
@@ -42,10 +57,11 @@ void BaoCurl::init()
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_ACCEPT_ENCODING, ""));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIEFILE, NULL));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PRIVATE, this));
 	this->setTimeout(15, 15);
 }
 
-void BaoCurl::open(std::string &method, std::string &url)
+void BaoCurl::open(std::string& method, std::string& url)
 {
 	this->m_method = method;
 	this->m_stream.header = "";
@@ -70,17 +86,17 @@ void BaoCurl::open(std::string &method, std::string &url)
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_CUSTOMREQUEST, method.c_str()));
 }
 
-void BaoCurl::setRequestHeader(std::string &key, std::string &value)
+void BaoCurl::setRequestHeader(std::string& key, std::string& value)
 {
 	this->m_pHeaders = curl_slist_append(this->m_pHeaders, (key + ": " + value).c_str());
 }
 
-void BaoCurl::setRequestHeader(std::string &keyValue)
+void BaoCurl::setRequestHeader(std::string& keyValue)
 {
 	this->m_pHeaders = curl_slist_append(this->m_pHeaders, keyValue.c_str());
 }
 
-void BaoCurl::setRequestHeaders(std::string &header)
+void BaoCurl::setRequestHeaders(std::string& header)
 {
 	auto arr = StringSplit(header, "\n");
 	for (auto arr_b = arr.begin(); arr_b != arr.end(); ++arr_b)
@@ -94,14 +110,14 @@ void BaoCurl::setRequestHeaders(std::string &header)
 	}
 }
 
-void BaoCurl::setProxy(std::string &proxy)
+void BaoCurl::setProxy(std::string& proxy)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXY, proxy.c_str()));
 	this->m_bProxy = true;
 }
 
-void BaoCurl::setProxy(std::string &proxy, std::string &username,
-					   std::string &password)
+void BaoCurl::setProxy(std::string& proxy, std::string& username,
+	std::string& password)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXY, proxy.c_str()));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXYUSERPWD, (username + ":" + password).c_str()));
@@ -121,41 +137,7 @@ void BaoCurl::setTimeout(
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TIMEOUT, sendTime));
 }
 
-void BaoCurl::send()
-{
-	std::string empty = "";
-	BaoCurl::send(empty);
-}
-
-void BaoCurl::send(std::string &data)
-{
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTPHEADER, this->m_pHeaders));
-	if (this->m_bProxy)
-	{
-		if (this->m_bIsHttps)
-		{
-			CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTPPROXYTUNNEL, 1L));
-		}
-		else
-		{
-			CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXYTYPE, CURLPROXY_HTTP));
-		}
-	}
-	if (this->m_method == "POST" || this->m_method == "PUT" || this->m_method == "PATCH")
-	{
-		CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDS, data.c_str()));
-		CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDSIZE, data.size()));
-	}
-	else
-	{
-		CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_NOBODY, data.size()));
-	}
-	CHECK_CURLOK(curl_easy_perform(this->m_pCURL));
-	curl_slist_free_all(this->m_pHeaders);
-	this->m_pHeaders = NULL;
-}
-
-void BaoCurl::sendByte(const char *data, const int len)
+void BaoCurl::sendByte(const char* data, const int len)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTPHEADER, this->m_pHeaders));
 	if (this->m_bProxy)
@@ -175,9 +157,9 @@ void BaoCurl::sendByte(const char *data, const int len)
 		CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDS, data));
 		CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDSIZE, len));
 	}
-	CHECK_CURLOK(curl_easy_perform(this->m_pCURL));
+	/*CHECK_CURLOK(curl_easy_perform(this->m_pCURL));
 	curl_slist_free_all(this->m_pHeaders);
-	this->m_pHeaders = NULL;
+	this->m_pHeaders = NULL;*/
 }
 
 /* Hostname */
@@ -187,23 +169,23 @@ void BaoCurl::sendByte(const char *data, const int len)
 /* Expiry in epoch time format. 0 == Session */
 /* Name */
 /* Value */
-void BaoCurl::setCookie(std::string &key, std::string &value, std::string &domain, std::string &path)
+void BaoCurl::setCookie(std::string& key, std::string& value, std::string& domain, std::string& path)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("%s\tTRUE\t%s\tFALSE\t0\t%s\t%s", domain.c_str(), path.c_str(), key.c_str(), value.c_str()).c_str()));
 	// CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("Set-Cookie: %s=%s; domain=%s; path=%s;", key.c_str(), value.c_str(), domain.c_str(), path.c_str()).c_str()));
 }
 
-void BaoCurl::deleteCookie(std::string &key, std::string &domain, std::string &path)
+void BaoCurl::deleteCookie(std::string& key, std::string& domain, std::string& path)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("%s\tTURE\t%s\tFALSE\t1600000000\t%s\t%s", domain.c_str(), path.c_str(), key.c_str(), "").c_str()));
 }
 
 std::string BaoCurl::getCookies()
 {
-	struct curl_slist *cookies = NULL;
+	struct curl_slist* cookies = NULL;
 	std::string str;
 	CHECK_CURLOK(curl_easy_getinfo(this->m_pCURL, CURLINFO_COOKIELIST, &cookies));
-	struct curl_slist *cookiesOrign = cookies;
+	struct curl_slist* cookiesOrign = cookies;
 
 	if (!cookies)
 	{
@@ -219,12 +201,12 @@ std::string BaoCurl::getCookies()
 	return str;
 }
 
-std::string BaoCurl::getCookie(std::string &key, std::string &domain, std::string &path)
+std::string BaoCurl::getCookie(std::string& key, std::string& domain, std::string& path)
 {
-	struct curl_slist *cookies = NULL;
+	struct curl_slist* cookies = NULL;
 	std::string str = "";
 	CHECK_CURLOK(curl_easy_getinfo(this->m_pCURL, CURLINFO_COOKIELIST, &cookies));
-	struct curl_slist *cookiesOrign = cookies;
+	struct curl_slist* cookiesOrign = cookies;
 	if (!cookies)
 	{
 		return "";
@@ -304,7 +286,7 @@ unsigned int BaoCurl::getLastCurlCode()
 	return this->m_lastCode;
 }
 
-const char *BaoCurl::getLastCurlCodeError()
+const char* BaoCurl::getLastCurlCodeError()
 {
 	return curl_easy_strerror(this->m_lastCode);
 }
@@ -316,13 +298,13 @@ curl_off_t BaoCurl::getResponseContentLength()
 	return size;
 }
 
-void BaoCurl::setInterface(std::string &network)
+void BaoCurl::setInterface(std::string& network)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_INTERFACE, network.c_str()));
 }
 
 void BaoCurl::setJA3Fingerprint(
-	int tls_version, std::string &cipher, std::string &tls13_cipher, std::string &extensions, std::string &support_groups, int ec_point_formats)
+	int tls_version, std::string& cipher, std::string& tls13_cipher, std::string& extensions, std::string& support_groups, int ec_point_formats)
 {
 
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSLVERSION, CURL_SSLVERSION_MAX_TLSv1_0 | CURL_SSLVERSION_MAX_TLSv1_1 | CURL_SSLVERSION_MAX_TLSv1_2 | CURL_SSLVERSION_MAX_TLSv1_3));
@@ -341,6 +323,13 @@ void BaoCurl::setJA3Fingerprint(
 		tmp2[i] = i+1;
 	} */
 	// tmp2[25]=0;
-	
+
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION/* 10316 */, extensions.c_str()));
 }
+
+void BaoCurl::setOnPublishCallback(BaoCurlOnPublishCallback callback) {
+	this->m_publishCallback = callback;
+}
+
+
+NAMESPACE_BAO_END
