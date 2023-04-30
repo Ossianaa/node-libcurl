@@ -4,7 +4,6 @@
 #define NAMESPACE_BAO_START namespace bao {
 #define NAMESPACE_BAO_END }
 
-#include <napi.h>
 #include "curl/curl.h"
 #include "utils.h"
 
@@ -92,6 +91,8 @@ private:
 	CURLcode m_lastCode;
 	BaoCurlOnPublishCallback m_publishCallback = nullptr;
 	void init();
+
+	std::unique_ptr<const char[]> m_postdata;
 };
 
 class BaoCurlMulti {

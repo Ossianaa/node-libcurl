@@ -7,7 +7,7 @@ async function fetch(url, request = {}) {
     request.instance ||= new libcurl_1.LibCurl();
     const curl = request.instance;
     const { method = "GET", headers, redirect = false, httpVersion = 0, openInnerLog = false, proxy, body, cookies, timeout, interface: interface_, ja3, } = request;
-    curl.open(method, url + '', true);
+    curl.open(method, url + '');
     if (headers) {
         curl.setRequestHeaders(headers);
     }

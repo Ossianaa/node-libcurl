@@ -154,7 +154,10 @@ void BaoCurl::sendByte(const char* data, const int len)
 
 	if (this->m_method == "POST" || this->m_method == "PUT" || this->m_method == "PATCH")
 	{
-		CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDS, data));
+		m_postdata = std::unique_ptr<const char[]>(new char[len]);
+		memcpy((void *)m_postdata.get(), data, len);
+
+		CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDS, m_postdata.get()));
 		CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDSIZE, len));
 	}
 	/*CHECK_CURLOK(curl_easy_perform(this->m_pCURL));

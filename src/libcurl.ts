@@ -5,7 +5,7 @@ const { BaoLibCurl } = bindings('bao_curl_node_addon');
 
 BaoLibCurl.globalInit();
 
-process.on('exit', () => {
+process.on('exit', (e) => {
     BaoLibCurl.globalCleanup();
 })
 

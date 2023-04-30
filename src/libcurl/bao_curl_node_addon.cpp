@@ -390,37 +390,6 @@ Napi::Value BaoLibCurlWarp::setJA3Fingerprint(const Napi::CallbackInfo &info)
 	return env.Undefined();
 }
 
-/*
-	send()
-*/
-Napi::Value BaoLibCurlWarp::send(const Napi::CallbackInfo &info)
-{
-	Napi::Env env = info.Env();
-	size_t argsLen = info.Length();
-	if (argsLen == 0 || info[0].IsNull())
-	{
-		this->m_curl.sendByte(nullptr, 0);
-		return env.Undefined();
-	}
-	REQUEST_TLS_METHOD_ARGS_TOO_MUCH_CHECK(env, "BaoCurl", "send", 1, argsLen)
-	if (info[0].IsTypedArray())
-	{
-		Napi::Uint8Array u8Arr = info[0].As<Napi::Uint8Array>();
-		uint8_t *utf8Buffer = u8Arr.Data();
-		this->m_curl.sendByte(reinterpret_cast<const char *>(utf8Buffer), u8Arr.ByteLength());
-		return env.Undefined();
-	}
-	if (info[0].IsString())
-	{
-		string str = info[0].As<Napi::String>().Utf8Value();
-		this->m_curl.sendByte(str.data(), str.size());
-		return env.Undefined();
-	}
-	vector<Napi::Value> argsList{info[0].As<Napi::Value>()};
-	string jsonStr = env.Global().Get("JSON").As<Napi::Object>().Get("stringify").As<Napi::Function>().Call(argsList).As<Napi::String>().Utf8Value();
-	this->m_curl.sendByte(jsonStr.data(), jsonStr.size());
-	return env.Undefined();
-}
 
 /*
 	sendAsync()
@@ -468,14 +437,14 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 		{
 			string str = info[0].As<Napi::String>().Utf8Value();
 			size_t strLen = str.size();
-			this->m_curl.sendByte(str.data(), strLen);
+			this->m_curl.sendByte(str.c_str(), strLen);
 		}
 		else
 		{
 			vector<Napi::Value> argsList{info[0].As<Napi::Value>()};
 			string jsonStr = env.Global().Get("JSON").As<Napi::Object>().Get("stringify").As<Napi::Function>().Call(argsList).As<Napi::String>().Utf8Value();
 			size_t strLen = jsonStr.size();
-			this->m_curl.sendByte(jsonStr.data(), strLen);
+			this->m_curl.sendByte(jsonStr.c_str(), strLen);
 		}
 	}
 	else
