@@ -195,11 +195,8 @@ export type LibCurlProxyInfo = string | LibCurlProxyWithAccountInfo;
 export type LibCurlURLInfo = string | URL;
 
 export class LibCurlError extends Error {
-    constructor(message: string, stack?: string) {
-        super(message)
-        if (stack) {
-            this.stack += stack;
-        }
+    constructor(message: string) {
+        super(message);
     }
 }
 
@@ -517,7 +514,9 @@ export class LibCurl {
         } else {
             promise = this.m_libCurl_impl_.sendAsync();
         }
-        return promise.finally(() => {
+        return promise.catch((error: string) => {
+            throw new LibCurlError(error);
+        }).finally(() => {
             this.m_isSending_ = false;
         })
     }
