@@ -8,6 +8,9 @@
 #include <stdlib.h> 
 #include <time.h> 
 #include <memory>
+#include <mutex>
+#include <functional>
+#include <thread>
 
 std::vector<std::string> StringSplit(const std::string& str, const std::string& pattern);
 template<typename ... Args>

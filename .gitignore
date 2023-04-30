@@ -2,3 +2,4 @@
 /node_modules/*
 /lib/*
 /*.tgz
+/test/libcurl_test.js
