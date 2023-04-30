@@ -4,7 +4,7 @@
     {                                                              \
         CURLMcode code = (e);                                      \
         this->m_lastCode = code;                                   \
-        if (code != CURLMcode::CURLM_OK)                           \
+        if (code != CURLM_OK)                           \
         {                                                          \
             printf("CURLM Error:%s\n", curl_multi_strerror(code)); \
         }                                                          \
@@ -14,7 +14,7 @@ NAMESPACE_BAO_START
 BaoCurlMulti::BaoCurlMulti()
 {
     this->m_pCURLM = curl_multi_init();
-    CHECK_CURLMOK(curl_multi_setopt(this->m_pCURLM, CURLMOPT_PIPELINING));
+    CHECK_CURLMOK(curl_multi_setopt(this->m_pCURLM, CURLMOPT_PIPELINING, CURLPIPE_MULTIPLEX));
     this->m_bRunning = true;
 }
 

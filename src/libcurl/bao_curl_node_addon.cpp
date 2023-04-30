@@ -415,14 +415,15 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 											} }),
 		"Test", 0, 1, [tsfn](Napi::Env env)
 		{ delete tsfn; });
-	auto &callbackPtr =
-		std::make_shared<std::function<void(bool, std::string)>>([tsfn](bool success, std::string errMsg)
+		auto callback = [tsfn](bool success, std::string errMsg)
 																 { tsfn->NonBlockingCall(
 																	   [tsfn, success, errMsg](Napi::Env env, Napi::Function jsCallback)
 																	   {
 																		   tsfn->Unref(env);
 																		   jsCallback.Call({Napi::Boolean::New(env, success), Napi::String::New(env, errMsg.c_str())});
-																	   }); });
+																	   }); };
+	auto callbackPtr =
+		std::make_shared<std::function<void(bool, std::string)>>(std::move(callback));
 
 	this->m_curl.setOnPublishCallback(callbackPtr);
 

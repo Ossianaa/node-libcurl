@@ -13,7 +13,7 @@
 #define CHECK_CURLSHOK(e)                                          \
 	{                                                            \
 		CURLSHcode code = (e);                                     \
-		if (this->m_verbose && code != CURLcode::CURLE_OK)       \
+		if (this->m_verbose && code != CURLSHE_OK)       \
 		{                                                        \
 			printf("CURL Error:%s\n", curl_share_strerror(code)); \
 		}                                                        \
