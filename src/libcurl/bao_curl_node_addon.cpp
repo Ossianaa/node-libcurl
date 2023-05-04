@@ -390,7 +390,6 @@ Napi::Value BaoLibCurlWarp::setJA3Fingerprint(const Napi::CallbackInfo &info)
 	return env.Undefined();
 }
 
-
 /*
 	sendAsync()
 */
@@ -415,13 +414,13 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 											} }),
 		"Test", 0, 1, [tsfn](Napi::Env env)
 		{ delete tsfn; });
-		auto callback = [tsfn](bool success, std::string errMsg)
-																 { tsfn->NonBlockingCall(
-																	   [tsfn, success, errMsg](Napi::Env env, Napi::Function jsCallback)
-																	   {
-																		   tsfn->Unref(env);
-																		   jsCallback.Call({Napi::Boolean::New(env, success), Napi::String::New(env, errMsg.c_str())});
-																	   }); };
+	auto callback = [tsfn](bool success, std::string errMsg)
+	{ tsfn->NonBlockingCall(
+		  [tsfn, success, errMsg](Napi::Env env, Napi::Function jsCallback)
+		  {
+			  tsfn->Unref(env);
+			  jsCallback.Call({Napi::Boolean::New(env, success), Napi::String::New(env, errMsg.c_str())});
+		  }); };
 	auto callbackPtr =
 		std::make_shared<std::function<void(bool, std::string)>>(std::move(callback));
 
