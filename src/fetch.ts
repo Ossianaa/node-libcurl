@@ -38,7 +38,7 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
         openInnerLog = false, proxy, body, cookies,timeout,
         interface: interface_, ja3,
     } = request;
-    curl.open(method, url + '', true);
+    curl.open(method, url + '');
     if (headers) {
         curl.setRequestHeaders(headers);
     }

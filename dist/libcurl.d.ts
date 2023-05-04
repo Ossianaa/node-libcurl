@@ -136,7 +136,7 @@ export type LibCurlProxyWithAccountInfo = {
 export type LibCurlProxyInfo = string | LibCurlProxyWithAccountInfo;
 export type LibCurlURLInfo = string | URL;
 export declare class LibCurlError extends Error {
-    constructor(message: string, stack?: string);
+    constructor(message: string);
 }
 export declare class LibCurl {
     private m_libCurl_impl_;

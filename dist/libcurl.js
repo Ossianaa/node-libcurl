@@ -8,7 +8,7 @@ const bindings_1 = __importDefault(require("bindings"));
 const utils_1 = require("./utils");
 const { BaoLibCurl } = (0, bindings_1.default)('bao_curl_node_addon');
 BaoLibCurl.globalInit();
-process.on('exit', () => {
+process.on('exit', (e) => {
     BaoLibCurl.globalCleanup();
 });
 var LibCurlHttpVersionInfo;
@@ -126,11 +126,8 @@ const LibCurlBoringSSLExtensionPermutation = [
     LibCurlJA3Extension.TLSEXT_TYPE_pre_shared_key,
 ];
 class LibCurlError extends Error {
-    constructor(message, stack) {
+    constructor(message) {
         super(message);
-        if (stack) {
-            this.stack += stack;
-        }
     }
 }
 exports.LibCurlError = LibCurlError;
@@ -331,7 +328,9 @@ class LibCurl {
         else {
             promise = this.m_libCurl_impl_.sendAsync();
         }
-        return promise.finally(() => {
+        return promise.catch((error) => {
+            throw new LibCurlError(error);
+        }).finally(() => {
             this.m_isSending_ = false;
         });
     }
