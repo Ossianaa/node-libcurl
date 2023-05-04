@@ -27,6 +27,7 @@ var LibCurlJA3Cipher;
     LibCurlJA3Cipher[LibCurlJA3Cipher["DES-CBC3-SHA"] = 10] = "DES-CBC3-SHA";
     LibCurlJA3Cipher[LibCurlJA3Cipher["AES128-SHA"] = 47] = "AES128-SHA";
     LibCurlJA3Cipher[LibCurlJA3Cipher["AES256-SHA"] = 53] = "AES256-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["TLS_RSA_WITH_AES_128_CBC_SHA256"] = 61] = "TLS_RSA_WITH_AES_128_CBC_SHA256";
     LibCurlJA3Cipher[LibCurlJA3Cipher["PSK-AES128-CBC-SHA"] = 140] = "PSK-AES128-CBC-SHA";
     LibCurlJA3Cipher[LibCurlJA3Cipher["PSK-AES256-CBC-SHA"] = 141] = "PSK-AES256-CBC-SHA";
     LibCurlJA3Cipher[LibCurlJA3Cipher["AES128-GCM-SHA256"] = 156] = "AES128-GCM-SHA256";
@@ -34,10 +35,16 @@ var LibCurlJA3Cipher;
     LibCurlJA3Cipher[LibCurlJA3Cipher["TLS_AES_128_GCM_SHA256"] = 4865] = "TLS_AES_128_GCM_SHA256";
     LibCurlJA3Cipher[LibCurlJA3Cipher["TLS_AES_256_GCM_SHA384"] = 4866] = "TLS_AES_256_GCM_SHA384";
     LibCurlJA3Cipher[LibCurlJA3Cipher["TLS_CHACHA20_POLY1305_SHA256"] = 4867] = "TLS_CHACHA20_POLY1305_SHA256";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-ECDSA-DES-CBC3-SHA"] = 49160] = "ECDHE-ECDSA-DES-CBC3-SHA";
     LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-ECDSA-AES128-SHA"] = 49161] = "ECDHE-ECDSA-AES128-SHA";
     LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-ECDSA-AES256-SHA"] = 49162] = "ECDHE-ECDSA-AES256-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-RSA-DES-CBC3-SHA"] = 49170] = "ECDHE-RSA-DES-CBC3-SHA";
     LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-RSA-AES128-SHA"] = 49171] = "ECDHE-RSA-AES128-SHA";
     LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-RSA-AES256-SHA"] = 49172] = "ECDHE-RSA-AES256-SHA";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256"] = 49187] = "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384"] = 49188] = "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256"] = 49191] = "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256";
+    LibCurlJA3Cipher[LibCurlJA3Cipher["TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384"] = 49192] = "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384";
     LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-ECDSA-AES128-GCM-SHA256"] = 49195] = "ECDHE-ECDSA-AES128-GCM-SHA256";
     LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-ECDSA-AES256-GCM-SHA384"] = 49196] = "ECDHE-ECDSA-AES256-GCM-SHA384";
     LibCurlJA3Cipher[LibCurlJA3Cipher["ECDHE-RSA-AES128-GCM-SHA256"] = 49199] = "ECDHE-RSA-AES128-GCM-SHA256";
@@ -136,8 +143,6 @@ class LibCurl {
     m_isSending_;
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
-    }
-    static multiExecute() {
     }
     checkSending() {
         if (this.m_isSending_) {
@@ -284,7 +289,7 @@ class LibCurl {
                 throw new LibCurlError(`ja3 fingerprint cipher ${key} no support`);
             }
             if (cipher.startsWith('TLS_')) {
-                const pos = ['4865', '4866', '4867'].indexOf(key);
+                const pos = ['4865', '4866', '4867', '49187', '49188', '49191', '49192'].indexOf(key);
                 if (pos == -1) {
                     throw new LibCurlError(`ja3 fingerprint TLSv1.3 cipher ${key} no support`);
                 }

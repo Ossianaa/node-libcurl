@@ -64,6 +64,7 @@ export enum LibCurlJA3Cipher {
     'DES-CBC3-SHA' = 0x000A,
     'AES128-SHA' = 0x002F,
     'AES256-SHA' = 0x0035,
+    'TLS_RSA_WITH_AES_128_CBC_SHA256' = 0x003D,
     'PSK-AES128-CBC-SHA' = 0x008C,
     'PSK-AES256-CBC-SHA' = 0x008D,
     'AES128-GCM-SHA256' = 0x009C,
@@ -71,10 +72,16 @@ export enum LibCurlJA3Cipher {
     'TLS_AES_128_GCM_SHA256' = 0x1301,
     'TLS_AES_256_GCM_SHA384' = 0x1302,
     'TLS_CHACHA20_POLY1305_SHA256' = 0x1303,
+    'ECDHE-ECDSA-DES-CBC3-SHA' = 0xC008,
     'ECDHE-ECDSA-AES128-SHA' = 0xC009,
     'ECDHE-ECDSA-AES256-SHA' = 0xC00A,
+    'ECDHE-RSA-DES-CBC3-SHA' = 0xC012,
     'ECDHE-RSA-AES128-SHA' = 0xC013,
     'ECDHE-RSA-AES256-SHA' = 0xC014,
+    'TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256' = 0xC023,
+    'TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384' = 0xC024,
+    'TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256' = 0xC027,
+    'TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384' = 0xC028,
     'ECDHE-ECDSA-AES128-GCM-SHA256' = 0xC02B,
     'ECDHE-ECDSA-AES256-GCM-SHA384' = 0xC02C,
     'ECDHE-RSA-AES128-GCM-SHA256' = 0xC02F,
@@ -208,9 +215,6 @@ export class LibCurl {
         /* this.setJA3Fingerprint(
             '771,4866-4865-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,27-51-17513-35-45-16-13-0-10-23-18-43-11-5-65281-21-41,29-23-24,0'
         ) */
-    }
-    private static multiExecute() {
-
     }
     private checkSending(): void {
         if (this.m_isSending_) {
@@ -452,7 +456,7 @@ export class LibCurl {
                 throw new LibCurlError(`ja3 fingerprint cipher ${key} no support`)
             }
             if (cipher.startsWith('TLS_')) {
-                const pos = ['4865', '4866', '4867'].indexOf(key);
+                const pos = ['4865', '4866', '4867', '49187', '49188', '49191', '49192'].indexOf(key);
                 if (pos == -1) {
                     throw new LibCurlError(`ja3 fingerprint TLSv1.3 cipher ${key} no support`)
                 }
