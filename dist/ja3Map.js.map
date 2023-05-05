@@ -1,0 +1,1 @@
+{"version":3,"file":"ja3Map.js","sourceRoot":"","sources":["../src/ja3Map.ts"],"names":[],"mappings":";;;AAAa,QAAA,aAAa,GAAG;IACzB,MAAM,EAAE;QACJ,MAAM,EAAE,sKAAsK;KACjL;IACD,MAAM,EAAE;QACJ,cAAc,EAAE,2IAA2I;QAC3J,eAAe,EAAE,iJAAiJ;KACrK;IACD,OAAO,EAAE;QACL,OAAO,EAAE,kKAAkK;KAC9K;CACJ,CAAA"}
