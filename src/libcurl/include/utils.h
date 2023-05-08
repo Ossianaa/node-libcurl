@@ -11,6 +11,7 @@
 #include <mutex>
 #include <functional>
 #include <thread>
+#include <chrono>
 
 std::vector<std::string> StringSplit(const std::string& str, const std::string& pattern);
 template<typename ... Args>
