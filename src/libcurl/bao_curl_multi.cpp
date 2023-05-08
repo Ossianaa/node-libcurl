@@ -4,7 +4,7 @@
     {                                                              \
         CURLMcode code = (e);                                      \
         this->m_lastCode = code;                                   \
-        if (code != CURLM_OK)                           \
+        if (code != CURLM_OK)                                      \
         {                                                          \
             printf("CURLM Error:%s\n", curl_multi_strerror(code)); \
         }                                                          \
@@ -113,8 +113,8 @@ void BaoCurlMulti::startThread()
                         std::cout << "ptr is nullptr" << std::endl;
                     }
                 };
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             } while (running);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     };
     this->m_thread = std::thread(callback);
