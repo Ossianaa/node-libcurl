@@ -47,7 +47,16 @@ class requests {
                 this.needSetCookies = !!cookies;
                 break;
             case 'object':
-                (0, utils_1.libcurlSetCookies)(curl, cookies.value, (0, utils_1.getUriTopLevelHost)(cookies.uri));
+                if (cookies !== null) {
+                    if (cookies.value) {
+                        if (cookies.uri) {
+                            (0, utils_1.libcurlSetCookies)(curl, cookies.value, (0, utils_1.getUriTopLevelHost)(cookies.uri));
+                        }
+                        else {
+                            this.needSetCookies = !!cookies;
+                        }
+                    }
+                }
                 break;
             default:
                 break;

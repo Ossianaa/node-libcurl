@@ -129,7 +129,15 @@ export class requests {
                 this.needSetCookies = !!cookies;
                 break;
             case 'object':
-                libcurlSetCookies(curl, cookies.value, getUriTopLevelHost(cookies.uri));
+                if (cookies !== null) {
+                    if (cookies.value) {
+                        if (cookies.uri) {
+                            libcurlSetCookies(curl, cookies.value, getUriTopLevelHost(cookies.uri));
+                        } else {
+                            this.needSetCookies = !!cookies;
+                        }
+                    }
+                }
                 break;
             default:
                 break;
