@@ -38,13 +38,19 @@ const assignURLSearchParam = (target, source) => {
 class requests {
     option;
     needSetCookies;
-    ja3;
     constructor(option = {}) {
         this.option = { ...option };
         const { cookies, timeout, verbose, redirect = false, proxy, httpVersion, interface: interface_, ja3 } = option;
         const curl = this.option.instance ||= new libcurl_1.LibCurl();
-        if (cookies) {
-            this.needSetCookies = !!cookies;
+        switch (typeof cookies) {
+            case 'string':
+                this.needSetCookies = !!cookies;
+                break;
+            case 'object':
+                (0, utils_1.libcurlSetCookies)(curl, cookies.value, (0, utils_1.getUriTopLevelHost)(cookies.uri));
+                break;
+            default:
+                break;
         }
         if (timeout) {
             curl.setTimeout(timeout, timeout);
@@ -64,8 +70,6 @@ class requests {
         if (proxy) {
             curl.setProxy(proxy);
         }
-        this.ja3 = ja3 || (0, utils_1.libcurlRandomJA3Fingerprint)();
-        curl.setJA3Fingerprint(this.ja3);
     }
     static session(option = {}) {
         return new requests(option);
@@ -148,20 +152,20 @@ class requests {
     }
     getJA3Fingerprint() {
         return {
-            ja3: this.ja3,
-            ja3_hash: (0, utils_1.md5)(this.ja3),
+            ja3: this.option.ja3,
+            ja3_hash: (0, utils_1.md5)(this.option.ja3),
         };
     }
     async sendRequest(method, url, requestOpt) {
-        const { instance: curl, cookies, timeout: timeoutOpt } = this.option;
-        const { headers, data, json, params, timeout } = requestOpt || {};
+        const { instance: curl, cookies, timeout: timeoutOpt, ja3 } = this.option;
+        const { headers, data, json, params, timeout, interface: interface_, redirect, proxy, httpVersion } = requestOpt || {};
         if (data && json) {
             throw new libcurl_1.LibCurlError('both data and json exist');
         }
         const url_ = new URL(url);
         if (this.needSetCookies) {
             this.needSetCookies = false;
-            (0, utils_1.libcurlSetCookies)(curl, cookies, url_.hostname.split('.').slice(-2).join('.'));
+            (0, utils_1.libcurlSetCookies)(curl, cookies, (0, utils_1.getUriTopLevelHost)(url_));
         }
         if (params) {
             assignURLSearchParam(url_.searchParams, new URLSearchParams(params));
@@ -170,11 +174,49 @@ class requests {
         if (headers) {
             curl.setRequestHeaders(headers);
         }
-        if (timeout) {
+        if (typeof timeout == 'number') {
             curl.setTimeout(timeout, timeout);
         }
         else if (timeoutOpt) {
             curl.setTimeout(timeoutOpt, timeoutOpt);
+        }
+        if (typeof interface_ == 'string') {
+            curl.setInterface(interface_);
+        }
+        else {
+            if (this.option.interface) {
+                curl.setInterface(this.option.interface);
+            }
+        }
+        if (typeof redirect == 'boolean') {
+            curl.setRedirect(redirect);
+        }
+        else {
+            if (this.option.redirect) {
+                curl.setRedirect(this.option.redirect);
+            }
+        }
+        if (proxy) {
+            curl.setProxy(proxy);
+        }
+        else {
+            if (this.option.proxy) {
+                curl.setProxy(this.option.proxy);
+            }
+        }
+        if (typeof httpVersion == 'number') {
+            curl.setHttpVersion(httpVersion);
+        }
+        else {
+            if (this.option.httpVersion) {
+                curl.setHttpVersion(this.option.httpVersion);
+            }
+        }
+        if (ja3) {
+            curl.setJA3Fingerprint(ja3);
+        }
+        else {
+            curl.setJA3Fingerprint((0, utils_1.libcurlRandomJA3Fingerprint)());
         }
         let hasContentType = false;
         if (headers && (data || json)) {

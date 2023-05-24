@@ -3,6 +3,10 @@ type requestsHttpVersionInfo = LibCurlHttpVersionInfo;
 type requestsHeadersInfo = LibCurlHeadersInfo;
 type requestsBodyInfo = LibCurlBodyInfo;
 type requestsCookiesInfo = LibCurlCookiesInfo;
+type requestsCookiesInfoWithUri = {
+    value: requestsCookiesInfo;
+    uri: string;
+};
 type requestsProxyInfo = LibCurlProxyInfo;
 type requestsURLInfo = LibCurlURLInfo;
 interface requestsResponseImp {
@@ -27,7 +31,7 @@ declare class requestsResponse implements requestsResponseImp {
 }
 interface requestsInitOption {
     redirect?: boolean;
-    cookies?: requestsCookiesInfo;
+    cookies?: requestsCookiesInfo | requestsCookiesInfoWithUri;
     proxy?: requestsProxyInfo;
     body?: requestsBodyInfo;
     httpVersion?: requestsHttpVersionInfo;
@@ -46,13 +50,16 @@ interface requestsOption {
     json?: object;
     data?: requestsBodyInfo;
     timeout?: number;
+    redirect?: boolean;
+    proxy?: requestsProxyInfo;
+    interface?: string;
+    httpVersion?: requestsHttpVersionInfo;
 }
 interface requestsStaticOption extends Omit<requestsInitOption, 'body' | 'instance'>, requestsOption {
 }
 export declare class requests {
     private option;
     private needSetCookies;
-    private ja3;
     constructor(option?: requestsInitOption);
     static session(option?: requestsInitOption): requests;
     static get(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse>;

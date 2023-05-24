@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.md5 = exports.libcurlRandomJA3Fingerprint = exports.libcurlSetCookies = exports.cookieOptFilter = exports.httpCookiesToArray = void 0;
+exports.getUriTopLevelHost = exports.md5 = exports.libcurlRandomJA3Fingerprint = exports.libcurlSetCookies = exports.cookieOptFilter = exports.httpCookiesToArray = void 0;
 const node_crypto_1 = __importDefault(require("node:crypto"));
 const httpCookiesToArray = (cookies) => {
     const stringBooleanToJsBoolean = (e) => {
@@ -99,4 +99,13 @@ const md5 = (e) => {
     return hasher.digest('hex');
 };
 exports.md5 = md5;
+const getUriTopLevelHost = (uri) => {
+    const getHost = (e) => e.split('.').slice(-2).join('.');
+    let uri_ = uri + '';
+    if (uri_.startsWith('http')) {
+        return getHost(new URL(uri).hostname);
+    }
+    return getHost(uri_);
+};
+exports.getUriTopLevelHost = getUriTopLevelHost;
 //# sourceMappingURL=utils.js.map

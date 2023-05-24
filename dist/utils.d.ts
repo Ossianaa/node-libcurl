@@ -4,3 +4,4 @@ export declare const cookieOptFilter: (cookieOpt: LibCurlGetCookiesOption) => (e
 export declare const libcurlSetCookies: (curl: LibCurl, cookies: LibCurlCookiesInfo, domain: string) => void;
 export declare const libcurlRandomJA3Fingerprint: () => string;
 export declare const md5: (e: string) => string;
+export declare const getUriTopLevelHost: (uri: string | URL) => string;
