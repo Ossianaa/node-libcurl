@@ -116,9 +116,13 @@ const assignURLSearchParam = (target: URLSearchParams, source: URLSearchParams) 
     })
 }
 
+const ja3Md5Map: Map<string, string> = new Map();
+
 export class requests {
     private option: requestsInitOption;
     private needSetCookies: boolean;
+    private lastJa3: string;
+    private randomJa3: boolean;
 
     constructor(option: requestsInitOption = {}) {
         this.option = { ...option };
@@ -161,6 +165,13 @@ export class requests {
 
         if (proxy) {
             curl.setProxy(proxy);
+        }
+
+        if (ja3) {
+            this.lastJa3 = ja3
+            this.randomJa3 = false;
+        } else {
+            this.randomJa3 = true;
         }
 
     }
@@ -253,9 +264,24 @@ export class requests {
     }
 
     getJA3Fingerprint() {
+        if (!this.lastJa3) {
+            return {
+                ja3: '',
+                ja3_hash: '',
+            }
+        }
+        if (!ja3Md5Map.has(this.lastJa3)) {
+            const ja3_hash = md5(this.lastJa3);
+            ja3Md5Map.set(this.lastJa3, ja3_hash);
+            return {
+                ja3: this.lastJa3,
+                ja3_hash,
+            };
+        }
+        const ja3_hash = ja3Md5Map.get(this.lastJa3)
         return {
-            ja3: this.option.ja3,
-            ja3_hash: md5(this.option.ja3),
+            ja3: this.lastJa3,
+            ja3_hash,
         };
     }
 
@@ -315,7 +341,10 @@ export class requests {
         if (ja3) {
             curl.setJA3Fingerprint(ja3);
         } else {
-            curl.setJA3Fingerprint(libcurlRandomJA3Fingerprint());
+            if (this.randomJa3) {
+                this.lastJa3 = libcurlRandomJA3Fingerprint();
+                curl.setJA3Fingerprint(this.lastJa3);
+            }
         }
         let hasContentType = false;
         if (headers && (data || json)) {
