@@ -1,3 +1,4 @@
+#pragma once
 #include <string.h>
 #include <vector>
 #include <cstdarg>
@@ -12,6 +13,9 @@
 #include <functional>
 #include <thread>
 #include <chrono>
+
+#define NAMESPACE_BAO_START namespace bao {
+#define NAMESPACE_BAO_END }
 
 std::vector<std::string> StringSplit(const std::string& str, const std::string& pattern);
 template<typename ... Args>

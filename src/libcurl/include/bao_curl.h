@@ -1,8 +1,7 @@
 #pragma once
 #ifndef _CURL_H
 #define _CURL_H
-#define NAMESPACE_BAO_START namespace bao {
-#define NAMESPACE_BAO_END }
+
 
 #include "curl/curl.h"
 #include "utils.h"

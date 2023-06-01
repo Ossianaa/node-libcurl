@@ -1,6 +1,7 @@
 #include <napi.h>
 #include <iostream>
 #include "bao_curl.h"
+#include "bao_curl_websocket.h"
 #include "request_tls_utils.h"
 
 using namespace std;
@@ -21,6 +22,176 @@ void uninitLibCurl()
 	curl_global_cleanup();
 }
 
+class BaoLibCurlWebSocketWarp : public Napi::ObjectWrap<BaoLibCurlWebSocketWarp>
+{
+public:
+	static Napi::Function Init(Napi::Env env);
+	BaoLibCurlWebSocketWarp(const Napi::CallbackInfo &info);
+	~BaoLibCurlWebSocketWarp();
+
+private:
+	std::unique_ptr<BaoCurlWebSocket> m_ws = nullptr;
+	Napi::Value start(const Napi::CallbackInfo &info);
+	Napi::Value close(const Napi::CallbackInfo &info);
+	Napi::Value send(const Napi::CallbackInfo &info);
+	Napi::Value setOnOpen(const Napi::CallbackInfo &info);
+	Napi::Value setOnClose(const Napi::CallbackInfo &info);
+	Napi::Value setOnError(const Napi::CallbackInfo &info);
+	Napi::Value setOnMessage(const Napi::CallbackInfo &info);
+
+	Napi::ThreadSafeFunction _onopen;
+	Napi::ThreadSafeFunction _onclose;
+	Napi::ThreadSafeFunction _onerror;
+	Napi::ThreadSafeFunction _onmessage;
+};
+
+Napi::Function BaoLibCurlWebSocketWarp::Init(Napi::Env env)
+{
+	std::vector<Napi::ClassPropertyDescriptor<BaoLibCurlWebSocketWarp>> wsMethodList = {
+		InstanceMethod<&BaoLibCurlWebSocketWarp::start>("start", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWebSocketWarp::close>("close", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWebSocketWarp::send>("send", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWebSocketWarp::setOnOpen>("setOnOpen", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWebSocketWarp::setOnClose>("setOnClose", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWebSocketWarp::setOnError>("setOnError", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWebSocketWarp::setOnMessage>("setOnMessage", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+	};
+	Napi::Function ws = DefineClass(env, "WebSocket", wsMethodList);
+	auto constructor = Napi::Persistent(ws);
+	constructor.SuppressDestruct();
+	return ws;
+}
+
+BaoLibCurlWebSocketWarp::BaoLibCurlWebSocketWarp(const Napi::CallbackInfo &info)
+	: Napi::ObjectWrap<BaoLibCurlWebSocketWarp>(info)
+{
+	Napi::Env env = info.Env();
+	size_t argsLen = info.Length();
+	REQUEST_TLS_METHOD_ARGS_CHECK_NO_RETURN(env, "BaoCurl.WebSocket", "constructor", 2, argsLen)
+	REQUEST_TLS_METHOD_CHECK_NO_RETURN(env, info[0].IsString(), "argument 0 is not a string")
+	REQUEST_TLS_METHOD_CHECK_NO_RETURN(env, info[1].IsObject(), "argument 1 is not a object")
+
+	string uri = info[0].As<Napi::String>().Utf8Value();
+	Napi::Object option = info[1].As<Napi::Object>();
+	string protocol = option.Get("protocol").IsString() ? option.Get("protocol").As<Napi::String>().Utf8Value() : "";
+	this->m_ws = std::make_unique<BaoCurlWebSocket>(uri, protocol, [this]()
+		{ _onopen.NonBlockingCall([](Napi::Env env, Napi::Function jsCallback)
+								  { jsCallback.Call({}); }); },
+		[this]()
+		{
+			_onclose.NonBlockingCall([](Napi::Env env, Napi::Function jsCallback)
+									 { jsCallback.Call({}); });
+		},
+		[this](const std::string &err)
+		{
+			_onerror.NonBlockingCall([err](Napi::Env env, Napi::Function jsCallback)
+									 { jsCallback.Call({Napi::String::New(env, err.c_str())}); });
+		},
+		[this](const std::string &data)
+		{
+			_onmessage.NonBlockingCall([data](Napi::Env env, Napi::Function jsCallback)
+									   { jsCallback.Call({Napi::String::New(env, data.c_str())}); });
+		});
+}
+
+BaoLibCurlWebSocketWarp::~BaoLibCurlWebSocketWarp()
+{
+	this->m_ws->close();
+	this->m_ws = nullptr;
+}
+
+Napi::Value BaoLibCurlWebSocketWarp::start(const Napi::CallbackInfo &info)
+{
+	Napi::Env env = info.Env();
+	size_t argsLen = info.Length();
+	bool isSuccess = this->m_ws->start();
+	if (isSuccess)
+	{
+		// env.AddCleanupHook([this](BaoCurlWebSocket *ws)
+		// 				   {
+		// 	while(!ws->isClosed){
+		// 		std::cout << "wait close" << std::endl;
+		// 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		// 	} },
+		// 				   this->m_ws);
+	};
+	return Napi::Boolean::New(env, isSuccess);
+}
+
+Napi::Value BaoLibCurlWebSocketWarp::close(const Napi::CallbackInfo &info)
+{
+	Napi::Env env = info.Env();
+	size_t argsLen = info.Length();
+	this->m_ws->close();
+	// this->_onopen.Abort();
+	// this->_onclose.Abort();
+	// this->_onerror.Abort();
+	// this->_onmessage.Abort();
+	this->_onopen.Release();
+	this->_onclose.Release();
+	this->_onerror.Release();
+	this->_onmessage.Release();
+	return env.Undefined();
+}
+
+Napi::Value BaoLibCurlWebSocketWarp::send(const Napi::CallbackInfo &info)
+{
+	Napi::Env env = info.Env();
+	size_t argsLen = info.Length();
+	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl.WebSocket", "send", 1, argsLen)
+	REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
+	std::string data = info[0].As<Napi::String>().Utf8Value();
+	this->m_ws->send(data);
+	return env.Undefined();
+};
+Napi::Value BaoLibCurlWebSocketWarp::setOnOpen(const Napi::CallbackInfo &info)
+{
+	Napi::Env env = info.Env();
+	size_t argsLen = info.Length();
+	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl.WebSocket", "setOnOpen", 1, argsLen)
+	REQUEST_TLS_METHOD_CHECK(env, info[0].IsFunction(), "argument 0 is not a function")
+	_onopen = Napi::ThreadSafeFunction::New(
+		env,
+		info[0].As<Napi::Function>(),
+		"Test", 0, 1);
+	return env.Undefined();
+};
+Napi::Value BaoLibCurlWebSocketWarp::setOnClose(const Napi::CallbackInfo &info)
+{
+	Napi::Env env = info.Env();
+	size_t argsLen = info.Length();
+	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl.WebSocket", "setOnClose", 1, argsLen)
+	REQUEST_TLS_METHOD_CHECK(env, info[0].IsFunction(), "argument 0 is not a function")
+	_onclose = Napi::ThreadSafeFunction::New(
+		env,
+		info[0].As<Napi::Function>(),
+		"Test", 0, 1);
+	return env.Undefined();
+};
+Napi::Value BaoLibCurlWebSocketWarp::setOnError(const Napi::CallbackInfo &info)
+{
+	Napi::Env env = info.Env();
+	size_t argsLen = info.Length();
+	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl.WebSocket", "setOnError", 1, argsLen)
+	REQUEST_TLS_METHOD_CHECK(env, info[0].IsFunction(), "argument 0 is not a function")
+	_onerror = Napi::ThreadSafeFunction::New(
+		env,
+		info[0].As<Napi::Function>(),
+		"Test", 0, 1);
+	return env.Undefined();
+};
+Napi::Value BaoLibCurlWebSocketWarp::setOnMessage(const Napi::CallbackInfo &info)
+{
+	Napi::Env env = info.Env();
+	size_t argsLen = info.Length();
+	REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl.WebSocket", "setOnMessage", 1, argsLen)
+	REQUEST_TLS_METHOD_CHECK(env, info[0].IsFunction(), "argument 0 is not a function")
+	_onmessage = Napi::ThreadSafeFunction::New(
+		env,
+		info[0].As<Napi::Function>(),
+		"Test", 0, 1);
+	return env.Undefined();
+};
 class BaoLibCurlWarp : public Napi::ObjectWrap<BaoLibCurlWarp>
 {
 public:
@@ -47,7 +218,6 @@ private:
 	Napi::Value setHttpVersion(const Napi::CallbackInfo &info);
 	Napi::Value setInterface(const Napi::CallbackInfo &info);
 	Napi::Value setJA3Fingerprint(const Napi::CallbackInfo &info);
-	Napi::Value send(const Napi::CallbackInfo &info);
 	Napi::Value sendAsync(const Napi::CallbackInfo &info);
 	Napi::Value getResponseBody(const Napi::CallbackInfo &info);
 	Napi::Value getResponseString(const Napi::CallbackInfo &info);
@@ -61,14 +231,22 @@ private:
 
 Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
 {
-	// This method is used to hook the accessor and method callbacks
+
 	std::vector<Napi::ClassPropertyDescriptor<BaoLibCurlWarp>> methodList = {
 		InstanceMethod<&BaoLibCurlWarp::open>("open", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::setRequestHeader>("setRequestHeader", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-		InstanceMethod<&BaoLibCurlWarp::setRequestHeaders>("setRequestHeaders", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setProxy>("setProxy", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setTimeout>("setTimeout", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setCookie>("setCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::deleteCookie>("deleteCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getCookies>("getCookies", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getCookie>("getCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::getResponseStatus>("getResponseStatus", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::reset>("reset", static_cast<napi_property_attributes>(napi_writable | napi_configurable)), InstanceMethod<&BaoLibCurlWarp::setRedirect>("setRedirect", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::setRequestHeaders>("setRequestHeaders", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::setProxy>("setProxy", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::setTimeout>("setTimeout", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::setCookie>("setCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::deleteCookie>("deleteCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::getCookies>("getCookies", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::getCookie>("getCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::getResponseStatus>("getResponseStatus", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::reset>("reset", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::setRedirect>("setRedirect", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::printInnerLogger>("printInnerLogger", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::setHttpVersion>("setHttpVersion", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-		// InstanceMethod<&BaoLibCurlWarp::send>("send", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::getResponseBody>("getResponseBody", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::getResponseString>("getResponseString", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::sendAsync>("sendAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -76,10 +254,9 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
 		InstanceMethod<&BaoLibCurlWarp::getResponseContentLength>("getResponseContentLength", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::setInterface>("setInterface", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::setJA3Fingerprint>("setJA3Fingerprint", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-		// StaticMethod<&BaoLibCurlWarp::multiExecute>("multiExecute", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		StaticMethod<&BaoLibCurlWarp::globalInit>("globalInit", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		StaticMethod<&BaoLibCurlWarp::globalCleanup>("globalCleanup", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-		// StaticMethod<&BaoLibCurlWarp::CreateNewItem>("CreateNewItem", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		StaticValue("WebSocket", BaoLibCurlWebSocketWarp::Init(env)),
 	};
 	Napi::Function func = DefineClass(env, "BaoLibCurl", methodList);
 	auto constructor = Napi::Persistent(func);
@@ -399,8 +576,7 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 	size_t argsLen = info.Length();
 	Napi::Promise::Deferred deferred = Napi::Promise::Deferred::New(env);
 
-	Napi::ThreadSafeFunction *tsfn = new Napi::ThreadSafeFunction;
-	*tsfn = Napi::ThreadSafeFunction::New(
+	Napi::ThreadSafeFunction tsfn = Napi::ThreadSafeFunction::New(
 		env,
 		Napi::Function::New(env, [env, deferred](const Napi::CallbackInfo &info)
 							{
@@ -413,12 +589,13 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 												deferred.Reject(errMsg);
 											} }),
 		"Test", 0, 1, [tsfn](Napi::Env env)
-		{ delete tsfn; });
+		{  });
+	;
 	auto callback = [tsfn](bool success, std::string errMsg)
-	{ tsfn->NonBlockingCall(
+	{ tsfn.NonBlockingCall(
 		  [tsfn, success, errMsg](Napi::Env env, Napi::Function jsCallback)
 		  {
-			  tsfn->Unref(env);
+			  tsfn.Unref(env);
 			  jsCallback.Call({Napi::Boolean::New(env, success), Napi::String::New(env, errMsg.c_str())});
 		  }); };
 	auto callbackPtr =
@@ -504,7 +681,8 @@ Napi::Value BaoLibCurlWarp::globalCleanup(const Napi::CallbackInfo &info)
 // Initialize native add-on
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
-
+	env.AddCleanupHook([]
+					   { uninitLibCurl(); });
 	BaoLibCurlWarp::Init(env, exports);
 	return exports;
 }

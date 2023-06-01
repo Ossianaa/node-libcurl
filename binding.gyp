@@ -7,8 +7,9 @@
                 "./src/libcurl/bao_curl_node_addon.cpp",
                 "./src/libcurl/bao_curl.cpp",
                 "./src/libcurl/bao_curl_multi.cpp",
+                "./src/libcurl/bao_curl_websocket.cpp",
+                "./src/libcurl/bao_curl_websocket_frames.cpp",
                 "./src/libcurl/utils.cpp",
-                # "./src/libcurl/curlAsyncWorker.cpp",
             ],
             "include_dirs": [
                 "<!@(node -p \"require('node-addon-api').include\")",

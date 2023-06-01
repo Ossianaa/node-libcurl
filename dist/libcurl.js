@@ -7,10 +7,8 @@ exports.LibCurl = exports.LibCurlError = exports.LibCurlJA3EcPointFormat = expor
 const bindings_1 = __importDefault(require("bindings"));
 const utils_1 = require("./utils");
 const { BaoLibCurl } = (0, bindings_1.default)('bao_curl_node_addon');
+const { WebSocket } = BaoLibCurl;
 BaoLibCurl.globalInit();
-process.on('exit', (e) => {
-    BaoLibCurl.globalCleanup();
-});
 var LibCurlHttpVersionInfo;
 (function (LibCurlHttpVersionInfo) {
     LibCurlHttpVersionInfo[LibCurlHttpVersionInfo["http1_1"] = 0] = "http1_1";

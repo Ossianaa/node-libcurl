@@ -60,6 +60,8 @@ interface requestsStaticOption extends Omit<requestsInitOption, 'body' | 'instan
 export declare class requests {
     private option;
     private needSetCookies;
+    private lastJa3;
+    private randomJa3;
     constructor(option?: requestsInitOption);
     static session(option?: requestsInitOption): requests;
     static get(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse>;
