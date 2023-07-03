@@ -200,6 +200,9 @@ export class requests {
     static async head(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
         return requests.sendRequestStaic('HEAD', url, requestOpt);
     }
+    static async delete(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('DELETE', url, requestOpt);
+    }
     async get(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('GET', url, requestOpt);
     }
@@ -217,6 +220,9 @@ export class requests {
     }
     async head(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('HEAD', url, requestOpt);
+    }
+    async delete(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequest('DELETE', url, requestOpt);
     }
 
     setCookie(key: string, value: string, domain: string, path: string = '') {

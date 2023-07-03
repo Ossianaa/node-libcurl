@@ -111,6 +111,9 @@ class requests {
     static async head(url, requestOpt) {
         return requests.sendRequestStaic('HEAD', url, requestOpt);
     }
+    static async delete(url, requestOpt) {
+        return requests.sendRequestStaic('DELETE', url, requestOpt);
+    }
     async get(url, requestOpt) {
         return this.sendRequest('GET', url, requestOpt);
     }
@@ -128,6 +131,9 @@ class requests {
     }
     async head(url, requestOpt) {
         return this.sendRequest('HEAD', url, requestOpt);
+    }
+    async delete(url, requestOpt) {
+        return this.sendRequest('DELETE', url, requestOpt);
     }
     setCookie(key, value, domain, path = '') {
         this.option.instance.setCookie({

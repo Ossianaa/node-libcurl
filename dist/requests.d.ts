@@ -70,12 +70,14 @@ export declare class requests {
     static patch(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse>;
     static trace(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse>;
     static head(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse>;
+    static delete(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse>;
     get(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
     post(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
     put(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
     patch(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
     trace(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
     head(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
+    delete(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse>;
     setCookie(key: string, value: string, domain: string, path?: string): void;
     getCookie(key: string, domain?: string, path?: string): string;
     getCookies(domain?: string, path?: string): string;
