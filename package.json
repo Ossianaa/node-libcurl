@@ -11,7 +11,7 @@
     "install": "node-pre-gyp install --fallback-to-build --update-binary && node-gyp rebuild --update-binary",
     "rebuild": "node-gyp rebuild --update-binary",
     "unittest": "mocha",
-    "tsc": "tsc -p tsconfig.json"
+    "tsc": "tsc -watch"
   },
   "binary": {
     "module_name": "node-libcurl",
