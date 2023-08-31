@@ -154,6 +154,14 @@ class LibCurl {
             throw new Error('the last request is sending, don\'t send one more request on one instance!');
         }
     }
+    checkError() {
+        const code = this.m_libCurl_impl_.getLastCode();
+        if (code == 0) {
+            return;
+        }
+        const error = this.m_libCurl_impl_.getLastCodeError();
+        throw new Error(error);
+    }
     open(method, url) {
         this.checkSending();
         this.m_libCurl_impl_.open(method, url + '');
@@ -191,6 +199,7 @@ class LibCurl {
         else {
             this.m_libCurl_impl_.setProxy(proxyOpt.proxy, proxyOpt.username, proxyOpt.password);
         }
+        this.checkError();
     }
     setTimeout(connectTime, sendTime) {
         this.checkSending();

@@ -157,6 +157,7 @@ export declare class LibCurl {
     private m_isSending_;
     constructor();
     private checkSending;
+    private checkError;
     open(method: LibCurlMethodInfo, url: LibCurlURLInfo): void;
     setRequestHeader(key: string, value: string): void;
     setRequestHeaders(headers: LibCurlHeadersInfo): void;
