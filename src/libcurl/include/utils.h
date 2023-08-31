@@ -13,6 +13,7 @@
 #include <functional>
 #include <thread>
 #include <chrono>
+#include <algorithm>
 
 #define NAMESPACE_BAO_START namespace bao {
 #define NAMESPACE_BAO_END }

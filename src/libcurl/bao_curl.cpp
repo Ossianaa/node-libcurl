@@ -10,21 +10,21 @@
 		}                                                        \
 	}
 
-#define CHECK_CURLSHOK(e)                                          \
-	{                                                            \
-		CURLSHcode code = (e);                                     \
-		if (this->m_verbose && code != CURLSHE_OK)       \
-		{                                                        \
+#define CHECK_CURLSHOK(e)                                         \
+	{                                                             \
+		CURLSHcode code = (e);                                    \
+		if (this->m_verbose && code != CURLSHE_OK)                \
+		{                                                         \
 			printf("CURL Error:%s\n", curl_share_strerror(code)); \
-		}                                                        \
+		}                                                         \
 	}
 
 NAMESPACE_BAO_START
 
-size_t write_func(void* ptr, size_t size, size_t nmemb, std::string& stream)
+size_t write_func(void *ptr, size_t size, size_t nmemb, std::string &stream)
 {
 	const size_t resize = size * nmemb;
-	std::string html_data(reinterpret_cast<const char*>(ptr), size * nmemb);
+	std::string html_data(reinterpret_cast<const char *>(ptr), size * nmemb);
 	stream += html_data;
 	return resize;
 }
@@ -61,7 +61,7 @@ void BaoCurl::init()
 	this->setTimeout(15, 15);
 }
 
-void BaoCurl::open(std::string& method, std::string& url)
+void BaoCurl::open(std::string &method, std::string &url)
 {
 	this->m_method = method;
 	this->m_stream.header = "";
@@ -86,17 +86,23 @@ void BaoCurl::open(std::string& method, std::string& url)
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_CUSTOMREQUEST, method.c_str()));
 }
 
-void BaoCurl::setRequestHeader(std::string& key, std::string& value)
+void BaoCurl::setRequestHeader(std::string &key, std::string &value)
 {
+	std::string _key = key;
+	transform(_key.begin(), _key.end(), _key.begin(), ::tolower);
+	if (_key == "user-agent")
+	{
+		CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_USERAGENT, value.c_str()));
+	}
 	this->m_pHeaders = curl_slist_append(this->m_pHeaders, (key + ": " + value).c_str());
 }
 
-void BaoCurl::setRequestHeader(std::string& keyValue)
+void BaoCurl::setRequestHeader(std::string &keyValue)
 {
 	this->m_pHeaders = curl_slist_append(this->m_pHeaders, keyValue.c_str());
 }
 
-void BaoCurl::setRequestHeaders(std::string& header)
+void BaoCurl::setRequestHeaders(std::string &header)
 {
 	auto arr = StringSplit(header, "\n");
 	for (auto arr_b = arr.begin(); arr_b != arr.end(); ++arr_b)
@@ -106,18 +112,29 @@ void BaoCurl::setRequestHeaders(std::string& header)
 		{
 			continue;
 		}
-		setRequestHeader(arr_mem);
+		if (arr_mem.find(": ") != -1)
+		{
+			auto arr = StringSplit(arr_mem, ": ");
+			auto key = arr.at(0);
+			auto value = arr.at(1);
+			setRequestHeader(key, value);
+		}
+		else
+		{
+
+			setRequestHeader(arr_mem);
+		}
 	}
 }
 
-void BaoCurl::setProxy(std::string& proxy)
+void BaoCurl::setProxy(std::string &proxy)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXY, proxy.c_str()));
 	this->m_bProxy = true;
 }
 
-void BaoCurl::setProxy(std::string& proxy, std::string& username,
-	std::string& password)
+void BaoCurl::setProxy(std::string &proxy, std::string &username,
+					   std::string &password)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXY, proxy.c_str()));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXYUSERPWD, (username + ":" + password).c_str()));
@@ -137,7 +154,7 @@ void BaoCurl::setTimeout(
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TIMEOUT, sendTime));
 }
 
-void BaoCurl::sendByte(const char* data, const int len)
+void BaoCurl::sendByte(const char *data, const int len)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTPHEADER, this->m_pHeaders));
 	if (this->m_bProxy)
@@ -172,23 +189,23 @@ void BaoCurl::sendByte(const char* data, const int len)
 /* Expiry in epoch time format. 0 == Session */
 /* Name */
 /* Value */
-void BaoCurl::setCookie(std::string& key, std::string& value, std::string& domain, std::string& path)
+void BaoCurl::setCookie(std::string &key, std::string &value, std::string &domain, std::string &path)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("%s\tTRUE\t%s\tFALSE\t0\t%s\t%s", domain.c_str(), path.c_str(), key.c_str(), value.c_str()).c_str()));
 	// CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("Set-Cookie: %s=%s; domain=%s; path=%s;", key.c_str(), value.c_str(), domain.c_str(), path.c_str()).c_str()));
 }
 
-void BaoCurl::deleteCookie(std::string& key, std::string& domain, std::string& path)
+void BaoCurl::deleteCookie(std::string &key, std::string &domain, std::string &path)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("%s\tTURE\t%s\tFALSE\t1600000000\t%s\t%s", domain.c_str(), path.c_str(), key.c_str(), "").c_str()));
 }
 
 std::string BaoCurl::getCookies()
 {
-	struct curl_slist* cookies = NULL;
+	struct curl_slist *cookies = NULL;
 	std::string str;
 	CHECK_CURLOK(curl_easy_getinfo(this->m_pCURL, CURLINFO_COOKIELIST, &cookies));
-	struct curl_slist* cookiesOrign = cookies;
+	struct curl_slist *cookiesOrign = cookies;
 
 	if (!cookies)
 	{
@@ -204,12 +221,12 @@ std::string BaoCurl::getCookies()
 	return str;
 }
 
-std::string BaoCurl::getCookie(std::string& key, std::string& domain, std::string& path)
+std::string BaoCurl::getCookie(std::string &key, std::string &domain, std::string &path)
 {
-	struct curl_slist* cookies = NULL;
+	struct curl_slist *cookies = NULL;
 	std::string str = "";
 	CHECK_CURLOK(curl_easy_getinfo(this->m_pCURL, CURLINFO_COOKIELIST, &cookies));
-	struct curl_slist* cookiesOrign = cookies;
+	struct curl_slist *cookiesOrign = cookies;
 	if (!cookies)
 	{
 		return "";
@@ -289,7 +306,7 @@ unsigned int BaoCurl::getLastCurlCode()
 	return this->m_lastCode;
 }
 
-const char* BaoCurl::getLastCurlCodeError()
+const char *BaoCurl::getLastCurlCodeError()
 {
 	return curl_easy_strerror(this->m_lastCode);
 }
@@ -301,13 +318,13 @@ curl_off_t BaoCurl::getResponseContentLength()
 	return size;
 }
 
-void BaoCurl::setInterface(std::string& network)
+void BaoCurl::setInterface(std::string &network)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_INTERFACE, network.c_str()));
 }
 
 void BaoCurl::setJA3Fingerprint(
-	int tls_version, std::string& cipher, std::string& tls13_cipher, std::string& extensions, std::string& support_groups, int ec_point_formats)
+	int tls_version, std::string &cipher, std::string &tls13_cipher, std::string &extensions, std::string &support_groups, int ec_point_formats)
 {
 
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSLVERSION, CURL_SSLVERSION_MAX_TLSv1_0 | CURL_SSLVERSION_MAX_TLSv1_1 | CURL_SSLVERSION_MAX_TLSv1_2 | CURL_SSLVERSION_MAX_TLSv1_3));
@@ -327,12 +344,12 @@ void BaoCurl::setJA3Fingerprint(
 	} */
 	// tmp2[25]=0;
 
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION/* 10316 */, extensions.c_str()));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION /* 10316 */, extensions.c_str()));
 }
 
-void BaoCurl::setOnPublishCallback(BaoCurlOnPublishCallback callback) {
+void BaoCurl::setOnPublishCallback(BaoCurlOnPublishCallback callback)
+{
 	this->m_publishCallback = callback;
 }
-
 
 NAMESPACE_BAO_END

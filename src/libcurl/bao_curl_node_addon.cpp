@@ -223,6 +223,8 @@ private:
 	Napi::Value getResponseString(const Napi::CallbackInfo &info);
 	Napi::Value getResponseHeaders(const Napi::CallbackInfo &info);
 	Napi::Value getResponseContentLength(const Napi::CallbackInfo &info);
+	Napi::Value getLastCode(const Napi::CallbackInfo &info);
+	Napi::Value getLastCodeError(const Napi::CallbackInfo &info);
 
 	// static Napi::Value multiExecute(const Napi::CallbackInfo &info);
 	static Napi::Value globalInit(const Napi::CallbackInfo &info);
@@ -252,6 +254,8 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
 		InstanceMethod<&BaoLibCurlWarp::sendAsync>("sendAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::getResponseHeaders>("getResponseHeaders", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::getResponseContentLength>("getResponseContentLength", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::getLastCode>("getLastCode", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+		InstanceMethod<&BaoLibCurlWarp::getLastCodeError>("getLastCodeError", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::setInterface>("setInterface", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		InstanceMethod<&BaoLibCurlWarp::setJA3Fingerprint>("setJA3Fingerprint", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
 		StaticMethod<&BaoLibCurlWarp::globalInit>("globalInit", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -454,8 +458,23 @@ Napi::Value BaoLibCurlWarp::getResponseStatus(const Napi::CallbackInfo &info)
 Napi::Value BaoLibCurlWarp::getResponseContentLength(const Napi::CallbackInfo &info)
 {
 	Napi::Env env = info.Env();
-	// size_t argsLen = info.Length();
 	return Napi::Number::New(env, this->m_curl.getResponseContentLength());
+}
+/*
+	getLastCode()
+*/
+Napi::Value BaoLibCurlWarp::getLastCode(const Napi::CallbackInfo &info)
+{
+	Napi::Env env = info.Env();
+	return Napi::Number::New(env, this->m_curl.getLastCurlCode());
+}
+/*
+	getLastCodeError()
+*/
+Napi::Value BaoLibCurlWarp::getLastCodeError(const Napi::CallbackInfo &info)
+{
+	Napi::Env env = info.Env();
+	return Napi::String::New(env, this->m_curl.getLastCurlCodeError());
 }
 
 /*
