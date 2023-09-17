@@ -106,9 +106,14 @@ interface requestsOption {
 
 interface requestsStaticOption
     extends Omit<requestsInitOption, 'body' | 'instance'>, requestsOption {
-
 }
 
+type requestsRetryConditionCallback = (resp: requestsResponse) => boolean;
+
+interface requestsRetryOption {
+    retryNum: number;
+    conditionCallback: requestsRetryConditionCallback;
+}
 
 const assignURLSearchParam = (target: URLSearchParams, source: URLSearchParams) => {
     source.forEach((value, key) => {
@@ -123,6 +128,12 @@ export class requests {
     private needSetCookies: boolean;
     private lastJa3: string;
     private randomJa3: boolean;
+    protected retryOption: requestsRetryOption = {
+        retryNum: 0,
+        conditionCallback(resp) {
+            return resp.status != 200;
+        }
+    };
 
     constructor(option: requestsInitOption = {}) {
         this.option = { ...option };
@@ -306,9 +317,31 @@ export class requests {
     }
 
     private static async sendRequestStaic(method: requestsMethodInfo, url: requestsURLInfo, requestStaticOpt?: requestsStaticOption) {
-        return requests.session(requestStaticOpt as requestsInitOption).sendRequest(method, url, requestStaticOpt);
+        return requests.session(requestStaticOpt as requestsInitOption).sendRequestRetry(method, url, requestStaticOpt);
     }
 
+    private async sendRequestRetry(method: requestsMethodInfo, url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        let isSuccess = false, resp: requestsResponse;
+        const { retryNum, conditionCallback } = this.retryOption;
+        if (retryNum == 0) {
+            return this.sendRequest(method, url, requestOpt);
+        }
+        for (let i = 0; i <= retryNum; i++) {
+            try {
+                resp = await this.sendRequest(method, url, requestOpt);
+                isSuccess = conditionCallback(resp);
+                if (isSuccess) {
+                    break;
+                }
+            } catch (error) {
+            }
+
+        }
+        if (!isSuccess) {
+            throw new LibCurlError(`failed after ${retryNum} retries`);
+        }
+        return resp;
+    }
 
     //暂定6种常用方法
     public static async get(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
@@ -333,25 +366,25 @@ export class requests {
         return requests.sendRequestStaic('DELETE', url, requestOpt);
     }
     public async get(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('GET', url, requestOpt);
+        return this.sendRequestRetry('GET', url, requestOpt);
     }
     public async post(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('POST', url, requestOpt);
+        return this.sendRequestRetry('POST', url, requestOpt);
     }
     public async put(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('PUT', url, requestOpt);
+        return this.sendRequestRetry('PUT', url, requestOpt);
     }
     public async patch(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('PATCH', url, requestOpt);
+        return this.sendRequestRetry('PATCH', url, requestOpt);
     }
     public async trace(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('TRACE', url, requestOpt);
+        return this.sendRequestRetry('TRACE', url, requestOpt);
     }
     public async head(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('HEAD', url, requestOpt);
+        return this.sendRequestRetry('HEAD', url, requestOpt);
     }
     public async delete(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('DELETE', url, requestOpt);
+        return this.sendRequestRetry('DELETE', url, requestOpt);
     }
 
     public setCookie(key: string, value: string, domain: string, path: string = '') {
@@ -413,11 +446,31 @@ export class requests {
                 ja3_hash,
             };
         }
-        const ja3_hash = ja3Md5Map.get(this.lastJa3)
+        const ja3_hash = ja3Md5Map.get(this.lastJa3);
         return {
             ja3: this.lastJa3,
             ja3_hash,
         };
+    }
+
+    /**
+     * 
+     * @param retryNum 
+     * @param conditionCallback defaults to the status code 200 
+     * @returns 
+     */
+    public retry(retryNum: number, conditionCallback?: requestsRetryConditionCallback) {
+        if (retryNum < 0) {
+            throw new LibCurlError('retryNum must be great than 0');
+        }
+        const rq = new requests({
+            ...this.option,
+        });
+        rq.retryOption.retryNum = retryNum;
+        if (typeof conditionCallback == 'function') {
+            rq.retryOption.conditionCallback = conditionCallback;
+        }
+        return rq;
     }
 
 }
