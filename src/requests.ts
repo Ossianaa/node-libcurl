@@ -176,56 +176,56 @@ export class requests {
 
     }
 
-    static session(option: requestsInitOption = {}): requests {
+    public static session(option: requestsInitOption = {}): requests {
         return new requests(option);
     }
 
 
     //暂定6种常用方法
-    static async get(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+    public static async get(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
         return requests.sendRequestStaic('GET', url, requestOpt);
     }
-    static async post(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+    public static async post(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
         return requests.sendRequestStaic('POST', url, requestOpt);
     }
-    static async put(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+    public static async put(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
         return requests.sendRequestStaic('PUT', url, requestOpt);
     }
-    static async patch(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+    public static async patch(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
         return requests.sendRequestStaic('PATCH', url, requestOpt);
     }
-    static async trace(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+    public static async trace(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
         return requests.sendRequestStaic('TRACE', url, requestOpt);
     }
-    static async head(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+    public static async head(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
         return requests.sendRequestStaic('HEAD', url, requestOpt);
     }
-    static async delete(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+    public static async delete(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
         return requests.sendRequestStaic('DELETE', url, requestOpt);
     }
-    async get(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+    public async get(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('GET', url, requestOpt);
     }
-    async post(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+    public async post(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('POST', url, requestOpt);
     }
-    async put(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+    public async put(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('PUT', url, requestOpt);
     }
-    async patch(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+    public async patch(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('PATCH', url, requestOpt);
     }
-    async trace(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+    public async trace(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('TRACE', url, requestOpt);
     }
-    async head(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+    public async head(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('HEAD', url, requestOpt);
     }
-    async delete(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+    public async delete(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
         return this.sendRequest('DELETE', url, requestOpt);
     }
 
-    setCookie(key: string, value: string, domain: string, path: string = '') {
+    public setCookie(key: string, value: string, domain: string, path: string = '') {
         this.option.instance.setCookie({
             name: key,
             value,
@@ -234,7 +234,7 @@ export class requests {
         });
     }
 
-    getCookie(key: string, domain?: string, path?: string): string {
+    public getCookie(key: string, domain?: string, path?: string): string {
         return this.option.instance.getCookie({
             name: key,
             domain: domain || "",
@@ -242,7 +242,7 @@ export class requests {
         })
     }
 
-    getCookies(domain?: string, path?: string): string {
+    public getCookies(domain?: string, path?: string): string {
         if (arguments.length == 0) {
             return this.option.instance.getCookies();
         }
@@ -251,7 +251,7 @@ export class requests {
             path: path || "",
         })
     }
-    getCookiesMap(domain?: string, path?: string): LibCurlCookiesAttr {
+    public getCookiesMap(domain?: string, path?: string): LibCurlCookiesAttr {
         if (arguments.length == 0) {
             return this.option.instance.getCookiesMap();
         }
@@ -261,7 +261,7 @@ export class requests {
         })
     }
 
-    deleteCookie(key: string, domain: string, path?: string) {
+    public deleteCookie(key: string, domain: string, path?: string) {
         this.option.instance.deleteCookie({
             name: key,
             domain: domain,
@@ -269,7 +269,7 @@ export class requests {
         })
     }
 
-    getJA3Fingerprint() {
+    public getJA3Fingerprint() {
         if (!this.lastJa3) {
             return {
                 ja3: '',
