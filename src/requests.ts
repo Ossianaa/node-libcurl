@@ -181,116 +181,6 @@ export class requests {
     }
 
 
-    //暂定6种常用方法
-    public static async get(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('GET', url, requestOpt);
-    }
-    public static async post(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('POST', url, requestOpt);
-    }
-    public static async put(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('PUT', url, requestOpt);
-    }
-    public static async patch(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('PATCH', url, requestOpt);
-    }
-    public static async trace(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('TRACE', url, requestOpt);
-    }
-    public static async head(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('HEAD', url, requestOpt);
-    }
-    public static async delete(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('DELETE', url, requestOpt);
-    }
-    public async get(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('GET', url, requestOpt);
-    }
-    public async post(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('POST', url, requestOpt);
-    }
-    public async put(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('PUT', url, requestOpt);
-    }
-    public async patch(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('PATCH', url, requestOpt);
-    }
-    public async trace(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('TRACE', url, requestOpt);
-    }
-    public async head(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('HEAD', url, requestOpt);
-    }
-    public async delete(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('DELETE', url, requestOpt);
-    }
-
-    public setCookie(key: string, value: string, domain: string, path: string = '') {
-        this.option.instance.setCookie({
-            name: key,
-            value,
-            domain,
-            path,
-        });
-    }
-
-    public getCookie(key: string, domain?: string, path?: string): string {
-        return this.option.instance.getCookie({
-            name: key,
-            domain: domain || "",
-            path: path || "",
-        })
-    }
-
-    public getCookies(domain?: string, path?: string): string {
-        if (arguments.length == 0) {
-            return this.option.instance.getCookies();
-        }
-        return this.option.instance.getCookies({
-            domain: domain || "",
-            path: path || "",
-        })
-    }
-    public getCookiesMap(domain?: string, path?: string): LibCurlCookiesAttr {
-        if (arguments.length == 0) {
-            return this.option.instance.getCookiesMap();
-        }
-        return this.option.instance.getCookiesMap({
-            domain: domain || "",
-            path: path || "",
-        })
-    }
-
-    public deleteCookie(key: string, domain: string, path?: string) {
-        this.option.instance.deleteCookie({
-            name: key,
-            domain: domain,
-            path: path || "/",
-        })
-    }
-
-    public getJA3Fingerprint() {
-        if (!this.lastJa3) {
-            return {
-                ja3: '',
-                ja3_hash: '',
-            }
-        }
-        if (!ja3Md5Map.has(this.lastJa3)) {
-            const ja3_hash = md5(this.lastJa3);
-            ja3Md5Map.set(this.lastJa3, ja3_hash);
-            return {
-                ja3: this.lastJa3,
-                ja3_hash,
-            };
-        }
-        const ja3_hash = ja3Md5Map.get(this.lastJa3)
-        return {
-            ja3: this.lastJa3,
-            ja3_hash,
-        };
-    }
-
     private async sendRequest(method: requestsMethodInfo, url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
         const { instance: curl, cookies, timeout: timeoutOpt, ja3 } = this.option;
         const { headers, data, json, params, timeout, interface: interface_, redirect, proxy, httpVersion } = requestOpt || {};
@@ -418,4 +308,116 @@ export class requests {
     private static async sendRequestStaic(method: requestsMethodInfo, url: requestsURLInfo, requestStaticOpt?: requestsStaticOption) {
         return requests.session(requestStaticOpt as requestsInitOption).sendRequest(method, url, requestStaticOpt);
     }
+
+
+    //暂定6种常用方法
+    public static async get(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('GET', url, requestOpt);
+    }
+    public static async post(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('POST', url, requestOpt);
+    }
+    public static async put(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('PUT', url, requestOpt);
+    }
+    public static async patch(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('PATCH', url, requestOpt);
+    }
+    public static async trace(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('TRACE', url, requestOpt);
+    }
+    public static async head(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('HEAD', url, requestOpt);
+    }
+    public static async delete(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('DELETE', url, requestOpt);
+    }
+    public async get(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequest('GET', url, requestOpt);
+    }
+    public async post(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequest('POST', url, requestOpt);
+    }
+    public async put(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequest('PUT', url, requestOpt);
+    }
+    public async patch(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequest('PATCH', url, requestOpt);
+    }
+    public async trace(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequest('TRACE', url, requestOpt);
+    }
+    public async head(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequest('HEAD', url, requestOpt);
+    }
+    public async delete(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequest('DELETE', url, requestOpt);
+    }
+
+    public setCookie(key: string, value: string, domain: string, path: string = '') {
+        this.option.instance.setCookie({
+            name: key,
+            value,
+            domain,
+            path,
+        });
+    }
+
+    public getCookie(key: string, domain?: string, path?: string): string {
+        return this.option.instance.getCookie({
+            name: key,
+            domain: domain || "",
+            path: path || "",
+        })
+    }
+
+    public getCookies(domain?: string, path?: string): string {
+        if (arguments.length == 0) {
+            return this.option.instance.getCookies();
+        }
+        return this.option.instance.getCookies({
+            domain: domain || "",
+            path: path || "",
+        })
+    }
+    public getCookiesMap(domain?: string, path?: string): LibCurlCookiesAttr {
+        if (arguments.length == 0) {
+            return this.option.instance.getCookiesMap();
+        }
+        return this.option.instance.getCookiesMap({
+            domain: domain || "",
+            path: path || "",
+        })
+    }
+
+    public deleteCookie(key: string, domain: string, path?: string) {
+        this.option.instance.deleteCookie({
+            name: key,
+            domain: domain,
+            path: path || "/",
+        })
+    }
+
+    public getJA3Fingerprint() {
+        if (!this.lastJa3) {
+            return {
+                ja3: '',
+                ja3_hash: '',
+            }
+        }
+        if (!ja3Md5Map.has(this.lastJa3)) {
+            const ja3_hash = md5(this.lastJa3);
+            ja3Md5Map.set(this.lastJa3, ja3_hash);
+            return {
+                ja3: this.lastJa3,
+                ja3_hash,
+            };
+        }
+        const ja3_hash = ja3Md5Map.get(this.lastJa3)
+        return {
+            ja3: this.lastJa3,
+            ja3_hash,
+        };
+    }
+
 }
