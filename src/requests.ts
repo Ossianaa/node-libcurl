@@ -463,7 +463,7 @@ export class requests {
         if (retryNum < 0) {
             throw new LibCurlError('retryNum must be great than 0');
         }
-        const rq = new requests({
+        const rq = requests.session({
             ...this.option,
         });
         rq.retryOption.retryNum = retryNum;
