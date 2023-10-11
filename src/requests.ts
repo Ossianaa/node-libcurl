@@ -178,11 +178,9 @@ export class requests {
             curl.setProxy(proxy);
         }
 
+        this.randomJa3 = !!ja3;
         if (ja3) {
             this.lastJa3 = ja3
-            this.randomJa3 = false;
-        } else {
-            this.randomJa3 = true;
         }
 
     }
