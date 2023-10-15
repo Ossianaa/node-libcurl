@@ -9,7 +9,8 @@
     "rebuild": "node-gyp rebuild",
     "unittest": "mocha",
     "tsc": "tsc -watch",
-    "artifacts": "node ./scripts/artifacts.js"
+    "artifacts": "node ./scripts/artifacts.js",
+    "publish-binding": "node ./scripts/publish-binding.js"
   },
   "dependencies": {
     "bindings": "^1.5.0",
