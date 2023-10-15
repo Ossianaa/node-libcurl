@@ -2,16 +2,19 @@
   "name": "@ossiana/node-libcurl",
   "version": "1.1.4-alpha-3",
   "dependencies": {
-    "@mapbox/node-pre-gyp": "^1.0.10",
     "bindings": "^1.5.0",
     "node-addon-api": "^5.0.0"
   },
   "scripts": {
     "test": "node ./test/libcurl_test.js",
-    "build": "node-pre-gyp install --fallback-to-build && node-gyp rebuild",
+    "build": "node-gyp configure && node-gyp build",
     "rebuild": "node-gyp rebuild",
     "unittest": "mocha",
     "tsc": "tsc -watch"
+  },
+  "binary": {
+    "module_name": "node-libcurl",
+    "module_path": "./lib/{configuration}/{platform}-{arch}/"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
