@@ -1,38 +1,61 @@
 on:
   push:
     branches:
-    - test-ci
+      - test-ci
 
 jobs:
   Build:
     name: Build Package
-    strategy: 
+    strategy:
       fail-fast: false
       matrix:
         settings:
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-          
+          - host: windows-latest
+            target: x86_64-pc-windows-msvc
+          # - host: macos-latest
+          #   target: x86_64-apple-darwin
+
     runs-on: ${{ matrix.settings.host }}
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4.1.0
-    - name: Setup Node
-      uses: actions/setup-node@v3.8.1
-      with:
-       node-version: 18
-    - name: Setup Python
-      uses: actions/setup-python@v4.7.1
-      with:
-        python-version: '3.9'
-    - name: Install
-      run: npm install && npm run build
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: bindings-${{ matrix.settings.target }}
-        path: |
-          ./build/Release/*.node
-        if-no-files-found: error
-        
-    
+      - name: Checkout
+        uses: actions/checkout@v4.1.0
+      - name: Setup Node
+        uses: actions/setup-node@v3.8.1
+        with:
+          node-version: 18
+      - name: Setup Python
+        uses: actions/setup-python@v4.7.1
+        with:
+          python-version: "3.9"
+      - name: Install
+        run: npm install && npm run build
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: bindings-${{ matrix.settings.target }}
+          path: |
+            ./build/Release/*.node
+          if-no-files-found: error
+
+  Publish:
+    name: Publish artifact to npm
+    runs-on: ubuntu-latest
+    needs:
+      - Build
+    steps:
+      - uses: actions/checkout@v4.1.0
+      - name: Setup node
+        uses: actions/setup-node@v3.8.1
+        with:
+          node-version: 18
+      - name: Set release name
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+      - name: List binaries
+        run: ls -R artifacts
+        shell: bash
