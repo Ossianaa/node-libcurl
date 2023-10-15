@@ -6,7 +6,14 @@ on:
 jobs:
   Build:
     name: Build Package
-    runs-on: ubuntu-latest
+    strategy: 
+      fail-fast: false
+      matrix:
+        settings:
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          
+    runs-on: ${{ matrix.settings.host }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4.1.0
@@ -19,7 +26,13 @@ jobs:
       with:
         python-version: '3.9'
     - name: Install
-      run: npm install
-      
+      run: npm install && npm run build
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: bindings-${{ matrix.settings.target }}
+        path: |
+          /build/Release/*.node
+        if-no-files-found: error
         
     
