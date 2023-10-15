@@ -8,17 +8,10 @@
   },
   "scripts": {
     "test": "node ./test/libcurl_test.js",
-    "install": "node-pre-gyp install --fallback-to-build --update-binary && node-gyp rebuild --update-binary",
+    "build": "node-pre-gyp install --fallback-to-build --update-binary && node-gyp rebuild --update-binary",
     "rebuild": "node-gyp rebuild --update-binary",
     "unittest": "mocha",
     "tsc": "tsc -watch"
-  },
-  "binary": {
-    "module_name": "node-libcurl",
-    "module_path": "./lib/{configuration}/{platform}-{arch}/",
-    "package_name": "{module_name}-{platform}-{arch}-release.tar.gz",
-    "host": "https://ossianaa.github.io/static/github/release/node-libcurl/",
-    "remote_path": "v1.0.3"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
