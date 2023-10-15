@@ -1,6 +1,6 @@
 {
   "name": "@ossiana/node-libcurl",
-  "version": "1.1.4-alpha-3",
+  "version": "1.0.0-test-ci",
   "author": {
     "name": "Ossian"
   },
@@ -8,7 +8,8 @@
     "test": "node ./test/libcurl_test.js",
     "rebuild": "node-gyp rebuild",
     "unittest": "mocha",
-    "tsc": "tsc -watch"
+    "tsc": "tsc -watch",
+    "artifacts": "node ./scripts/artifacts.js"
   },
   "dependencies": {
     "bindings": "^1.5.0",

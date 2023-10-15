@@ -9,3 +9,4 @@
 /src/*.ts
 /tsconfig.json
 /static/*
+/artifact
