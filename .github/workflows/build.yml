@@ -32,7 +32,7 @@ jobs:
       with:
         name: bindings-${{ matrix.settings.target }}
         path: |
-          /build/Release/*.node
+          ./build/Release/*.node
         if-no-files-found: error
         
     
