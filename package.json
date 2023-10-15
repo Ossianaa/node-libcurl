@@ -12,10 +12,6 @@
     "unittest": "mocha",
     "tsc": "tsc -watch"
   },
-  "binary": {
-    "module_name": "node-libcurl",
-    "module_path": "./lib/{configuration}/{platform}-{arch}/"
-  },
   "devDependencies": {
     "@types/node": "^18.15.11",
     "body-parser": "^1.20.1",
