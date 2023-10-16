@@ -1,13 +1,8 @@
-import bindings from 'bindings'
+import * as assert from "assert";
+import { BaoLibCurl } from '../scripts/bindings';
 import { httpCookiesToArray, cookieOptFilter } from './utils';
 
-const { BaoLibCurl } = bindings('bao_curl_node_addon');
-const { WebSocket } = BaoLibCurl;
 BaoLibCurl.globalInit();
-
-// process.on('exit', (e) => {
-//     BaoLibCurl.globalCleanup();
-// })
 
 export enum LibCurlHttpVersionInfo {
     http1_1,

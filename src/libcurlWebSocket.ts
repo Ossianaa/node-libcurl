@@ -1,7 +1,5 @@
-import bindings from 'bindings'
+import { BaoLibCurl } from '../scripts/bindings';
 import { LibCurlURLInfo } from './libcurl';
-
-const { BaoLibCurl } = bindings('bao_curl_node_addon');
 
 interface LibCurlWebSocketOption {
     protocol?: string;
