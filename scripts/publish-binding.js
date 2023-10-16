@@ -7,5 +7,5 @@ const dirs = fs.readdirSync(artifactsDir);
 
 for (const bindingName of dirs) {
     const bindingDir = path.join('scripts/npm', bindingName);
-    execSync(`cd ${bindingDir} && npm publish --access public`);
+    execSync(`cd ${bindingDir} && npm publish --access public  --tag ci-alpha`);
 }

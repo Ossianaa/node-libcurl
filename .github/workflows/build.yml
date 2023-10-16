@@ -6,8 +6,8 @@ permissions:
 
 on:
   push:
-    branches:
-      - test-ci
+    tags:
+      - v*
 
 jobs:
   Build:

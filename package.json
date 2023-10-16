@@ -1,6 +1,6 @@
 {
   "name": "@ossiana/node-libcurl",
-  "version": "1.0.0-test-ci-3",
+  "version": "1.2.0",
   "author": {
     "name": "Ossian"
   },
@@ -40,6 +40,7 @@
     "readme.md",
     "scripts/postinstall.js"
   ],
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git@github.com/Ossianaa/node-libcurl.git"
