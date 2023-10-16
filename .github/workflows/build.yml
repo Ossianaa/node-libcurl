@@ -84,3 +84,13 @@ jobs:
         shell: bash
         run: |
           npm run publish-binding
+      - name: Convert to js
+        shell: bash
+        run: |
+          npm install --ignore-scripts
+          npx tsc
+      - name: Publish Core to npm
+        shell: bash
+        run: |
+          npm run publish
+

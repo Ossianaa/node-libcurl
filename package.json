@@ -1,6 +1,6 @@
 {
   "name": "@ossiana/node-libcurl",
-  "version": "1.0.0-test-ci-2",
+  "version": "1.0.0-test-ci-3",
   "author": {
     "name": "Ossian"
   },
@@ -10,7 +10,8 @@
     "unittest": "mocha",
     "tsc": "tsc -watch",
     "artifacts": "node ./scripts/artifacts.js",
-    "publish-binding": "node ./scripts/publish-binding.js"
+    "publish-binding": "node ./scripts/publish-binding.js",
+    "publish": "node ./scripts/publish.js"
   },
   "dependencies": {
     "bindings": "^1.5.0",
@@ -26,7 +27,19 @@
     "node-gyp": "^9.3.1",
     "typescript": "^4.9.4"
   },
+  "optionalDependencies": {
+    "@ossiana/node-libcurl-darwin-x64": "1.0.0",
+    "@ossiana/node-libcurl-win32-x64-msvc": "1.0.0",
+    "@ossiana/node-libcurl-linux-x64-gnu": "1.0.0"
+  },
   "main": "./dist/index.js",
+  "files": [
+    "dist/",
+    "LICENSE",
+    "package.json",
+    "readme.md",
+    "scripts/postinstall.js"
+  ],
   "repository": {
     "type": "git",
     "url": "git@github.com/Ossianaa/node-libcurl.git"
