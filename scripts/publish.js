@@ -9,4 +9,4 @@ for (const k in optionalDependencies) {
     optionalDependencies[k] = version;
 }
 fs.writeFileSync(packagePath, JSON.stringify(package, null, 2));
-execSync('npm publish --access public --tag ci-alpha');
+execSync('npm publish --access public');
