@@ -22,10 +22,6 @@ jobs:
           #   target: x86_64-pc-windows-msvc
           - host: macos-latest
             target: x86_64-apple-darwin
-            setup: |
-              clang -v
-              g++ -v
-              export CXX=/usr/local/g++
 
     runs-on: ${{ matrix.settings.host }}
     steps:
