@@ -23,6 +23,8 @@ jobs:
           - host: macos-latest
             target: x86_64-apple-darwin
             setup: |
+              clang -v
+              g++ -v
               export CXX=/usr/local/g++
 
     runs-on: ${{ matrix.settings.host }}
@@ -38,7 +40,7 @@ jobs:
         with:
           python-version: "3.9"
       - name: Setup env
-        if: ${{ matrix.setting.setup }}
+        if: ${{ matrix.settings.setup }}
         shell: bash
         run: ${{ matrix.settings.setup }}
       - name: Install
