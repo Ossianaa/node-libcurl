@@ -1,13 +1,7 @@
-import bindings from 'bindings'
+import { BaoLibCurl } from '../scripts/bindings';
 import { httpCookiesToArray, cookieOptFilter } from './utils';
 
-const { BaoLibCurl } = bindings('bao_curl_node_addon');
-
 BaoLibCurl.globalInit();
-
-process.on('exit', (e) => {
-    BaoLibCurl.globalCleanup();
-})
 
 export enum LibCurlHttpVersionInfo {
     http1_1,
@@ -229,6 +223,16 @@ export class LibCurl {
             throw new Error('the last request is sending, don\'t send one more request on one instance!')
         }
     }
+
+    private checkError(): void {
+        const code: number = this.m_libCurl_impl_.getLastCode();
+        if (code == 0) {
+            return;
+        }
+        const error: string = this.m_libCurl_impl_.getLastCodeError();
+        throw new Error(error);
+    }
+
     public open(method: LibCurlMethodInfo, url: LibCurlURLInfo): void {
         this.checkSending();
         this.m_libCurl_impl_.open(method, url + '');
@@ -275,6 +279,7 @@ export class LibCurl {
         } else {
             this.m_libCurl_impl_.setProxy(proxyOpt.proxy, proxyOpt.username, proxyOpt.password);
         }
+        this.checkError();
     }
 
     /**
@@ -398,6 +403,7 @@ export class LibCurl {
         this.checkSending();
         return this.m_libCurl_impl_.getResponseContentLength();
     }
+
 
     /**
      * 重置curl 包括之前的所有设定

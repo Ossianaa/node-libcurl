@@ -1,24 +1,21 @@
 {
   "name": "@ossiana/node-libcurl",
-  "version": "1.1.3-alpha-6",
-  "dependencies": {
-    "@mapbox/node-pre-gyp": "^1.0.10",
-    "bindings": "^1.5.0",
-    "node-addon-api": "^5.0.0"
+  "version": "1.2.1",
+  "author": {
+    "name": "Ossian"
   },
   "scripts": {
     "test": "node ./test/libcurl_test.js",
-    "install": "node-pre-gyp install --fallback-to-build --update-binary && node-gyp rebuild --update-binary",
-    "rebuild": "node-gyp rebuild --update-binary",
+    "rebuild": "node-gyp rebuild",
     "unittest": "mocha",
-    "tsc": "tsc -p tsconfig.json"
+    "tsc": "tsc -watch",
+    "artifacts": "node ./scripts/artifacts.js",
+    "publish-binding": "node ./scripts/publish-binding.js",
+    "publish-core": "node ./scripts/publish.js"
   },
-  "binary": {
-    "module_name": "node-libcurl",
-    "module_path": "./lib/{configuration}/{platform}-{arch}/",
-    "package_name": "{module_name}-{platform}-{arch}-release.tar.gz",
-    "host": "https://ossianaa.github.io/static/github/release/node-libcurl/",
-    "remote_path": "v1.0.3"
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "node-addon-api": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
@@ -30,10 +27,21 @@
     "node-gyp": "^9.3.1",
     "typescript": "^4.9.4"
   },
-  "author": {
-    "name": "Ossian"
+  "optionalDependencies": {
+    "@ossiana/node-libcurl-darwin-x64": "1.2.0",
+    "@ossiana/node-libcurl-win32-x64-msvc": "1.2.0",
+    "@ossiana/node-libcurl-linux-x64-gnu": "1.2.0"
   },
   "main": "./dist/index.js",
+  "files": [
+    "dist/",
+    "LICENSE",
+    "package.json",
+    "readme.md",
+    "scripts/postinstall.js",
+    "scripts/bindings.js"
+  ],
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git@github.com/Ossianaa/node-libcurl.git"

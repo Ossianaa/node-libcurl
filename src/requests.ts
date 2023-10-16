@@ -106,9 +106,14 @@ interface requestsOption {
 
 interface requestsStaticOption
     extends Omit<requestsInitOption, 'body' | 'instance'>, requestsOption {
-
 }
 
+type requestsRetryConditionCallback = (resp: requestsResponse) => boolean;
+
+interface requestsRetryOption {
+    retryNum: number;
+    conditionCallback: requestsRetryConditionCallback;
+}
 
 const assignURLSearchParam = (target: URLSearchParams, source: URLSearchParams) => {
     source.forEach((value, key) => {
@@ -123,6 +128,12 @@ export class requests {
     private needSetCookies: boolean;
     private lastJa3: string;
     private randomJa3: boolean;
+    protected retryOption: requestsRetryOption = {
+        retryNum: 0,
+        conditionCallback(resp) {
+            return resp.status != 200;
+        }
+    };
 
     constructor(option: requestsInitOption = {}) {
         this.option = { ...option };
@@ -167,123 +178,17 @@ export class requests {
             curl.setProxy(proxy);
         }
 
+        this.randomJa3 = !!ja3;
         if (ja3) {
             this.lastJa3 = ja3
-            this.randomJa3 = false;
-        } else {
-            this.randomJa3 = true;
         }
 
     }
 
-    static session(option: requestsInitOption = {}): requests {
+    public static session(option: requestsInitOption = {}): requests {
         return new requests(option);
     }
 
-
-    //暂定6种常用方法
-    static async get(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('GET', url, requestOpt);
-    }
-    static async post(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('POST', url, requestOpt);
-    }
-    static async put(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('PUT', url, requestOpt);
-    }
-    static async patch(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('PATCH', url, requestOpt);
-    }
-    static async trace(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('TRACE', url, requestOpt);
-    }
-    static async head(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('HEAD', url, requestOpt);
-    }
-    async get(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('GET', url, requestOpt);
-    }
-    async post(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('POST', url, requestOpt);
-    }
-    async put(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('PUT', url, requestOpt);
-    }
-    async patch(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('PATCH', url, requestOpt);
-    }
-    async trace(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('TRACE', url, requestOpt);
-    }
-    async head(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequest('HEAD', url, requestOpt);
-    }
-
-    setCookie(key: string, value: string, domain: string, path: string = '') {
-        this.option.instance.setCookie({
-            name: key,
-            value,
-            domain,
-            path,
-        });
-    }
-
-    getCookie(key: string, domain?: string, path?: string): string {
-        return this.option.instance.getCookie({
-            name: key,
-            domain: domain || "",
-            path: path || "",
-        })
-    }
-
-    getCookies(domain?: string, path?: string): string {
-        if (arguments.length == 0) {
-            return this.option.instance.getCookies();
-        }
-        return this.option.instance.getCookies({
-            domain: domain || "",
-            path: path || "",
-        })
-    }
-    getCookiesMap(domain?: string, path?: string): LibCurlCookiesAttr {
-        if (arguments.length == 0) {
-            return this.option.instance.getCookiesMap();
-        }
-        return this.option.instance.getCookiesMap({
-            domain: domain || "",
-            path: path || "",
-        })
-    }
-
-    deleteCookie(key: string, domain: string, path?: string) {
-        this.option.instance.deleteCookie({
-            name: key,
-            domain: domain,
-            path: path || "/",
-        })
-    }
-
-    getJA3Fingerprint() {
-        if (!this.lastJa3) {
-            return {
-                ja3: '',
-                ja3_hash: '',
-            }
-        }
-        if (!ja3Md5Map.has(this.lastJa3)) {
-            const ja3_hash = md5(this.lastJa3);
-            ja3Md5Map.set(this.lastJa3, ja3_hash);
-            return {
-                ja3: this.lastJa3,
-                ja3_hash,
-            };
-        }
-        const ja3_hash = ja3Md5Map.get(this.lastJa3)
-        return {
-            ja3: this.lastJa3,
-            ja3_hash,
-        };
-    }
 
     private async sendRequest(method: requestsMethodInfo, url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
         const { instance: curl, cookies, timeout: timeoutOpt, ja3 } = this.option;
@@ -410,6 +315,160 @@ export class requests {
     }
 
     private static async sendRequestStaic(method: requestsMethodInfo, url: requestsURLInfo, requestStaticOpt?: requestsStaticOption) {
-        return requests.session(requestStaticOpt as requestsInitOption).sendRequest(method, url, requestStaticOpt);
+        return requests.session(requestStaticOpt as requestsInitOption).sendRequestRetry(method, url, requestStaticOpt);
     }
+
+    private async sendRequestRetry(method: requestsMethodInfo, url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        let isSuccess = false, resp: requestsResponse;
+        const { retryNum, conditionCallback } = this.retryOption;
+        if (retryNum == 0) {
+            return this.sendRequest(method, url, requestOpt);
+        }
+        for (let i = 0; i <= retryNum; i++) {
+            try {
+                resp = await this.sendRequest(method, url, requestOpt);
+                isSuccess = conditionCallback(resp);
+                if (isSuccess) {
+                    break;
+                }
+            } catch (error) {
+            }
+
+        }
+        if (!isSuccess) {
+            throw new LibCurlError(`failed after ${retryNum} retries`);
+        }
+        return resp;
+    }
+
+    //暂定6种常用方法
+    public static async get(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('GET', url, requestOpt);
+    }
+    public static async post(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('POST', url, requestOpt);
+    }
+    public static async put(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('PUT', url, requestOpt);
+    }
+    public static async patch(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('PATCH', url, requestOpt);
+    }
+    public static async trace(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('TRACE', url, requestOpt);
+    }
+    public static async head(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('HEAD', url, requestOpt);
+    }
+    public static async delete(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
+        return requests.sendRequestStaic('DELETE', url, requestOpt);
+    }
+    public async get(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequestRetry('GET', url, requestOpt);
+    }
+    public async post(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequestRetry('POST', url, requestOpt);
+    }
+    public async put(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequestRetry('PUT', url, requestOpt);
+    }
+    public async patch(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequestRetry('PATCH', url, requestOpt);
+    }
+    public async trace(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequestRetry('TRACE', url, requestOpt);
+    }
+    public async head(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequestRetry('HEAD', url, requestOpt);
+    }
+    public async delete(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
+        return this.sendRequestRetry('DELETE', url, requestOpt);
+    }
+
+    public setCookie(key: string, value: string, domain: string, path: string = '') {
+        this.option.instance.setCookie({
+            name: key,
+            value,
+            domain,
+            path,
+        });
+    }
+
+    public getCookie(key: string, domain?: string, path?: string): string {
+        return this.option.instance.getCookie({
+            name: key,
+            domain: domain || "",
+            path: path || "",
+        })
+    }
+
+    public getCookies(domain?: string, path?: string): string {
+        if (arguments.length == 0) {
+            return this.option.instance.getCookies();
+        }
+        return this.option.instance.getCookies({
+            domain: domain || "",
+            path: path || "",
+        })
+    }
+    public getCookiesMap(domain?: string, path?: string): LibCurlCookiesAttr {
+        if (arguments.length == 0) {
+            return this.option.instance.getCookiesMap();
+        }
+        return this.option.instance.getCookiesMap({
+            domain: domain || "",
+            path: path || "",
+        })
+    }
+
+    public deleteCookie(key: string, domain: string, path?: string) {
+        this.option.instance.deleteCookie({
+            name: key,
+            domain: domain,
+            path: path || "/",
+        })
+    }
+
+    public getJA3Fingerprint() {
+        if (!this.lastJa3) {
+            return {
+                ja3: '',
+                ja3_hash: '',
+            }
+        }
+        if (!ja3Md5Map.has(this.lastJa3)) {
+            const ja3_hash = md5(this.lastJa3);
+            ja3Md5Map.set(this.lastJa3, ja3_hash);
+            return {
+                ja3: this.lastJa3,
+                ja3_hash,
+            };
+        }
+        const ja3_hash = ja3Md5Map.get(this.lastJa3);
+        return {
+            ja3: this.lastJa3,
+            ja3_hash,
+        };
+    }
+
+    /**
+     * 
+     * @param retryNum 
+     * @param conditionCallback defaults to the status code 200 
+     * @returns 
+     */
+    public retry(retryNum: number, conditionCallback?: requestsRetryConditionCallback) {
+        if (retryNum < 0) {
+            throw new LibCurlError('retryNum must be great than 0');
+        }
+        const rq = requests.session({
+            ...this.option,
+        });
+        rq.retryOption.retryNum = retryNum;
+        if (typeof conditionCallback == 'function') {
+            rq.retryOption.conditionCallback = conditionCallback;
+        }
+        return rq;
+    }
+
 }

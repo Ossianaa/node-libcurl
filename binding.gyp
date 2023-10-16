@@ -7,8 +7,9 @@
                 "./src/libcurl/bao_curl_node_addon.cpp",
                 "./src/libcurl/bao_curl.cpp",
                 "./src/libcurl/bao_curl_multi.cpp",
+                "./src/libcurl/bao_curl_websocket.cpp",
+                "./src/libcurl/bao_curl_websocket_frames.cpp",
                 "./src/libcurl/utils.cpp",
-                # "./src/libcurl/curlAsyncWorker.cpp",
             ],
             "include_dirs": [
                 "<!@(node -p \"require('node-addon-api').include\")",
@@ -62,8 +63,8 @@
 
                     "configurations": {
                         'Release': {
-                            'cflags': [ '-std=c++11', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch' ,'-fPIC'],
-                            'cflags_cc': [ '-std=c++11', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch','-fPIC']
+                            'cflags': [ '-std=c++14', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch' ,'-fPIC'],
+                            'cflags_cc': [ '-std=c++14', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch','-fPIC']
                         },
                         'Debug': {
                             
@@ -79,8 +80,8 @@
                 ['OS=="mac"', {
                     "configurations": {
                         'Release': {
-                            'cflags': [ '-std=c++11', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch' ,'-fPIC'],
-                            'cflags_cc': [ '-std=c++11', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch','-fPIC'],
+                            'cflags': [ '-std=c++14', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch' ,'-fPIC'],
+                            'cflags_cc': [ '-std=c++14', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch','-fPIC'],
                         },
                     },
                     'libraries': [
@@ -90,6 +91,11 @@
                         "<(module_root_dir)/lib/Release/darwin-x64/libssl.a",
                         "<(module_root_dir)/lib/Release/darwin-x64/libcrypto.a"
                     ],
+                    'xcode_settings': {
+                        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
+                        'CLANG_CXX_LIBRARY': 'libc++',
+                        'MACOSX_DEPLOYMENT_TARGET': '10.7',
+                    },
                 }]
             ],
         }

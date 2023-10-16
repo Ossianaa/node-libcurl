@@ -1,4 +1,4 @@
-import { LibCurl, LibCurlBodyInfo, LibCurlMethodInfo, LibCurlHeadersInfo, LibCurlCookiesAttr, LibCurlHttpVersionInfo, LibCurlProxyInfo, LibCurlCookiesInfo, LibCurlInterfaceInfo, LibCurlJA3FingerPrintInfo } from "./libcurl";
+import { LibCurl, LibCurlBodyInfo, LibCurlMethodInfo, LibCurlHeadersInfo, LibCurlCookiesAttr, LibCurlHttpVersionInfo, LibCurlProxyInfo, LibCurlCookiesInfo, LibCurlInterfaceInfo, LibCurlJA3FingerPrintInfo, LibCurlHeadersAttr } from "./libcurl";
 import { libcurlRandomJA3Fingerprint, libcurlSetCookies } from "./utils";
 
 interface LibCurlRequestInfo {
@@ -25,7 +25,7 @@ interface LibCurlResponseInfo {
     arraybuffer: () => Promise<ArrayBuffer>;
     text: () => Promise<string>;
     json: () => Promise<object>;
-    headers: () => Promise<string>;
+    headers: () => Promise<LibCurlHeadersAttr>;
     cookies: () => Promise<string>;
     cookiesMap: () => Promise<LibCurlCookiesAttr>;
 }
@@ -74,7 +74,7 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
         arraybuffer: async () => curl.getResponseBody().buffer,
         text: async () => curl.getResponseString(),
         json: async () => curl.getResponseJson(),
-        headers: async () => curl.getResponseHeaders(),
+        headers: async () => curl.getResponseHeadersMap(),
         cookies: async () => curl.getCookies(),
         cookiesMap: async () => curl.getCookiesMap(),
     } as LibCurlResponseInfo;

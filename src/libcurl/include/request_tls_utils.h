@@ -1,3 +1,4 @@
+#pragma once
 #define REQUEST_TLS_METHOD_THROW(env,className,methodName,reason) {\
     Napi::TypeError::New(env,StringFormat("Failed to execute '%s' on '%s': %s",methodName,className,reason)).ThrowAsJavaScriptException();\
     return (env).Undefined();\
@@ -26,5 +27,17 @@
     if (!(condition)){\
         Napi::TypeError::New(env,message).ThrowAsJavaScriptException();\
         return (env).Undefined();\
+	}\
+}
+
+#define REQUEST_TLS_METHOD_ARGS_CHECK_NO_RETURN(env,className,methodName,needLen,getLen) {\
+    if (getLen !=  needLen){\
+        Napi::TypeError::New(env,StringFormat("Failed to execute '%s' on '%s': %d arguments required, but only %d present.",methodName,className,needLen,getLen)).ThrowAsJavaScriptException();\
+	}\
+}
+
+#define REQUEST_TLS_METHOD_CHECK_NO_RETURN(env,condition,message) {\
+    if (!(condition)){\
+        Napi::TypeError::New(env,message).ThrowAsJavaScriptException();\
 	}\
 }

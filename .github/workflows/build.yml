@@ -1,0 +1,96 @@
+name: Publish
+
+permissions:
+  contents: write
+  id-token: write
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  Build:
+    name: Build Package
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - host: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - host: windows-latest
+            target: x86_64-pc-windows-msvc
+          - host: macos-latest
+            target: x86_64-apple-darwin
+
+    runs-on: ${{ matrix.settings.host }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.0
+      - name: Setup Node
+        uses: actions/setup-node@v3.8.1
+        with:
+          node-version: 18
+      - name: Setup Python
+        uses: actions/setup-python@v4.7.1
+        with:
+          python-version: "3.9"
+      - name: Setup env
+        if: ${{ matrix.settings.setup }}
+        shell: bash
+        run: ${{ matrix.settings.setup }}
+      - name: Install
+        run: npm install
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: bindings-${{ matrix.settings.target }}
+          path: |
+            ./build/Release/*.node
+            ./build/Release/*.dll
+          if-no-files-found: error
+
+  Publish:
+    name: Publish artifact to npm
+    runs-on: ubuntu-latest
+    needs:
+      - Build
+    steps:
+      - uses: actions/checkout@v4.1.0
+      - name: Setup node
+        uses: actions/setup-node@v3.8.1
+        with:
+          node-version: 18
+      - name: Set release name
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Set npm token
+        run: |
+          npm config set provenance true
+          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+      - name: List binaries
+        run: ls -R artifacts
+        shell: bash
+      - name: Move binaries
+        shell: bash
+        run: |
+          npm run artifacts
+      - name: Publish binaries
+        shell: bash
+        run: |
+          npm run publish-binding
+      - name: Convert to js
+        shell: bash
+        run: |
+          npm install --ignore-scripts
+          npx tsc
+      - name: Publish Core to npm
+        shell: bash
+        run: |
+          npm run publish-core
+
