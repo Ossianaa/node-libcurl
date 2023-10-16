@@ -28,9 +28,9 @@
     "typescript": "^4.9.4"
   },
   "optionalDependencies": {
-    "@ossiana/node-libcurl-darwin-x64": "1.0.0",
-    "@ossiana/node-libcurl-win32-x64-msvc": "1.0.0",
-    "@ossiana/node-libcurl-linux-x64-gnu": "1.0.0"
+    "@ossiana/node-libcurl-darwin-x64": "1.2.0",
+    "@ossiana/node-libcurl-win32-x64-msvc": "1.2.0",
+    "@ossiana/node-libcurl-linux-x64-gnu": "1.2.0"
   },
   "main": "./dist/index.js",
   "files": [
@@ -38,7 +38,8 @@
     "LICENSE",
     "package.json",
     "readme.md",
-    "scripts/postinstall.js"
+    "scripts/postinstall.js",
+    "scripts/bindings.js"
   ],
   "license": "MIT",
   "repository": {
