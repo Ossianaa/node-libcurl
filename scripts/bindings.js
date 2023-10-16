@@ -1,3 +1,5 @@
+const assert = require('assert');
+
 const bindings = (() => {
     let binding;
     try {

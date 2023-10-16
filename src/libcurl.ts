@@ -1,4 +1,3 @@
-import * as assert from "assert";
 import { BaoLibCurl } from '../scripts/bindings';
 import { httpCookiesToArray, cookieOptFilter } from './utils';
 
