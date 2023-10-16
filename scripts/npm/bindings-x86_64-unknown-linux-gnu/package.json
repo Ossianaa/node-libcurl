@@ -1,6 +1,12 @@
 {
   "name": "@ossiana/node-libcurl-linux-x64-gnu",
   "version": "1.0.0",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
   "description": "",
   "main": "bao_curl_node_addon.node",
   "repository": {

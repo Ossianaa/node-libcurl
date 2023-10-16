@@ -1,6 +1,12 @@
 {
   "name": "@ossiana/node-libcurl-x86_64-apple-darwin",
   "version": "1.1.4-alpha-3",
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "x64"
+  ],
   "description": "",
   "main": "bao_curl_node_addon.node",
   "repository": {
