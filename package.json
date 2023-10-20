@@ -1,6 +1,6 @@
 {
   "name": "@ossiana/node-libcurl",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "author": {
     "name": "Ossian"
   },
@@ -14,7 +14,6 @@
     "publish-core": "node ./scripts/publish.js"
   },
   "dependencies": {
-    "bindings": "^1.5.0",
     "node-addon-api": "^5.0.0"
   },
   "devDependencies": {

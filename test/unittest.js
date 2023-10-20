@@ -1,4 +1,4 @@
-const { BaoLibCurl } = require('bindings')('bao_curl_node_addon');
+const { BaoLibCurl } = require('../scripts/bindings');
 const { expect, assert, should } = require('chai');
 const { host: unittestHost } = require('./server/server.js');
 
