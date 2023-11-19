@@ -63,6 +63,8 @@ void BaoCurl::init()
 
 void BaoCurl::open(std::string &method, std::string &url)
 {
+	 std::transform(method.begin(), method.end(), method.begin(),
+                   [](unsigned char c) { return std::toupper(c); });
 	this->m_method = method;
 	this->m_stream.header = "";
 	this->m_stream.responseText = "";
@@ -169,8 +171,9 @@ void BaoCurl::sendByte(const char *data, const int len)
 		}
 	}
 
-	if (this->m_method == "POST" || this->m_method == "PUT" || this->m_method == "PATCH")
+	if (this->m_method == "POST" || this->m_method == "PUT" || this->m_method == "PATCH" || this->m_method == "DELETE")
 	{
+		if (len == 0) return;
 		m_postdata = std::unique_ptr<const char[]>(new char[len]);
 		memcpy((void *)m_postdata.get(), data, len);
 
