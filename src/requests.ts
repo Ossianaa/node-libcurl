@@ -131,8 +131,7 @@ export class requests {
     protected retryOption: requestsRetryOption = {
         retryNum: 0,
         conditionCallback(resp) {
-            const { status } = resp;
-            return status >= 200 && status < 400;
+            return true;
         }
     };
 
@@ -455,7 +454,7 @@ export class requests {
     /**
      * 
      * @param retryNum 
-     * @param conditionCallback defaults to the status code 200~399 
+     * @param conditionCallback defaults timeout return false
      * @returns 
      */
     public retry(retryNum: number, conditionCallback?: requestsRetryConditionCallback) {
