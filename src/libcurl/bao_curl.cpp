@@ -180,6 +180,7 @@ void BaoCurl::sendByte(const char *data, const int len)
 		CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDS, m_postdata.get()));
 		CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDSIZE, len));
 	}
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_NOBODY, this->m_method == "HEAD" ? 1L : 0L));
 	/*CHECK_CURLOK(curl_easy_perform(this->m_pCURL));
 	curl_slist_free_all(this->m_pHeaders);
 	this->m_pHeaders = NULL;*/
