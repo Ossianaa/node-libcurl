@@ -1,5 +1,23 @@
-import { LibCurl, LibCurlBodyInfo, LibCurlCookiesAttr, LibCurlCookiesInfo, LibCurlHeadersAttr, LibCurlHeadersInfo, LibCurlMethodInfo, LibCurlProxyInfo, LibCurlHttpVersionInfo, LibCurlURLInfo, LibCurlError, LibCurlJA3FingerPrintInfo } from "./libcurl"
-import { getUriTopLevelHost, libcurlRandomJA3Fingerprint, libcurlSetCookies, md5 } from "./utils";
+import {
+    LibCurl,
+    LibCurlBodyInfo,
+    LibCurlCookiesAttr,
+    LibCurlCookiesInfo,
+    LibCurlHeadersAttr,
+    LibCurlHeadersInfo,
+    LibCurlMethodInfo,
+    LibCurlProxyInfo,
+    LibCurlHttpVersionInfo,
+    LibCurlURLInfo,
+    LibCurlError,
+    LibCurlJA3FingerPrintInfo,
+} from "./libcurl";
+import {
+    getUriTopLevelHost,
+    libcurlRandomJA3Fingerprint,
+    libcurlSetCookies,
+    md5,
+} from "./utils";
 
 type requestsHttpVersionInfo = LibCurlHttpVersionInfo;
 type requestsHeadersInfo = LibCurlHeadersInfo;
@@ -8,11 +26,11 @@ type requestsCookiesInfo = LibCurlCookiesInfo;
 type requestsCookiesInfoWithUri = {
     value: requestsCookiesInfo;
     uri: string;
-}
+};
 type requestsMethodInfo = LibCurlMethodInfo;
 
 type requestsProxyInfo = LibCurlProxyInfo;
-type requestsURLInfo = LibCurlURLInfo
+type requestsURLInfo = LibCurlURLInfo;
 
 interface requestsResponseImp {
     readonly text: string;
@@ -57,8 +75,6 @@ class requestsResponse implements requestsResponseImp {
     public get contentLength(): number {
         return this.curl.getResponseContentLength();
     }
-
-
 }
 
 interface requestsInitOption {
@@ -76,7 +92,7 @@ interface requestsInitOption {
      */
     timeout?: number;
     /**
-     * 指定网卡访问 
+     * 指定网卡访问
      */
     interface?: string;
     /**
@@ -89,7 +105,6 @@ interface requestsInitOption {
 
 type requestsParamsInfo = URLSearchParams | string | { [key: string]: string };
 
-
 interface requestsOption {
     headers?: requestsHeadersInfo;
     params?: requestsParamsInfo;
@@ -100,13 +115,11 @@ interface requestsOption {
     proxy?: requestsProxyInfo;
     interface?: string;
     httpVersion?: requestsHttpVersionInfo;
-
 }
-
 
 interface requestsStaticOption
-    extends Omit<requestsInitOption, 'body' | 'instance'>, requestsOption {
-}
+    extends Omit<requestsInitOption, "body" | "instance">,
+        requestsOption {}
 
 type requestsRetryConditionCallback = (resp: requestsResponse) => boolean;
 
@@ -115,11 +128,14 @@ interface requestsRetryOption {
     conditionCallback: requestsRetryConditionCallback;
 }
 
-const assignURLSearchParam = (target: URLSearchParams, source: URLSearchParams) => {
+const assignURLSearchParam = (
+    target: URLSearchParams,
+    source: URLSearchParams,
+) => {
     source.forEach((value, key) => {
         target.append(key, value);
-    })
-}
+    });
+};
 
 const ja3Md5Map: Map<string, string> = new Map();
 
@@ -132,22 +148,35 @@ export class requests {
         retryNum: 0,
         conditionCallback(resp) {
             return true;
-        }
+        },
     };
 
     constructor(option: requestsInitOption = {}) {
         this.option = { ...option };
-        const { cookies, timeout, verbose, redirect = false, proxy, httpVersion, interface: interface_, ja3 } = option;
-        const curl = this.option.instance ||= new LibCurl();
+        const {
+            cookies,
+            timeout,
+            verbose,
+            redirect = false,
+            proxy,
+            httpVersion,
+            interface: interface_,
+            ja3,
+        } = option;
+        const curl = (this.option.instance ||= new LibCurl());
         switch (typeof cookies) {
-            case 'string':
+            case "string":
                 this.needSetCookies = !!cookies;
                 break;
-            case 'object':
+            case "object":
                 if (cookies !== null) {
                     if (cookies.value) {
                         if (cookies.uri) {
-                            libcurlSetCookies(curl, cookies.value, getUriTopLevelHost(cookies.uri));
+                            libcurlSetCookies(
+                                curl,
+                                cookies.value,
+                                getUriTopLevelHost(cookies.uri),
+                            );
                         } else {
                             this.needSetCookies = !!cookies;
                         }
@@ -167,7 +196,7 @@ export class requests {
         if (interface_) {
             curl.setInterface(interface_);
         }
-        if (typeof httpVersion != 'undefined') {
+        if (typeof httpVersion != "undefined") {
             curl.setHttpVersion(httpVersion);
         }
         if (redirect) {
@@ -180,48 +209,72 @@ export class requests {
 
         this.randomJa3 = !ja3;
         if (ja3) {
-            this.lastJa3 = ja3
+            this.lastJa3 = ja3;
         }
-
     }
 
     public static session(option: requestsInitOption = {}): requests {
         return new requests(option);
     }
 
-
-    private async sendRequest(method: requestsMethodInfo, url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        const { instance: curl, cookies, timeout: timeoutOpt, ja3 } = this.option;
-        const { headers, data, json, params, timeout, interface: interface_, redirect, proxy, httpVersion } = requestOpt || {};
+    private async sendRequest(
+        method: requestsMethodInfo,
+        url: requestsURLInfo,
+        requestOpt?: requestsOption,
+    ): Promise<requestsResponse> {
+        const {
+            instance: curl,
+            cookies,
+            timeout: timeoutOpt,
+            ja3,
+        } = this.option;
+        const {
+            headers,
+            data,
+            json,
+            params,
+            timeout,
+            interface: interface_,
+            redirect,
+            proxy,
+            httpVersion,
+        } = requestOpt || {};
 
         if (data && json) {
-            throw new LibCurlError('both data and json exist');
+            throw new LibCurlError("both data and json exist");
         }
         const url_ = new URL(url);
         if (this.needSetCookies) {
             this.needSetCookies = false;
-            libcurlSetCookies(curl, cookies as string, getUriTopLevelHost(url_));//放到top域名里去
+            libcurlSetCookies(
+                curl,
+                cookies as string,
+                getUriTopLevelHost(url_),
+            ); //放到top域名里去
         }
         if (params) {
-            assignURLSearchParam(url_.searchParams, new URLSearchParams(params));
+            assignURLSearchParam(
+                url_.searchParams,
+                new URLSearchParams(params),
+            );
         }
         curl.open(method, url_);
         if (headers) {
             curl.setRequestHeaders(headers);
         }
-        if (typeof timeout == 'number') {
+        if (typeof timeout == "number") {
             curl.setTimeout(timeout, timeout);
         } else if (timeoutOpt) {
             curl.setTimeout(timeoutOpt, timeoutOpt);
         }
-        if (typeof interface_ == 'string') {
+        if (typeof interface_ == "string") {
             curl.setInterface(interface_);
         } else {
             if (this.option.interface) {
                 curl.setInterface(this.option.interface);
             }
         }
-        if (typeof redirect == 'boolean') {
+        if (typeof redirect == "boolean") {
             curl.setRedirect(redirect);
         } else {
             if (this.option.redirect) {
@@ -235,11 +288,10 @@ export class requests {
                 curl.setProxy(this.option.proxy);
             }
         }
-        if (typeof httpVersion == 'number') {
+        if (typeof httpVersion == "number") {
             curl.setHttpVersion(httpVersion);
         } else {
             if (this.option.httpVersion) {
-
                 curl.setHttpVersion(this.option.httpVersion);
             }
         }
@@ -254,8 +306,9 @@ export class requests {
         let hasContentType = false;
         if (headers && (data || json)) {
             //如果有传入data或json 才用的上
-            const contentTypeFilter = (e: string[]) => e.some(e => e.toLocaleLowerCase() == 'content-type');
-            if (typeof headers == 'string') {
+            const contentTypeFilter = (e: string[]) =>
+                e.some((e) => e.toLocaleLowerCase() == "content-type");
+            if (typeof headers == "string") {
                 hasContentType = /content-type/i.test(headers);
             } else if (headers instanceof Map) {
                 hasContentType = contentTypeFilter([...headers.keys()]);
@@ -265,47 +318,64 @@ export class requests {
         }
         if (json) {
             if (!hasContentType) {
-                curl.setRequestHeader('Content-Type', 'application/json');
+                curl.setRequestHeader("Content-Type", "application/json");
             }
-            await curl.send(json);//不用序列化 cpp代码已经处理
+            await curl.send(json); //不用序列化 cpp代码已经处理
         } else if (data) {
             let sendData = data;
             if (!hasContentType) {
-                if (typeof data == 'string') {
-                    curl.setRequestHeader('Content-Type', 'text/plain');
+                if (typeof data == "string") {
+                    curl.setRequestHeader("Content-Type", "text/plain");
                 } else if (data instanceof URLSearchParams) {
-                    curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    curl.setRequestHeader(
+                        "Content-Type",
+                        "application/x-www-form-urlencoded",
+                    );
                 } else if (data instanceof Uint8Array) {
-                    curl.setRequestHeader('Content-Type', 'application/octet-stream');
+                    curl.setRequestHeader(
+                        "Content-Type",
+                        "application/octet-stream",
+                    );
                 } else {
-                    curl.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    curl.setRequestHeader(
+                        "Content-Type",
+                        "application/x-www-form-urlencoded",
+                    );
                 }
             }
 
             if (data instanceof Uint8Array) {
                 //直接发送
-            }
-            else if (
+            } else if (
                 !(data instanceof URLSearchParams) &&
-                typeof data == 'object' && data != null
+                typeof data == "object" &&
+                data != null
             ) {
-                sendData = Object.keys(data).map((e) => {
-                    const value = data[e];
-                    const type = typeof value;
-                    if (/* value !== null && */['object', 'boolean'].includes(type)) {
-                        //照样处理null
-                        return [e, JSON.stringify(value)];
-                    } else if (type == 'undefined') {
-                        return [e, ''];
-                    } else if (['string', 'number'].includes(type)) {
-                        return [e, value + ''];
-                    } else {
-                        throw new LibCurlError(`data unkown type ${type}`)
-                    }
-
-                })
-                    .map(([key, value]: [string, string]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-                    .join('&');
+                sendData = Object.keys(data)
+                    .map((e) => {
+                        const value = data[e];
+                        const type = typeof value;
+                        if (
+                            /* value !== null && */ [
+                                "object",
+                                "boolean",
+                            ].includes(type)
+                        ) {
+                            //照样处理null
+                            return [e, JSON.stringify(value)];
+                        } else if (type == "undefined") {
+                            return [e, ""];
+                        } else if (["string", "number"].includes(type)) {
+                            return [e, value + ""];
+                        } else {
+                            throw new LibCurlError(`data unkown type ${type}`);
+                        }
+                    })
+                    .map(
+                        ([key, value]: [string, string]) =>
+                            `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
+                    )
+                    .join("&");
             }
             await curl.send(sendData);
         } else {
@@ -314,12 +384,23 @@ export class requests {
         return new requestsResponse(curl);
     }
 
-    private static async sendRequestStaic(method: requestsMethodInfo, url: requestsURLInfo, requestStaticOpt?: requestsStaticOption) {
-        return requests.session(requestStaticOpt as requestsInitOption).sendRequestRetry(method, url, requestStaticOpt);
+    private static async sendRequestStaic(
+        method: requestsMethodInfo,
+        url: requestsURLInfo,
+        requestStaticOpt?: requestsStaticOption,
+    ) {
+        return requests
+            .session(requestStaticOpt as requestsInitOption)
+            .sendRequestRetry(method, url, requestStaticOpt);
     }
 
-    private async sendRequestRetry(method: requestsMethodInfo, url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        let isSuccess = false, resp: requestsResponse;
+    private async sendRequestRetry(
+        method: requestsMethodInfo,
+        url: requestsURLInfo,
+        requestOpt?: requestsOption,
+    ): Promise<requestsResponse> {
+        let isSuccess = false,
+            resp: requestsResponse;
         const { retryNum, conditionCallback } = this.retryOption;
         if (retryNum == 0) {
             return this.sendRequest(method, url, requestOpt);
@@ -331,9 +412,7 @@ export class requests {
                 if (isSuccess) {
                     break;
                 }
-            } catch (error) {
-            }
-
+            } catch (error) {}
         }
         if (!isSuccess) {
             throw new LibCurlError(`failed after ${retryNum} retries`);
@@ -342,50 +421,97 @@ export class requests {
     }
 
     //暂定6种常用方法
-    public static async get(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('GET', url, requestOpt);
+    public static async get(
+        url: requestsURLInfo,
+        requestOpt?: requestsStaticOption,
+    ): Promise<requestsResponse> {
+        return requests.sendRequestStaic("GET", url, requestOpt);
     }
-    public static async post(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('POST', url, requestOpt);
+    public static async post(
+        url: requestsURLInfo,
+        requestOpt?: requestsStaticOption,
+    ): Promise<requestsResponse> {
+        return requests.sendRequestStaic("POST", url, requestOpt);
     }
-    public static async put(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('PUT', url, requestOpt);
+    public static async put(
+        url: requestsURLInfo,
+        requestOpt?: requestsStaticOption,
+    ): Promise<requestsResponse> {
+        return requests.sendRequestStaic("PUT", url, requestOpt);
     }
-    public static async patch(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('PATCH', url, requestOpt);
+    public static async patch(
+        url: requestsURLInfo,
+        requestOpt?: requestsStaticOption,
+    ): Promise<requestsResponse> {
+        return requests.sendRequestStaic("PATCH", url, requestOpt);
     }
-    public static async trace(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('TRACE', url, requestOpt);
+    public static async trace(
+        url: requestsURLInfo,
+        requestOpt?: requestsStaticOption,
+    ): Promise<requestsResponse> {
+        return requests.sendRequestStaic("TRACE", url, requestOpt);
     }
-    public static async head(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('HEAD', url, requestOpt);
+    public static async head(
+        url: requestsURLInfo,
+        requestOpt?: requestsStaticOption,
+    ): Promise<requestsResponse> {
+        return requests.sendRequestStaic("HEAD", url, requestOpt);
     }
-    public static async delete(url: requestsURLInfo, requestOpt?: requestsStaticOption): Promise<requestsResponse> {
-        return requests.sendRequestStaic('DELETE', url, requestOpt);
+    public static async delete(
+        url: requestsURLInfo,
+        requestOpt?: requestsStaticOption,
+    ): Promise<requestsResponse> {
+        return requests.sendRequestStaic("DELETE", url, requestOpt);
     }
-    public async get(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequestRetry('GET', url, requestOpt);
+    public async get(
+        url: requestsURLInfo,
+        requestOpt?: requestsOption,
+    ): Promise<requestsResponse> {
+        return this.sendRequestRetry("GET", url, requestOpt);
     }
-    public async post(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequestRetry('POST', url, requestOpt);
+    public async post(
+        url: requestsURLInfo,
+        requestOpt?: requestsOption,
+    ): Promise<requestsResponse> {
+        return this.sendRequestRetry("POST", url, requestOpt);
     }
-    public async put(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequestRetry('PUT', url, requestOpt);
+    public async put(
+        url: requestsURLInfo,
+        requestOpt?: requestsOption,
+    ): Promise<requestsResponse> {
+        return this.sendRequestRetry("PUT", url, requestOpt);
     }
-    public async patch(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequestRetry('PATCH', url, requestOpt);
+    public async patch(
+        url: requestsURLInfo,
+        requestOpt?: requestsOption,
+    ): Promise<requestsResponse> {
+        return this.sendRequestRetry("PATCH", url, requestOpt);
     }
-    public async trace(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequestRetry('TRACE', url, requestOpt);
+    public async trace(
+        url: requestsURLInfo,
+        requestOpt?: requestsOption,
+    ): Promise<requestsResponse> {
+        return this.sendRequestRetry("TRACE", url, requestOpt);
     }
-    public async head(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequestRetry('HEAD', url, requestOpt);
+    public async head(
+        url: requestsURLInfo,
+        requestOpt?: requestsOption,
+    ): Promise<requestsResponse> {
+        return this.sendRequestRetry("HEAD", url, requestOpt);
     }
-    public async delete(url: requestsURLInfo, requestOpt?: requestsOption): Promise<requestsResponse> {
-        return this.sendRequestRetry('DELETE', url, requestOpt);
+    public async delete(
+        url: requestsURLInfo,
+        requestOpt?: requestsOption,
+    ): Promise<requestsResponse> {
+        return this.sendRequestRetry("DELETE", url, requestOpt);
     }
 
-    public setCookie(key: string, value: string, domain: string, path: string = '') {
+    public setCookie(
+        key: string,
+        value: string,
+        domain: string,
+        path: string = "",
+    ) {
         this.option.instance.setCookie({
             name: key,
             value,
@@ -399,7 +525,7 @@ export class requests {
             name: key,
             domain: domain || "",
             path: path || "",
-        })
+        });
     }
 
     public getCookies(domain?: string, path?: string): string {
@@ -409,7 +535,7 @@ export class requests {
         return this.option.instance.getCookies({
             domain: domain || "",
             path: path || "",
-        })
+        });
     }
     public getCookiesMap(domain?: string, path?: string): LibCurlCookiesAttr {
         if (arguments.length == 0) {
@@ -418,7 +544,7 @@ export class requests {
         return this.option.instance.getCookiesMap({
             domain: domain || "",
             path: path || "",
-        })
+        });
     }
 
     public deleteCookie(key: string, domain: string, path?: string) {
@@ -426,15 +552,15 @@ export class requests {
             name: key,
             domain: domain,
             path: path || "/",
-        })
+        });
     }
 
     public getJA3Fingerprint() {
         if (!this.lastJa3) {
             return {
-                ja3: '',
-                ja3_hash: '',
-            }
+                ja3: "",
+                ja3_hash: "",
+            };
         }
         if (!ja3Md5Map.has(this.lastJa3)) {
             const ja3_hash = md5(this.lastJa3);
@@ -452,23 +578,25 @@ export class requests {
     }
 
     /**
-     * 
-     * @param retryNum 
+     *
+     * @param retryNum
      * @param conditionCallback defaults timeout return false
-     * @returns 
+     * @returns
      */
-    public retry(retryNum: number, conditionCallback?: requestsRetryConditionCallback) {
+    public retry(
+        retryNum: number,
+        conditionCallback?: requestsRetryConditionCallback,
+    ) {
         if (retryNum < 0) {
-            throw new LibCurlError('retryNum must be great than 0');
+            throw new LibCurlError("retryNum must be great than 0");
         }
         const rq = requests.session({
             ...this.option,
         });
         rq.retryOption.retryNum = retryNum;
-        if (typeof conditionCallback == 'function') {
+        if (typeof conditionCallback == "function") {
             rq.retryOption.conditionCallback = conditionCallback;
         }
         return rq;
     }
-
 }

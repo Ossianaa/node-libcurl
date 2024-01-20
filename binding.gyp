@@ -8,7 +8,7 @@
                 "./src/libcurl/bao_curl.cpp",
                 "./src/libcurl/bao_curl_multi.cpp",
                 "./src/libcurl/bao_curl_websocket.cpp",
-                "./src/libcurl/bao_curl_websocket_frames.cpp",
+                "./src/libcurl/async_worker_websocket.cpp",
                 "./src/libcurl/utils.cpp",
             ],
             "include_dirs": [

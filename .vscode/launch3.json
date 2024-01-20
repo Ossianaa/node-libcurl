@@ -11,11 +11,11 @@
                 "${workspaceFolder}/test/libcurl_test.js"
             ]
         },
-        /* {
+        {
             "name": "Attach C/C++ Addon",
             "type": "lldb",
             "request": "attach",
             "pid": "${command:pickMyProcess}"
-        } */
+        }
     ]
 }

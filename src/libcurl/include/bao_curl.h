@@ -78,8 +78,8 @@ public:
 	curl_off_t getResponseContentLength();
 	friend class BaoCurlMulti;
 
-private:
 	CURL* m_pCURL = NULL;
+private:
 	struct curl_slist* m_pHeaders = NULL;
 	std::string m_method = "GET";
 	struct Stream_st m_stream;

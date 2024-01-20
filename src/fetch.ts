@@ -1,4 +1,16 @@
-import { LibCurl, LibCurlBodyInfo, LibCurlMethodInfo, LibCurlHeadersInfo, LibCurlCookiesAttr, LibCurlHttpVersionInfo, LibCurlProxyInfo, LibCurlCookiesInfo, LibCurlInterfaceInfo, LibCurlJA3FingerPrintInfo, LibCurlHeadersAttr } from "./libcurl";
+import {
+    LibCurl,
+    LibCurlBodyInfo,
+    LibCurlMethodInfo,
+    LibCurlHeadersInfo,
+    LibCurlCookiesAttr,
+    LibCurlHttpVersionInfo,
+    LibCurlProxyInfo,
+    LibCurlCookiesInfo,
+    LibCurlInterfaceInfo,
+    LibCurlJA3FingerPrintInfo,
+    LibCurlHeadersAttr,
+} from "./libcurl";
 import { libcurlRandomJA3Fingerprint, libcurlSetCookies } from "./utils";
 
 interface LibCurlRequestInfo {
@@ -30,15 +42,26 @@ interface LibCurlResponseInfo {
     cookiesMap: () => Promise<LibCurlCookiesAttr>;
 }
 
-export async function fetch(url: string | URL, request: LibCurlRequestInfo = {}): Promise<LibCurlResponseInfo> {
+export async function fetch(
+    url: string | URL,
+    request: LibCurlRequestInfo = {},
+): Promise<LibCurlResponseInfo> {
     request.instance ||= new LibCurl();
     const curl = request.instance;
-    const { method = "GET",
-        headers, redirect = false, httpVersion = 0,
-        openInnerLog = false, proxy, body, cookies,timeout,
-        interface: interface_, ja3,
+    const {
+        method = "GET",
+        headers,
+        redirect = false,
+        httpVersion = 0,
+        openInnerLog = false,
+        proxy,
+        body,
+        cookies,
+        timeout,
+        interface: interface_,
+        ja3,
     } = request;
-    curl.open(method, url + '');
+    curl.open(method, url + "");
     if (headers) {
         curl.setRequestHeaders(headers);
     }
@@ -64,7 +87,7 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
         curl.setProxy(proxy);
     }
     if (timeout) {
-        curl.setTimeout(timeout,timeout);
+        curl.setTimeout(timeout, timeout);
     }
     curl.setJA3Fingerprint(ja3 || libcurlRandomJA3Fingerprint());
     await curl.send(body);
@@ -78,5 +101,4 @@ export async function fetch(url: string | URL, request: LibCurlRequestInfo = {})
         cookies: async () => curl.getCookies(),
         cookiesMap: async () => curl.getCookiesMap(),
     } as LibCurlResponseInfo;
-
 }

@@ -58,6 +58,13 @@ void BaoCurl::init()
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIEFILE, NULL));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PRIVATE, this));
+	//  curl_easy_setopt(this->m_pCURL, CURLOPT_TCP_KEEPALIVE, 1L);
+
+	// /* keep-alive idle time to 120 seconds */
+	// curl_easy_setopt(this->m_pCURL, CURLOPT_TCP_KEEPIDLE, 120L);
+
+	// /* interval time between keep-alive probes: 60 seconds */
+	// curl_easy_setopt(this->m_pCURL, CURLOPT_TCP_KEEPINTVL, 60L);
 	this->setTimeout(15, 15);
 }
 
@@ -336,22 +343,12 @@ void BaoCurl::setJA3Fingerprint(
 
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2));
 
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_CIPHER_LIST, cipher.c_str() /* "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:DH-RSA-AES128-GCM-SHA256:AES128-SHA:AES256-SHA" */));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_CIPHER_LIST, cipher.c_str()));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS13_CIPHERS, tls13_cipher.c_str()));
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_EC_CURVES, support_groups.c_str() /*  "X25519:P-256:P-384" */));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_EC_CURVES, support_groups.c_str()));
 	// extensions unsupport
 	// ec_point_formats unsupport
-
-	/* char tmp2[26] = {
-		25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0
-	}; */
-	/* for (size_t i = 0; i < 24; i++)
-	{
-		tmp2[i] = i+1;
-	} */
-	// tmp2[25]=0;
-
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION /* 10316 */, extensions.c_str()));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION, extensions.c_str()));
 }
 
 void BaoCurl::setOnPublishCallback(BaoCurlOnPublishCallback callback)
