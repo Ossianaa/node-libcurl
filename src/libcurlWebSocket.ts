@@ -11,7 +11,9 @@ const { WebSocket } = BaoLibCurl;
 
 interface LibCurlWebSocketOption {
     instance?: LibCurl;
-    headers?: LibCurlHeadersInfo;
+    userAgent?: string;
+    origin?: string;
+    cookie?: string;
     ja3?: LibCurlJA3FingerPrintInfo;
 }
 
@@ -27,15 +29,25 @@ interface LibCurlWebSocketOnMessageEvent extends LibCurlWebSocketEvent {
     (message: Uint8Array): void;
 }
 
+type LibCurlWebSocketSendType = Uint8Array | string;
+
 export class LibCurlWebSocket {
     private m_libcurlWebSocket_impl_: any;
     private m_instance: LibCurl;
     private m_isOpen: boolean = false;
     constructor(url: LibCurlURLInfo, option: LibCurlWebSocketOption = {}) {
         this.m_instance = option.instance || new LibCurl();
-        if (option.headers) {
-            this.m_instance.setRequestHeaders(option.headers);
+        const headers = ["Accept:", "Accept-Encoding:"];
+        if (option.cookie) {
+            headers.push("Cookie: " + option.cookie);
         }
+        if (option.origin) {
+            headers.push("Origin: " + option.origin);
+        }
+        if (option.userAgent) {
+            headers.push("User-Agent: " + option.userAgent);
+        }
+        this.m_instance.setRequestHeaders(headers.join("\n"));
         if (option.ja3) {
             this.m_instance.setJA3Fingerprint(option.ja3);
         }
@@ -68,7 +80,7 @@ export class LibCurlWebSocket {
         this.m_libcurlWebSocket_impl_.setOnMessage(event);
     }
 
-    send(message: Uint8Array) {
+    send(message: LibCurlWebSocketSendType) {
         if (!this.m_isOpen) {
             throw new LibCurlError(
                 "LibCurlWebSocket is already in CLOSING or CLOSED state",

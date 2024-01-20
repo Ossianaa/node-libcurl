@@ -43,10 +43,12 @@ void BaoCurlWebSocket::open(std::string url) {
             {
                 close(false);
                 break;
+            } else if (meta->flags == CURLWS_BINARY || meta->flags == CURLWS_TEXT)
+            {
+                auto _buffer = std::make_unique<uint8_t[]>(rlen);
+                memcpy(_buffer.get(), buffer, rlen);
+                m_onmessage(_buffer.get(), rlen);
             }
-            auto _buffer = std::make_unique<uint8_t[]>(rlen);
-            memcpy(_buffer.get(), buffer, rlen);
-            m_onmessage(_buffer.get(), rlen);
         }
         else {
             m_onerror(curl_easy_strerror(res));
@@ -60,6 +62,11 @@ void BaoCurlWebSocket::open(std::string url) {
 void BaoCurlWebSocket::send(uint8_t* data, size_t size) {
     size_t sent;
     curl_ws_send(m_curl, data, size, &sent, 0, CURLWS_BINARY);
+}
+
+void BaoCurlWebSocket::send(std::string& text) {
+    size_t sent;
+    curl_ws_send(m_curl, text.c_str(), text.size(), &sent, 0, CURLWS_TEXT);
 }
 
 void BaoCurlWebSocket::close(bool forward) {

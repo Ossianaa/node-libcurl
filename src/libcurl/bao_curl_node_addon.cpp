@@ -153,11 +153,18 @@ Napi::Value BaoLibCurlWebSocketWarp::send(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
     REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl.WebSocket", "send", 1, argsLen)
-    REQUEST_TLS_METHOD_CHECK(env, info[0].IsTypedArray(), "argument 0 is not a TypedArray")
-    Napi::Uint8Array u8Arr = info[0].As<Napi::Uint8Array>();
-    this->m_ws->send(u8Arr.Data(), u8Arr.ByteLength());
+    REQUEST_TLS_METHOD_CHECK(env, info[0].IsTypedArray() || info[0].IsString(), "argument 0 is not a TypedArray or String")
+    if (info[0].Type() == napi_string)
+    {
+        std::string str = info[0].As<Napi::String>().Utf8Value();
+        this->m_ws->send(str);
+    } else {
+        Napi::Uint8Array u8Arr = info[0].As<Napi::Uint8Array>();
+        this->m_ws->send(u8Arr.Data(), u8Arr.ByteLength());
+    }
     return env.Undefined();
-};
+}
+
 Napi::Value BaoLibCurlWebSocketWarp::setOnOpen(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
@@ -176,7 +183,7 @@ Napi::Value BaoLibCurlWebSocketWarp::setOnOpen(const Napi::CallbackInfo &info)
         });
     });
     return env.Undefined();
-};
+}
 Napi::Value BaoLibCurlWebSocketWarp::setOnClose(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
@@ -195,7 +202,7 @@ Napi::Value BaoLibCurlWebSocketWarp::setOnClose(const Napi::CallbackInfo &info)
         });
     });
     return env.Undefined();
-};
+}
 Napi::Value BaoLibCurlWebSocketWarp::setOnError(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
@@ -213,7 +220,7 @@ Napi::Value BaoLibCurlWebSocketWarp::setOnError(const Napi::CallbackInfo &info)
         });
     });
     return env.Undefined();
-};
+}
 Napi::Value BaoLibCurlWebSocketWarp::setOnMessage(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
@@ -241,7 +248,7 @@ Napi::Value BaoLibCurlWebSocketWarp::setOnMessage(const Napi::CallbackInfo &info
         });
     });
     return env.Undefined();
-};
+}
 
 Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
 {

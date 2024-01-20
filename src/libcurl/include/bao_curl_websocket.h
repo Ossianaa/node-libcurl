@@ -29,6 +29,7 @@ public:
         m_onmessage = onmessage;
     };
     void send(uint8_t* data, size_t size);
+    void send(std::string& text);
     void close(bool forward);
 
 private:

@@ -135,6 +135,7 @@ void BaoCurl::setRequestHeaders(std::string &header)
 			setRequestHeader(arr_mem);
 		}
 	}
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTPHEADER, this->m_pHeaders));
 }
 
 void BaoCurl::setProxy(std::string &proxy)
