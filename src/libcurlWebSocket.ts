@@ -54,13 +54,14 @@ export class LibCurlWebSocket {
         this.m_libcurlWebSocket_impl_ = new WebSocket(
             //@ts-ignore
             this.m_instance.m_libCurl_impl_,
-            () => {
-                this.close();
-                this.m_isOpen = false;
-            },
         );
-        this.open(url);
-        this.m_isOpen = true;
+        this.m_libcurlWebSocket_impl_.setOnClose(() => {
+            this.m_isOpen = false;
+        });
+        process.nextTick(() => {
+            this.open(url);
+            this.m_isOpen = true;
+        });
     }
 
     private open(url: LibCurlURLInfo) {
@@ -71,7 +72,10 @@ export class LibCurlWebSocket {
         this.m_libcurlWebSocket_impl_.setOnOpen(event);
     }
     set onclose(event: LibCurlWebSocketOnCloseEvent) {
-        this.m_libcurlWebSocket_impl_.setOnClose(event);
+        this.m_libcurlWebSocket_impl_.setOnClose(() => {
+            this.m_isOpen = false;
+            event();
+        });
     }
     set onerror(event: LibCurlWebSocketOnErrorEvent) {
         this.m_libcurlWebSocket_impl_.setOnError(event);

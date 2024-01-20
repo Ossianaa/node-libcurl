@@ -2,7 +2,6 @@
 #include <iostream>
 #include "bao_curl.h"
 #include "bao_curl_websocket.h"
-#include "async_worker_websocket.h"
 #include "request_tls_utils.h"
 
 using namespace std;
@@ -56,7 +55,8 @@ public:
 
 private:
     BaoCurlWebSocket *m_ws = nullptr;
-    WebSocketWorker *m_worker = nullptr;
+    Napi::Reference<Napi::Object>* m_ref = nullptr;
+    // WebSocketWorker *m_worker = nullptr;
     Napi::Value open(const Napi::CallbackInfo &info);
     Napi::Value close(const Napi::CallbackInfo &info);
     Napi::Value send(const Napi::CallbackInfo &info);
@@ -108,15 +108,13 @@ BaoLibCurlWebSocketWarp::BaoLibCurlWebSocketWarp(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK_NO_RETURN(env, "BaoCurl.WebSocket", "constructor", 2, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK_NO_RETURN(env, "BaoCurl.WebSocket", "constructor", 1, argsLen)
     REQUEST_TLS_METHOD_CHECK_NO_RETURN(env, info[0].IsObject(), "argument 0 is not a object")
-    REQUEST_TLS_METHOD_CHECK_NO_RETURN(env, info[1].IsFunction(), "argument 1 is not a function")
     auto arg0 = info[0].As<Napi::Object>();
-    auto arg1 = info[1].As<Napi::Function>();
     BaoLibCurlWarp *BaoLibCurl = BaoLibCurlWarp::Unwrap(arg0);
+    BaoLibCurl->Ref();
+    this->m_ref = BaoLibCurl;
     this->m_ws = new BaoCurlWebSocket(BaoLibCurl->m_curl.m_pCURL);
-    this->m_worker = new WebSocketWorker(arg1, this->m_ws);
-    this->m_worker->pushRef(BaoLibCurl);
 }
 
 BaoLibCurlWebSocketWarp::~BaoLibCurlWebSocketWarp()
@@ -130,9 +128,8 @@ Napi::Value BaoLibCurlWebSocketWarp::open(const Napi::CallbackInfo &info)
     REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl.WebSocket", "open", 1, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     std::string url = info[0].As<Napi::String>().Utf8Value();
-    this->m_worker->setUrl(url);
-    this->m_worker->Queue();
-    this->m_worker->pushRef(this);
+    this->m_ws->open(url);
+    this->Ref();
     return env.Undefined();
 }
 
@@ -195,7 +192,10 @@ Napi::Value BaoLibCurlWebSocketWarp::setOnClose(const Napi::CallbackInfo &info)
                    info[0].As<Napi::Function>(),
     "Test", 0, 1, [](Napi::Env env) {});
     this->m_ws->setOnClose([this]()
-    {   _onclose.NonBlockingCall(
+    {
+        this->m_ref->Unref();
+        this->Unref();
+        _onclose.NonBlockingCall(
                     [](Napi::Env env, Napi::Function jsCallback)
         {
             jsCallback.Call({});

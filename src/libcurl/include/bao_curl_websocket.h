@@ -39,6 +39,8 @@ private:
     std::function<void()> m_onclose;
     std::function<void(std::string)> m_onerror;
     std::function<void(uint8_t* data, size_t size)> m_onmessage;
+    std::thread m_thread;
+    std::mutex m_lock;
 
 protected:
     std::function<void()> m_onopen_default = []() {
