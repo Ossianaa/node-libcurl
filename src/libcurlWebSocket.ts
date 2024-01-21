@@ -33,10 +33,15 @@ type LibCurlWebSocketSendType = Uint8Array | string;
 
 export class LibCurlWebSocket {
     private m_libcurlWebSocket_impl_: any;
-    private m_instance: LibCurl;
     private m_isOpen: boolean = false;
+
+    private m_onOpen: LibCurlWebSocketOnOpenEvent;
+    private m_onClose: LibCurlWebSocketOnCloseEvent;
+    private m_onMessage: LibCurlWebSocketOnMessageEvent;
+    private m_onError: LibCurlWebSocketOnErrorEvent;
+
     constructor(url: LibCurlURLInfo, option: LibCurlWebSocketOption = {}) {
-        this.m_instance = option.instance || new LibCurl();
+        const curl = option.instance || new LibCurl();
         const headers = ["Accept:", "Accept-Encoding:"];
         if (option.cookie) {
             headers.push("Cookie: " + option.cookie);
@@ -47,41 +52,61 @@ export class LibCurlWebSocket {
         if (option.userAgent) {
             headers.push("User-Agent: " + option.userAgent);
         }
-        this.m_instance.setRequestHeaders(headers.join("\n"));
+        curl.setRequestHeaders(headers.join("\n"));
         if (option.ja3) {
-            this.m_instance.setJA3Fingerprint(option.ja3);
+            curl.setJA3Fingerprint(option.ja3);
         }
-        this.m_libcurlWebSocket_impl_ = new WebSocket(
+        const ws = (this.m_libcurlWebSocket_impl_ = new WebSocket(
             //@ts-ignore
-            this.m_instance.m_libCurl_impl_,
-        );
-        this.m_libcurlWebSocket_impl_.setOnClose(() => {
-            this.m_isOpen = false;
-        });
-        process.nextTick(() => {
-            this.open(url);
+            curl.m_libCurl_impl_,
+        ));
+        ws.setOnOpen(() => {
             this.m_isOpen = true;
+            try {
+                this.m_onOpen?.();
+            } catch (error) {
+                console.error('LibCurlWebSocket onOpen catch a error', error);
+            }
         });
+        ws.setOnClose(() => {
+            this.m_isOpen = false;
+            try {
+                this.m_onClose?.();
+            } catch (error) {
+                console.error('LibCurlWebSocket onClose catch a error', error);
+            }
+        });
+        ws.setOnMessage((e) => {
+            try {
+                this.m_onMessage?.(e);
+            } catch (error) {
+                console.error('LibCurlWebSocket onMessage catch a error', error);
+            }
+        });
+        ws.setOnError((e) => {
+            try {
+                this.m_onError?.(e);
+            } catch (error) {
+                console.error('LibCurlWebSocket onError catch a error', error);
+            }
+        });
+        this.open(url);
     }
-
     private open(url: LibCurlURLInfo) {
         this.m_libcurlWebSocket_impl_.open(url + "");
     }
 
     set onopen(event: LibCurlWebSocketOnOpenEvent) {
-        this.m_libcurlWebSocket_impl_.setOnOpen(event);
+        this.m_onOpen = event;
     }
     set onclose(event: LibCurlWebSocketOnCloseEvent) {
-        this.m_libcurlWebSocket_impl_.setOnClose(() => {
-            this.m_isOpen = false;
-            event();
-        });
+        this.m_onClose = event;
     }
     set onerror(event: LibCurlWebSocketOnErrorEvent) {
-        this.m_libcurlWebSocket_impl_.setOnError(event);
+        this.m_onError = event;
     }
     set onmessage(event: LibCurlWebSocketOnMessageEvent) {
-        this.m_libcurlWebSocket_impl_.setOnMessage(event);
+        this.m_onMessage = event;
     }
 
     send(message: LibCurlWebSocketSendType) {

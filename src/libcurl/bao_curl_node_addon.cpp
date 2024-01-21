@@ -112,13 +112,15 @@ BaoLibCurlWebSocketWarp::BaoLibCurlWebSocketWarp(const Napi::CallbackInfo &info)
     REQUEST_TLS_METHOD_CHECK_NO_RETURN(env, info[0].IsObject(), "argument 0 is not a object")
     auto arg0 = info[0].As<Napi::Object>();
     BaoLibCurlWarp *BaoLibCurl = BaoLibCurlWarp::Unwrap(arg0);
-    BaoLibCurl->Ref();
     this->m_ref = BaoLibCurl;
     this->m_ws = new BaoCurlWebSocket(BaoLibCurl->m_curl.m_pCURL);
+    this->Ref();
+    this->m_ref->Ref();
 }
 
 BaoLibCurlWebSocketWarp::~BaoLibCurlWebSocketWarp()
 {
+    delete this->m_ws;
 }
 
 Napi::Value BaoLibCurlWebSocketWarp::open(const Napi::CallbackInfo &info)
@@ -129,7 +131,6 @@ Napi::Value BaoLibCurlWebSocketWarp::open(const Napi::CallbackInfo &info)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     std::string url = info[0].As<Napi::String>().Utf8Value();
     this->m_ws->open(url);
-    this->Ref();
     return env.Undefined();
 }
 
@@ -138,10 +139,6 @@ Napi::Value BaoLibCurlWebSocketWarp::close(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
     this->m_ws->close(true);
-    this->_onopen.Release();
-    this->_onclose.Release();
-    this->_onerror.Release();
-    this->_onmessage.Release();
     return env.Undefined();
 }
 
@@ -193,13 +190,17 @@ Napi::Value BaoLibCurlWebSocketWarp::setOnClose(const Napi::CallbackInfo &info)
     "Test", 0, 1, [](Napi::Env env) {});
     this->m_ws->setOnClose([this]()
     {
-        this->m_ref->Unref();
-        this->Unref();
-        _onclose.NonBlockingCall(
-                    [](Napi::Env env, Napi::Function jsCallback)
+        _onclose.BlockingCall(
+                    [this](Napi::Env env, Napi::Function jsCallback)
         {
             jsCallback.Call({});
+            this->_onopen.Unref(env);
+            this->_onclose.Unref(env);
+            this->_onerror.Unref(env);
+            this->_onmessage.Unref(env);
         });
+        this->m_ref->Unref();
+        this->Unref();
     });
     return env.Undefined();
 }
