@@ -81,7 +81,7 @@ void BaoCurlMulti::startThread()
                         break;
                     }
                     CURL *handle = msg->easy_handle;
-
+                    CURLcode result = msg->data.result;
                     this->m_lock.lock();
                     CHECK_CURLMOK(curl_multi_remove_handle(this->m_pCURLM, handle));
                     BaoCurl *pCurl = nullptr;
@@ -91,7 +91,7 @@ void BaoCurlMulti::startThread()
                     if (pCurl)
                     {
                         pCurl->m_postdata.reset(); // 释放内存
-                        pCurl->m_lastCode = msg->data.result;
+                        pCurl->m_lastCode = result;
                         if (pCurl->m_publishCallback)
                         {
                             bool success = pCurl->m_lastCode == CURLE_OK;
