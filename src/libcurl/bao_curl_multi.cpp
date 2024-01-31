@@ -96,16 +96,8 @@ void BaoCurlMulti::startThread()
                         {
                             bool success = pCurl->m_lastCode == CURLE_OK;
                             std::string errMsg = success ? "" : pCurl->getLastCurlCodeError();
-                            auto &callbackPtr = pCurl->m_publishCallback;
-                            (*callbackPtr)(success, errMsg);
-                            callbackPtr.reset(); // 减少引用计数
-
-                            /* callback->NonBlockingCall(
-                                [success, callback](Napi::Env env, Napi::Function jsCallback)
-                                {
-                                    callback->Unref(env);
-                                    jsCallback.Call({Napi::Boolean::New(env, success)});
-                                }); */
+                            auto callbackPtr = pCurl->m_publishCallback;
+                            callbackPtr(success, errMsg);
                         }
                     }
                     else

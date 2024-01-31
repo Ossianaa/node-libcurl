@@ -617,10 +617,7 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 			  tsfn.Unref(env);
 			  jsCallback.Call({Napi::Boolean::New(env, success), Napi::String::New(env, errMsg.c_str())});
 		  }); };
-	auto callbackPtr =
-		std::make_shared<std::function<void(bool, std::string)>>(std::move(callback));
-
-	this->m_curl.setOnPublishCallback(callbackPtr);
+	this->m_curl.setOnPublishCallback(std::function<void(bool, std::string)>(std::move(callback)));
 
 	if (argsLen > 0)
 	{
