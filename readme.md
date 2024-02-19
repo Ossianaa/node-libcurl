@@ -27,7 +27,7 @@
 |  __MacOS (arm64)__  | __Yes__  |
 ------------
 
-## How to build
+## How to Install
 > npm i -g @ossiana/node-libcurl
 ------------
 
@@ -35,9 +35,14 @@
 
 ## Use Sample
 
-### import
+### import as ES Module
 ```javascript
 import { LibCurl, fetch, requests } from '@ossiana/node-libcurl'
+```
+
+### import as CommonJS Module
+```javascript
+const { LibCurl, fetch, requests } = require('@ossiana/node-libcurl')
 ```
 
 ### browser fetch  style
@@ -58,23 +63,4 @@ const res = await session.get('https://www.baidu.com', {
 console.log(res.headersMap);
 console.log(session.getCookiesMap().get('ua'));
 console.log(res.text);
-```
-
-
-
-### winhttp  style
-```javascript
-const curl = new LibCurl();
-curl.open('POST', 'https://xxx.io/api/graphql/');
-curl.setRequestHeaders(`Host: xxx.io
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36
-Content-Type: application/octet-stream
-Referer: https://xxx.io/
-Accept-Encoding: gzip, deflate, br
-Accept-Language: zh-CN,zh;q=0.9
-`);
-curl.send(new Uint8Array([1, 255, 188]))
-    .then(e => {
-        console.log(curl.getResponseString());
-    });
 ```
