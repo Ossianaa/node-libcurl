@@ -615,34 +615,29 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
     size_t argsLen = info.Length();
     Napi::Promise::Deferred deferred = Napi::Promise::Deferred::New(env);
 
-    Napi::ThreadSafeFunction tsfn = Napi::ThreadSafeFunction::New(
-                                        env,
-                                        Napi::Function::New(env, [env, deferred](const Napi::CallbackInfo &info)
-    {
-        bool success = info[0].As<Napi::Boolean>().Value();
-        if (success)
-        {
-            deferred.Resolve(env.Undefined());
-        } else {
-            Napi::String errMsg = info[1].As<Napi::String>();
-            deferred.Reject(errMsg);
-        }
-    }),
-    "Test", 0, 1, [tsfn](Napi::Env env) {});
-
-    auto callback = [tsfn](bool success, std::string errMsg)
-    {
-        tsfn.NonBlockingCall(
-                [tsfn, success, errMsg](Napi::Env env, Napi::Function jsCallback)
-        {
-            tsfn.Unref(env);
-            jsCallback.Call({Napi::Boolean::New(env, success), Napi::String::New(env, errMsg.c_str())});
-        });
-    };
-    auto callbackPtr =
-        std::make_shared<std::function<void(bool, std::string)>>(std::move(callback));
-
-    this->m_curl.setOnPublishCallback(callbackPtr);
+	Napi::ThreadSafeFunction tsfn = Napi::ThreadSafeFunction::New(
+		env,
+		Napi::Function::New(env, [env, deferred](const Napi::CallbackInfo &info)
+							{
+									bool success = info[0].As<Napi::Boolean>().Value();
+									 		if (success)
+											{
+												deferred.Resolve(env.Undefined());
+											} else {
+												Napi::String errMsg = info[1].As<Napi::String>();
+												deferred.Reject(errMsg);
+											} }),
+		"Test", 0, 1, [tsfn](Napi::Env env)
+		{  });
+	;
+	auto callback = [tsfn](bool success, std::string errMsg)
+	{ tsfn.NonBlockingCall(
+		  [tsfn, success, errMsg](Napi::Env env, Napi::Function jsCallback)
+		  {
+			  tsfn.Unref(env);
+			  jsCallback.Call({Napi::Boolean::New(env, success), Napi::String::New(env, errMsg.c_str())});
+		  }); };
+	this->m_curl.setOnPublishCallback(std::function<void(bool, std::string)>(std::move(callback)));
 
     if (argsLen > 0)
     {

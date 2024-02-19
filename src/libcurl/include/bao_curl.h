@@ -8,8 +8,7 @@
 
 NAMESPACE_BAO_START
 
-// typedef Napi::ThreadSafeFunction* BaoCurlOnPublishCallback;
-typedef std::shared_ptr<std::function<void (bool, std::string)>> BaoCurlOnPublishCallback;
+typedef std::function<void (bool, std::string)> BaoCurlOnPublishCallback;
 
 struct Stream_st
 {
