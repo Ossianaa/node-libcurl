@@ -76,7 +76,7 @@
                     ],
                 
                 }],
-                ['OS=="mac"', {
+                ['OS=="mac" and target_arch=="x64"', {
                     "configurations": {
                         'Release': {
                             'cflags': [ '-std=c++14', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch' ,'-fPIC'],
@@ -89,6 +89,26 @@
                         "<(module_root_dir)/lib/Release/darwin-x64/libcurl.a",
                         "<(module_root_dir)/lib/Release/darwin-x64/libssl.a",
                         "<(module_root_dir)/lib/Release/darwin-x64/libcrypto.a"
+                    ],
+                    'xcode_settings': {
+                        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
+                        'CLANG_CXX_LIBRARY': 'libc++',
+                        'MACOSX_DEPLOYMENT_TARGET': '10.7',
+                    },
+                }],
+                ['OS=="mac" and target_arch=="arm64"', {
+                    "configurations": {
+                        'Release': {
+                            'cflags': [ '-std=c++14', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch' ,'-fPIC'],
+                            'cflags_cc': [ '-std=c++14', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch','-fPIC'],
+                        },
+                    },
+                    'libraries': [
+                        "/System/Library/Frameworks/CoreFoundation.framework",
+                        "/System/Library/Frameworks/SystemConfiguration.framework",
+                        "<(module_root_dir)/lib/Release/darwin-arm64/libcurl.a",
+                        "<(module_root_dir)/lib/Release/darwin-arm64/libssl.a",
+                        "<(module_root_dir)/lib/Release/darwin-arm64/libcrypto.a"
                     ],
                     'xcode_settings': {
                         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
