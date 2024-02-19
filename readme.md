@@ -24,7 +24,7 @@
 |  __Windows (arm)__  | __No__  |
 | __Ubuntu (x86_64)__ | __Yes__ |
 | __MacOS (x86_64)__  | __Yes__ |
-|  __MacOS (arm64)__  | __No__  |
+|  __MacOS (arm64)__  | __Yes__  |
 ------------
 
 ## How to build
