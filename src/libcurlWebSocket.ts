@@ -14,6 +14,7 @@ interface LibCurlWebSocketOption {
     userAgent?: string;
     origin?: string;
     cookie?: string;
+    timeout?: number;
     ja3?: LibCurlJA3FingerPrintInfo;
 }
 
@@ -53,6 +54,9 @@ export class LibCurlWebSocket {
             headers.push("User-Agent: " + option.userAgent);
         }
         curl.setRequestHeaders(headers.join("\n"));
+        if (option.timeout) {
+            curl.setTimeout(option.timeout, option.timeout);
+        }
         if (option.ja3) {
             curl.setJA3Fingerprint(option.ja3);
         }
