@@ -82,7 +82,7 @@ void BaoCurlWebSocket::send(std::string& text) {
 }
 
 void BaoCurlWebSocket::close(bool forward) {
-    if (!m_isOpen) return;
+    if (forward && !m_isOpen) return;
     m_lock.lock();
     m_isOpen = false;
     m_lock.unlock();
