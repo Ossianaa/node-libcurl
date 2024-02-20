@@ -49,7 +49,7 @@ jobs:
         shell: bash
         run: ${{ matrix.settings.setup }}
       - name: Install
-        run: npm install ${{ matrix.settings.arch }}
+        run: npm install --arch=${{ matrix.settings.arch }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
