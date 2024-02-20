@@ -30,6 +30,7 @@ jobs:
               export CXX=$(xcrun -f clang++);
               SYSROOT=$(xcrun --sdk macosx --show-sdk-path);
               export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT";
+            arch: arm64
 
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -48,7 +49,7 @@ jobs:
         shell: bash
         run: ${{ matrix.settings.setup }}
       - name: Install
-        run: npm install
+        run: npm install --arch=${{ matrix.settings.arch }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
