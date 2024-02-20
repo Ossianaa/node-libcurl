@@ -40,6 +40,7 @@ jobs:
         uses: actions/setup-node@v3.8.1
         with:
           node-version: 18
+          architecture: ${{ matrix.settings.arch }}
       - name: Setup Python
         uses: actions/setup-python@v4.7.1
         with:
@@ -49,7 +50,7 @@ jobs:
         shell: bash
         run: ${{ matrix.settings.setup }}
       - name: Install
-        run: npm install --arch=${{ matrix.settings.arch }}
+        run: npm install
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
