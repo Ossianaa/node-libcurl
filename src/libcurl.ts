@@ -199,7 +199,7 @@ interface LibCurlCommonHeaders {
 
 export type LibCurlHeadersInfo =
     | string
-    | { [key: string]: [value: string] }
+    | { [key: string]: string }
     | LibCurlHeadersAttr
     | LibCurlCommonHeaders;
 
