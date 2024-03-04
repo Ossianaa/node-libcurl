@@ -121,7 +121,7 @@ interface requestsStaticOption
     extends Omit<requestsInitOption, "body" | "instance">,
         requestsOption {}
 
-type requestsRetryConditionCallback = (resp: requestsResponse) => boolean;
+type requestsRetryConditionCallback = (resp: requestsResponse | null, error?: Error) => boolean;
 
 interface requestsRetryOption {
     retryNum: number;
@@ -412,7 +412,12 @@ export class requests {
                 if (isSuccess) {
                     break;
                 }
-            } catch (error) {}
+            } catch (error) {
+                isSuccess = conditionCallback(null, error);
+                if (isSuccess) {
+                    break;
+                }
+            }
         }
         if (!isSuccess) {
             throw new LibCurlError(`failed after ${retryNum} retries`);
