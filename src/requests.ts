@@ -121,7 +121,7 @@ interface requestsStaticOption
     extends Omit<requestsInitOption, "body" | "instance">,
         requestsOption {}
 
-type requestsRetryConditionCallback = (resp: requestsResponse | null, error?: Error) => boolean;
+type requestsRetryConditionCallback = (resp: requestsResponse | null, error?: Error) => Promise<boolean> | boolean;
 
 interface requestsRetryOption {
     retryNum: number;
@@ -408,12 +408,12 @@ export class requests {
         for (let i = 0; i <= retryNum; i++) {
             try {
                 resp = await this.sendRequest(method, url, requestOpt);
-                isSuccess = conditionCallback(resp);
+                isSuccess = await conditionCallback(resp);
                 if (isSuccess) {
                     break;
                 }
             } catch (error) {
-                isSuccess = conditionCallback(null, error);
+                isSuccess = await conditionCallback(null, error);
                 if (isSuccess) {
                     break;
                 }
