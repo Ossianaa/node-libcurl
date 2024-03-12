@@ -146,8 +146,8 @@ export class requests {
     private randomJa3: boolean;
     protected retryOption: requestsRetryOption = {
         retryNum: 0,
-        conditionCallback(resp) {
-            return true;
+        conditionCallback(resp, error) {
+            return !error;
         },
     };
 
