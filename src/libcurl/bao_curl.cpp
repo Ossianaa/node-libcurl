@@ -58,6 +58,8 @@ void BaoCurl::init()
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIEFILE, NULL));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PRIVATE, this));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_FORBID_REUSE, 1L));
+	// CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_SESSIONID_CACHE, 0L));
 	//  curl_easy_setopt(this->m_pCURL, CURLOPT_TCP_KEEPALIVE, 1L);
 
 	// /* keep-alive idle time to 120 seconds */
@@ -342,7 +344,7 @@ void BaoCurl::setJA3Fingerprint(
 	int tls_version, std::string &cipher, std::string &tls13_cipher, std::string &extensions, std::string &support_groups, int ec_point_formats)
 {
 
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 | CURL_SSLVERSION_MAX_TLSv1_3));
 
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_CIPHER_LIST, cipher.c_str()));
 	// CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS13_CIPHERS, tls13_cipher.c_str()));
