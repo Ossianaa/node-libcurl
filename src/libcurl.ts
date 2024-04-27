@@ -146,6 +146,7 @@ export enum LibCurlJA3SupportGroup {
     X25519 = 29,
     ffdhe2048 = 256,
     ffdhe3072 = 257,
+    X25519Kyber768Draft00 = 25497,
 }
 
 export enum LibCurlJA3EcPointFormat {
