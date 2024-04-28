@@ -101,6 +101,8 @@ interface requestsInitOption {
     instance?: LibCurl;
 
     ja3?: LibCurlJA3FingerPrintInfo;
+
+    connectReuse?: boolean;
 }
 
 type requestsParamsInfo = URLSearchParams | string | { [key: string]: string };
@@ -162,6 +164,7 @@ export class requests {
             httpVersion,
             interface: interface_,
             ja3,
+            connectReuse,
         } = option;
         const curl = (this.option.instance ||= new LibCurl());
         switch (typeof cookies) {
@@ -210,6 +213,9 @@ export class requests {
         this.randomJa3 = !ja3;
         if (ja3) {
             this.lastJa3 = ja3;
+        }
+        if (typeof connectReuse != 'undefined') {
+            curl.enableConnectReuse(connectReuse);
         }
     }
 

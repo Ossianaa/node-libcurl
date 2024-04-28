@@ -58,7 +58,7 @@ void BaoCurl::init()
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIEFILE, NULL));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PRIVATE, this));
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_FORBID_REUSE, 1L));
+	enableConnectReuse(false);
 	// CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_SESSIONID_CACHE, 0L));
 	//  curl_easy_setopt(this->m_pCURL, CURLOPT_TCP_KEEPALIVE, 1L);
 
@@ -316,6 +316,11 @@ void BaoCurl::setHttpVersion(BaoCurl::HttpVersion version)
 		return;
 	}
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP_VERSION, temp));
+}
+
+void BaoCurl::enableConnectReuse(bool enable)
+{
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_FORBID_REUSE, enable ? 0L : 1L));
 }
 
 unsigned int BaoCurl::getLastCurlCode()

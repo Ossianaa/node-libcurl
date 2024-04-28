@@ -72,6 +72,7 @@ public:
 		http2,
 	};
 	void setHttpVersion(HttpVersion);
+	void enableConnectReuse(bool);
 	unsigned int getLastCurlCode();
 	const char* getLastCurlCodeError();
 	curl_off_t getResponseContentLength();

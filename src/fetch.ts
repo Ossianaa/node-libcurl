@@ -29,6 +29,7 @@ interface LibCurlRequestInfo {
      */
     instance?: LibCurl;
     ja3?: LibCurlJA3FingerPrintInfo;
+    connectReuse?: boolean;
 }
 
 interface LibCurlResponseInfo {
@@ -60,6 +61,7 @@ export async function fetch(
         timeout,
         interface: interface_,
         ja3,
+        connectReuse,
     } = request;
     curl.open(method, url + "");
     if (headers) {
@@ -90,6 +92,9 @@ export async function fetch(
         curl.setTimeout(timeout, timeout);
     }
     curl.setJA3Fingerprint(ja3 || libcurlRandomJA3Fingerprint());
+    if (typeof connectReuse != 'undefined') {
+        curl.enableConnectReuse(connectReuse);
+    }
     await curl.send(body);
     return {
         status: () => curl.getResponseStatus(),
