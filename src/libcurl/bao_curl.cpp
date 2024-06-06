@@ -321,6 +321,7 @@ void BaoCurl::setHttpVersion(BaoCurl::HttpVersion version)
 void BaoCurl::enableConnectReuse(bool enable)
 {
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_FORBID_REUSE, enable ? 0L : 1L));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PIPEWAIT, enable ? 0L : 1L));
 }
 
 unsigned int BaoCurl::getLastCurlCode()
