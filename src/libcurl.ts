@@ -236,7 +236,7 @@ export class LibCurlError extends Error {
 export class LibCurl {
     private m_libCurl_impl_: any;
     private m_isSending_: boolean;
-    private m_requestHeaderMap_: Map<string, string>;
+    private m_requestHeaderMap_: LibCurlHeadersAttr;
     private m_autoSortRequestHeaders: boolean = false;
 
     constructor() {

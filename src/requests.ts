@@ -82,6 +82,9 @@ interface requestsInitOption {
     cookies?: requestsCookiesInfo | requestsCookiesInfoWithUri;
     proxy?: requestsProxyInfo;
     body?: requestsBodyInfo;
+
+    defaultRequestHeaders?: requestsHeadersInfo;
+
     httpVersion?: requestsHttpVersionInfo;
     /**
      * 打印curl内部访问日志
@@ -155,6 +158,7 @@ export class requests {
     private needSetCookies: boolean;
     private lastJa3: string;
     private randomJa3: boolean;
+    private defaultRequestsHeaderMap: LibCurlHeadersAttr;
     protected retryOption: requestsRetryOption = {
         retryNum: 0,
         conditionCallback(resp, error) {
@@ -163,6 +167,7 @@ export class requests {
     };
 
     constructor(option: requestsInitOption = {}) {
+        this.defaultRequestsHeaderMap = new Map();
         this.option = { ...option };
         const {
             cookies,
@@ -175,6 +180,7 @@ export class requests {
             ja3,
             connectReuse,
             autoSortRequestHeaders,
+            defaultRequestHeaders,
         } = option;
         const curl = (this.option.instance ||= new LibCurl());
         switch (typeof cookies) {
@@ -224,11 +230,46 @@ export class requests {
         if (ja3) {
             this.lastJa3 = ja3;
         }
+        if (typeof defaultRequestHeaders != "undefined") {
+            this.setDefaultRequestHeader(defaultRequestHeaders);
+        }
         if (typeof connectReuse != "undefined") {
             curl.enableConnectReuse(connectReuse);
         }
         if (typeof autoSortRequestHeaders != "undefined") {
             curl.enableAutoSortRequestHeaders(autoSortRequestHeaders);
+        }
+    }
+
+    private setDefaultRequestHeader(headers: LibCurlHeadersInfo) {
+        if (!headers) {
+            return;
+        }
+        const filterHeaders = ["Content-Length", "Content-Type"];
+        if (headers instanceof Map) {
+            headers.forEach(
+                (value, key) =>
+                    !filterHeaders.includes(key) &&
+                    this.defaultRequestsHeaderMap.set(key, value),
+            );
+        } else if (typeof headers == "string") {
+            headers
+                .split("\n")
+                .filter(Boolean)
+                .filter((e) => !filterHeaders.includes(e))
+                .forEach((header) => {
+                    const [key, value = ""] = header.split(": ");
+                    this.defaultRequestsHeaderMap.set(key, value);
+                });
+        } else if (typeof headers == "object") {
+            Object.keys(headers)
+                .filter((e) => !filterHeaders.includes(e))
+                .forEach((key) => {
+                    const value = headers[key];
+                    this.defaultRequestsHeaderMap.set(key, value);
+                });
+        } else {
+            throw new TypeError("unkown type");
         }
     }
 
@@ -278,6 +319,9 @@ export class requests {
             );
         }
         curl.open(method, url_);
+        if (this.defaultRequestsHeaderMap.size) {
+            curl.setRequestHeaders(this.defaultRequestsHeaderMap);
+        }
         if (headers) {
             curl.setRequestHeaders(headers);
         }
