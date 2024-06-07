@@ -1,4 +1,4 @@
-import { BaoLibCurl } from "../scripts/bindings";
+import { BaoLibCurl, processRequestHeaders } from "../scripts/bindings";
 import { httpCookiesToArray, cookieOptFilter } from "./utils";
 
 BaoLibCurl.globalInit();
@@ -236,11 +236,12 @@ export class LibCurlError extends Error {
 export class LibCurl {
     private m_libCurl_impl_: any;
     private m_isSending_: boolean;
+    private m_requestHeaderMap_: Map<string, string>;
+    private m_autoSortRequestHeaders: boolean = false;
+
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
-        /* this.setJA3Fingerprint(
-            '771,4866-4865-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,27-51-17513-35-45-16-13-0-10-23-18-43-11-5-65281-21-41,29-23-24,0'
-        ) */
+        this.m_requestHeaderMap_ = new Map();
     }
     private checkSending(): void {
         if (this.m_isSending_) {
@@ -259,14 +260,17 @@ export class LibCurl {
         throw new Error(error);
     }
 
+    public enableAutoSortRequestHeaders(enable: boolean) {
+        this.m_autoSortRequestHeaders = enable;
+    }
+
     public open(method: LibCurlMethodInfo, url: LibCurlURLInfo): void {
         this.checkSending();
         this.m_libCurl_impl_.open(method, url + "");
     }
 
     public setRequestHeader(key: string, value: string): void {
-        this.checkSending();
-        this.m_libCurl_impl_.setRequestHeader(key, value);
+        this.m_requestHeaderMap_.set(key, value);
     }
 
     /**
@@ -279,15 +283,19 @@ export class LibCurl {
             return;
         }
         if (headers instanceof Map) {
-            headers.forEach((value, key) =>
-                this.m_libCurl_impl_.setRequestHeader(key, value),
-            );
+            headers.forEach((value, key) => this.setRequestHeader(key, value));
         } else if (typeof headers == "string") {
-            this.m_libCurl_impl_.setRequestHeaders(headers);
+            headers
+                .split("\n")
+                .filter(Boolean)
+                .forEach((header) => {
+                    const [key, value = ""] = header.split(": ");
+                    this.setRequestHeader(key, value);
+                });
         } else if (typeof headers == "object") {
             Object.keys(headers).forEach((key) => {
                 const value = headers[key];
-                this.m_libCurl_impl_.setRequestHeader(key, value);
+                this.setRequestHeader(key, value);
             });
         } else {
             throw new TypeError("unkown type");
@@ -491,7 +499,7 @@ export class LibCurl {
         this.checkSending();
         this.m_libCurl_impl_.setHttpVersion(version);
     }
-    
+
     /**
      *
      * @param enable
@@ -600,6 +608,130 @@ export class LibCurl {
         );
     }
 
+    private beforeProcessRequestHeaders(contentLength?: number) {
+        if (typeof contentLength == "number") {
+            this.setRequestHeader("Content-Length", contentLength + "");
+        }
+        if (!this.m_autoSortRequestHeaders) {
+            for (const [key, value] of this.m_requestHeaderMap_.entries()) {
+                this.m_libCurl_impl_.setRequestHeader(key, value);
+            }
+            this.m_requestHeaderMap_.clear();
+            return;
+        }
+        const fixedPrefixArr = [
+            "Host",
+            "Connection",
+            "Content-Length",
+            "Pragma",
+            "Cache-Control",
+        ];
+        const clientHintArr = [
+            "Upgrade-Insecure-Requests",
+            "sec-ch-ua",
+            "sec-ch-ua-mobile",
+            "sec-ch-ua-full-version",
+            "sec-ch-ua-arch",
+            "sec-ch-ua-platform",
+            "sec-ch-ua-platform-version",
+            "sec-ch-ua-model",
+            "sec-ch-ua-bitness",
+            "sec-ch-ua-wow64",
+            "sec-ch-ua-full-version-list",
+            "sec-ch-ua-form-factors",
+            "User-Agent",
+        ];
+        const fixedSuffixArr = [
+            "Accept",
+            "Origin",
+            "Sec-Fetch-Site",
+            "Sec-Fetch-Mode",
+            "Sec-Fetch-User",
+            "Sec-Fetch-Dest",
+            "Referer",
+            "Accept-Encoding",
+            "Accept-Language",
+            "priority",
+            "If-None-Match",
+        ];
+
+        const processedFixedPrefixArr = [];
+        const processedFixedSuffixArr = [];
+
+        const extraHeaders = [];
+        const customHeaders = [];
+        for (const [key, value] of this.m_requestHeaderMap_.entries()) {
+            const _key = key.toLowerCase();
+            let _;
+            if ((_ = fixedPrefixArr.find((e) => e.toLowerCase() == _key))) {
+                processedFixedPrefixArr.push([_, value]);
+                continue;
+            }
+            if ((_ = fixedSuffixArr.find((e) => e.toLowerCase() == _key))) {
+                processedFixedSuffixArr.push([_, value]);
+                continue;
+            }
+            if ((_ = clientHintArr.find((e) => e.toLowerCase() == _key))) {
+                extraHeaders.push([_, value]);
+            } else {
+                customHeaders.push([key, value]);
+            }
+        }
+
+        extraHeaders.sort((a, b) =>
+            clientHintArr.indexOf(a[0]) < clientHintArr.indexOf(b[0]) ? -1 : 1,
+        );
+
+        customHeaders.sort(function codeUnitCompareIgnoringASCIICase(
+            [str1],
+            [str2],
+        ) {
+            str1 = str1.toLowerCase();
+            str2 = str2.toLowerCase();
+            let pos = 0;
+            let l1 = str1.length,
+                l2 = str2.length;
+            const lmin = Math.min(str1.length, str2.length);
+            while (pos < lmin && str1[pos] == str2[pos]) {
+                ++pos;
+            }
+            if (pos < lmin) {
+                return str1[pos] > str2[pos] ? 1 : -1;
+            }
+            if (l1 == l2) return 0;
+            return l1 > l2 ? 1 : -1;
+        });
+        processedFixedPrefixArr.sort((a, b) =>
+            fixedPrefixArr.indexOf(a[0]) < fixedPrefixArr.indexOf(b[0])
+                ? -1
+                : 1,
+        );
+        processedFixedSuffixArr.sort((a, b) =>
+            fixedSuffixArr.indexOf(a[0]) < fixedSuffixArr.indexOf(b[0])
+                ? -1
+                : 1,
+        );
+        const processedHeaders = processRequestHeaders(
+            extraHeaders.map((e) => e[0].toLowerCase()),
+            customHeaders.map((e) => e[0].toLowerCase()),
+        ).reduce((e, key: string) => {
+            const [_key, value] =
+                extraHeaders.find((j) => j[0].toLowerCase() == key) ||
+                customHeaders.find((j) => j[0].toLowerCase() == key);
+            e.push([_key, value]);
+            return e;
+        }, []);
+
+        for (const [key, value] of [
+            ...processedFixedPrefixArr,
+            ...processedHeaders,
+            ...processedFixedSuffixArr,
+        ]) {
+            this.m_libCurl_impl_.setRequestHeader(key, value);
+        }
+        this.m_requestHeaderMap_.clear();
+    }
+
     /**
      *
      * @param body POST PUT PATCH时 发送的body
@@ -610,12 +742,15 @@ export class LibCurl {
         this.m_isSending_ = true;
         let promise;
         if (body) {
-            let sendData;
+            let sendData: LibCurlBodyInfo;
             if (body instanceof URLSearchParams) {
                 sendData = body + "";
+            } else if (typeof body == "object") {
+                sendData = JSON.stringify(body);
             } else {
                 sendData = body;
             }
+            this.beforeProcessRequestHeaders(sendData.length);
             promise = this.m_libCurl_impl_.sendAsync(sendData);
         } else {
             promise = this.m_libCurl_impl_.sendAsync();

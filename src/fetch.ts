@@ -30,6 +30,12 @@ interface LibCurlRequestInfo {
     instance?: LibCurl;
     ja3?: LibCurlJA3FingerPrintInfo;
     connectReuse?: boolean;
+
+    /**
+     * @experimental
+     * 自动重排请求头 对标chrome fetch方法
+     */
+    autoSortRequestHeaders?: boolean;
 }
 
 interface LibCurlResponseInfo {
@@ -62,6 +68,7 @@ export async function fetch(
         interface: interface_,
         ja3,
         connectReuse,
+        autoSortRequestHeaders,
     } = request;
     curl.open(method, url + "");
     if (headers) {
@@ -94,6 +101,9 @@ export async function fetch(
     curl.setJA3Fingerprint(ja3 || libcurlRandomJA3Fingerprint());
     if (typeof connectReuse != 'undefined') {
         curl.enableConnectReuse(connectReuse);
+    }
+    if (typeof autoSortRequestHeaders != "undefined") {
+        curl.enableAutoSortRequestHeaders(autoSortRequestHeaders);
     }
     await curl.send(body);
     return {

@@ -3,7 +3,7 @@
 #include "bao_curl.h"
 #include "bao_curl_websocket.h"
 #include "request_tls_utils.h"
-
+#include "wtf/HashSet.h"
 using namespace std;
 using namespace bao;
 
@@ -730,12 +730,36 @@ Napi::Value BaoLibCurlWarp::globalCleanup(const Napi::CallbackInfo &info)
     return info.Env().Undefined();
 }
 
+Napi::Value processRequestHeaders(const Napi::CallbackInfo &info)
+{
+    Napi::Array extraHeaders = info[0].As<Napi::Array>();
+    Napi::Array customHeaders = info[1].As<Napi::Array>();
+    std::vector<std::string> _extraHeaders;
+    std::vector<std::string> _customHeaders;
+    for (size_t i = 0; i < extraHeaders.Length(); i++)
+    {
+         _extraHeaders.push_back(extraHeaders.Get(i).As<Napi::String>().Utf8Value());
+    }
+     for (size_t i = 0; i < customHeaders.Length(); i++)
+    {
+         _customHeaders.push_back(customHeaders.Get(i).As<Napi::String>().Utf8Value());
+    }
+    std::vector<std::string> result = process_requestHeaders(_extraHeaders, _customHeaders);
+    Napi::Array newArray = Napi::Array::New(info.Env(), extraHeaders.Length() + customHeaders.Length());
+    for (size_t i = 0; i < result.size(); i++)
+    {
+        newArray.Set(i, Napi::String::From(info.Env(), result[i]));
+    }
+    return newArray;
+}
+
 // Initialize native add-on
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
     env.AddCleanupHook([]
     { uninitLibCurl(); });
     BaoLibCurlWarp::Init(env, exports);
+    exports.Set("processRequestHeaders", Napi::Function::New(env, processRequestHeaders));
     return exports;
 }
 NODE_API_MODULE(bao_curl_node_addon, Init)

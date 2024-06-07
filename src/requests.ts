@@ -103,6 +103,12 @@ interface requestsInitOption {
     ja3?: LibCurlJA3FingerPrintInfo;
 
     connectReuse?: boolean;
+
+    /**
+     * @experimental
+     * 自动重排请求头 对标chrome fetch方法
+     */
+    autoSortRequestHeaders?: boolean;
 }
 
 type requestsParamsInfo = URLSearchParams | string | { [key: string]: string };
@@ -123,7 +129,10 @@ interface requestsStaticOption
     extends Omit<requestsInitOption, "body" | "instance">,
         requestsOption {}
 
-type requestsRetryConditionCallback = (resp: requestsResponse | null, error?: Error) => Promise<boolean> | boolean;
+type requestsRetryConditionCallback = (
+    resp: requestsResponse | null,
+    error?: Error,
+) => Promise<boolean> | boolean;
 
 interface requestsRetryOption {
     retryNum: number;
@@ -165,6 +174,7 @@ export class requests {
             interface: interface_,
             ja3,
             connectReuse,
+            autoSortRequestHeaders,
         } = option;
         const curl = (this.option.instance ||= new LibCurl());
         switch (typeof cookies) {
@@ -214,8 +224,11 @@ export class requests {
         if (ja3) {
             this.lastJa3 = ja3;
         }
-        if (typeof connectReuse != 'undefined') {
+        if (typeof connectReuse != "undefined") {
             curl.enableConnectReuse(connectReuse);
+        }
+        if (typeof autoSortRequestHeaders != "undefined") {
+            curl.enableAutoSortRequestHeaders(autoSortRequestHeaders);
         }
     }
 
