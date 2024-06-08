@@ -753,7 +753,7 @@ export class LibCurl {
                 sendData = body;
             }
             // @ts-ignore
-            this.beforeProcessRequestHeaders(sendData.length);
+            this.beforeProcessRequestHeaders(Buffer.from(sendData).length);
             promise = this.m_libCurl_impl_.sendAsync(sendData);
         } else {
             this.beforeProcessRequestHeaders(0);
