@@ -742,14 +742,17 @@ export class LibCurl {
         this.m_isSending_ = true;
         let promise;
         if (body) {
-            let sendData: LibCurlBodyInfo;
+            let sendData: Omit<LibCurlBodyInfo, "object">;
             if (body instanceof URLSearchParams) {
                 sendData = body + "";
+            } else if (body instanceof Uint8Array) {
+                sendData = body;
             } else if (typeof body == "object") {
                 sendData = JSON.stringify(body);
             } else {
                 sendData = body;
             }
+            // @ts-ignore
             this.beforeProcessRequestHeaders(sendData.length);
             promise = this.m_libCurl_impl_.sendAsync(sendData);
         } else {
