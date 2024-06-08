@@ -756,6 +756,7 @@ export class LibCurl {
             this.beforeProcessRequestHeaders(sendData.length);
             promise = this.m_libCurl_impl_.sendAsync(sendData);
         } else {
+            this.beforeProcessRequestHeaders(0);
             promise = this.m_libCurl_impl_.sendAsync();
         }
         return promise
