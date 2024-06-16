@@ -764,6 +764,8 @@ export class LibCurl {
         } else {
             if (["POST", "PATCH", "PUT", "DELETE"].includes(this.m_method_)) {
                 this.beforeProcessRequestHeaders(0);
+            } else {
+                this.beforeProcessRequestHeaders();
             }
             promise = this.m_libCurl_impl_.sendAsync();
         }
