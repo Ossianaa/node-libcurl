@@ -610,6 +610,9 @@ export class LibCurl {
 
     private beforeProcessRequestHeaders(contentLength?: number) {
         if (typeof contentLength == "number") {
+            if (this.m_requestHeaderMap_.has("content-length")) {
+                this.m_requestHeaderMap_.delete("content-length");
+            }
             this.setRequestHeader("Content-Length", contentLength + "");
         }
         if (!this.m_autoSortRequestHeaders) {
@@ -653,6 +656,7 @@ export class LibCurl {
             "Accept-Language",
             "priority",
             "If-None-Match",
+            "Cookie",
         ];
 
         const processedFixedPrefixArr = [];
