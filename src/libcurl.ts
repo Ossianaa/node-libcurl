@@ -235,6 +235,7 @@ export class LibCurlError extends Error {
 
 export class LibCurl {
     private m_libCurl_impl_: any;
+    private m_method_: LibCurlMethodInfo;
     private m_isSending_: boolean;
     private m_requestHeaderMap_: LibCurlHeadersAttr;
     private m_autoSortRequestHeaders: boolean = false;
@@ -266,6 +267,7 @@ export class LibCurl {
 
     public open(method: LibCurlMethodInfo, url: LibCurlURLInfo): void {
         this.checkSending();
+        this.m_method_ = method;
         this.m_libCurl_impl_.open(method, url + "");
     }
 
@@ -760,7 +762,9 @@ export class LibCurl {
             this.beforeProcessRequestHeaders(Buffer.from(sendData).length);
             promise = this.m_libCurl_impl_.sendAsync(sendData);
         } else {
-            this.beforeProcessRequestHeaders(0);
+            if (["POST", "PATCH", "PUT", "DELETE"].includes(this.m_method_)) {
+                this.beforeProcessRequestHeaders(0);
+            }
             promise = this.m_libCurl_impl_.sendAsync();
         }
         return promise
