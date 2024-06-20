@@ -90,7 +90,7 @@
                         "<(module_root_dir)/lib/Release/darwin-x64/libcurl.a",
                         "<(module_root_dir)/lib/Release/darwin-x64/libssl.a",
                         "<(module_root_dir)/lib/Release/darwin-x64/libcrypto.a",
-                        "<(module_root_dir)/lib/Release/linux-x64/libzstd.a"
+                        "<(module_root_dir)/lib/Release/darwin-x64/libzstd.a"
                     ],
                     'xcode_settings': {
                         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
@@ -111,7 +111,7 @@
                         "<(module_root_dir)/lib/Release/darwin-arm64/libcurl.a",
                         "<(module_root_dir)/lib/Release/darwin-arm64/libssl.a",
                         "<(module_root_dir)/lib/Release/darwin-arm64/libcrypto.a",
-                        "<(module_root_dir)/lib/Release/linux-x64/libzstd.a"
+                        "<(module_root_dir)/lib/Release/darwin-arm64/libzstd.a"
                     ],
                     'xcode_settings': {
                         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
