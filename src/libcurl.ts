@@ -624,6 +624,21 @@ export class LibCurl {
             this.m_requestHeaderMap_.clear();
             return;
         }
+        if (
+            !this.m_requestHeaderMap_.has("Accpet") &&
+            !this.m_requestHeaderMap_.has("accept")
+        ) {
+            this.m_requestHeaderMap_.set("Accept", "*/*");
+        }
+        if (
+            !this.m_requestHeaderMap_.has("Accpet-Encoding") &&
+            !this.m_requestHeaderMap_.has("accept-encoding")
+        ) {
+            this.m_requestHeaderMap_.set(
+                "Accept-Encoding",
+                "gzip, deflate, br, zstd",
+            );
+        }
         const fixedPrefixArr = [
             "Host",
             "Connection",
