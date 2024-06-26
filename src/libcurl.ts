@@ -551,10 +551,6 @@ export class LibCurl {
                         "4865",
                         "4866",
                         "4867",
-                        "49187",
-                        "49188",
-                        "49191",
-                        "49192",
                     ].indexOf(key);
                     if (pos == -1) {
                         throw new LibCurlError(
