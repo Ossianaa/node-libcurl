@@ -29,6 +29,7 @@
 
 ## How to Install
 > npm i -g pnpm
+> 
 > pnpm i @ossiana/node-libcurl
 ------------
 
