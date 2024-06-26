@@ -353,7 +353,7 @@ void BaoCurl::setJA3Fingerprint(
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 | CURL_SSLVERSION_MAX_TLSv1_3));
 
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_CIPHER_LIST, cipher.c_str()));
-	// CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS13_CIPHERS, tls13_cipher.c_str()));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS13_CIPHERS, tls13_cipher.c_str()));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_EC_CURVES, support_groups.c_str()));
 	// extensions unsupport
 	// ec_point_formats unsupport
