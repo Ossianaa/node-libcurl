@@ -58,15 +58,6 @@ void BaoCurl::init()
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIEFILE, NULL));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PRIVATE, this));
-	enableConnectReuse(false);
-	// CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_SESSIONID_CACHE, 0L));
-	//  curl_easy_setopt(this->m_pCURL, CURLOPT_TCP_KEEPALIVE, 1L);
-
-	// /* keep-alive idle time to 120 seconds */
-	// curl_easy_setopt(this->m_pCURL, CURLOPT_TCP_KEEPIDLE, 120L);
-
-	// /* interval time between keep-alive probes: 60 seconds */
-	// curl_easy_setopt(this->m_pCURL, CURLOPT_TCP_KEEPINTVL, 60L);
 	this->setTimeout(15, 15);
 }
 
