@@ -28,7 +28,8 @@
 ------------
 
 ## How to Install
-> npm i -g @ossiana/node-libcurl
+> npm i -g pnpm
+> pnpm i @ossiana/node-libcurl
 ------------
 
 
@@ -49,7 +50,7 @@ const { LibCurl, fetch, requests } = require('@ossiana/node-libcurl')
 ```javascript
 fetch("https://xxx.io/api/graphql/").then(e => e.json())
 ```
-### requests  style
+### requests  style (🔥)
 ```javascript
 const session = requests.session();
 
