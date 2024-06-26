@@ -3,3 +3,4 @@
 /*.tgz
 /test/libcurl_test.js
 /dist
+/.vscode
