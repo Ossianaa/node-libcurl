@@ -15,4 +15,12 @@
 
 ## docker build
 
-future...
+```bash
+docker build . -f Dockerfile-arm64-apple-darwin -t curl_arm64-apple-darwin
+
+docker run --rm -v /path/to/your:/output curl_arm64-apple-darwin
+```
+
+Now `libcrypto.a` `libssl.a` `libzstd.a` `libcurl.a` are generated in `/path/to/your`.
+
+Windows dockerfile future...
