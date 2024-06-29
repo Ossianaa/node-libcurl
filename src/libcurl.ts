@@ -522,7 +522,7 @@ export class LibCurl {
      */
     public setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo): void {
         this.checkSending();
-        const ja3Arr = ja3.replaceAll("s", "").split(",");
+        const ja3Arr = ja3.split(",");
         if (ja3Arr.length != 5) {
             throw new LibCurlError("ja3 fingerprint error");
         }
