@@ -52,7 +52,7 @@ export type LibCurlCookieAttrObject = {
 
 export type LibCurlCookiesAttr = Map<string, LibCurlCookieAttrObject>;
 
-export type LibCurlHeadersAttr = Map<string, string>;
+export type LibCurlHeadersAttr = Headers;
 
 export type LibCurlInterfaceInfo = string;
 
@@ -435,17 +435,8 @@ export class LibCurl {
     public getResponseHeadersMap(): LibCurlHeadersAttr {
         this.checkSending();
         const headers_ = this.m_libCurl_impl_.getResponseHeaders();
-        return headers_
-            .split("\r\n")
-            .slice(1) //HTTP/1.1 200 OK
-            .reduce((e: LibCurlHeadersAttr, t: string) => {
-                if (!t) {
-                    return e;
-                }
-                const [key, value] = t.split(": ");
-                e.set(key, value);
-                return e;
-            }, new Map<string, string>());
+        const lines = headers_.split("\r\n").filter((header: string) => !header.startsWith('HTTP/') && !!header);
+        return new Headers(lines.map((line: string) => line.split(': ')));
     }
 
     /**
