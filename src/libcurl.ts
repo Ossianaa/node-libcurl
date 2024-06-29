@@ -237,12 +237,12 @@ export class LibCurl {
     private m_libCurl_impl_: any;
     private m_method_: LibCurlMethodInfo;
     private m_isSending_: boolean;
-    private m_requestHeaderMap_: LibCurlHeadersAttr;
+    private m_requestHeaders_: LibCurlHeadersAttr;
     private m_autoSortRequestHeaders: boolean = false;
 
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
-        this.m_requestHeaderMap_ = new Headers();
+        this.m_requestHeaders_ = new Headers();
     }
     private checkSending(): void {
         if (this.m_isSending_) {
@@ -272,7 +272,7 @@ export class LibCurl {
     }
 
     public setRequestHeader(key: string, value: string): void {
-        this.m_requestHeaderMap_.set(key, value);
+        this.m_requestHeaders_.set(key, value);
     }
 
     /**
@@ -599,29 +599,29 @@ export class LibCurl {
 
     private beforeProcessRequestHeaders(contentLength?: number) {
         if (typeof contentLength == "number") {
-            if (this.m_requestHeaderMap_.has("content-length")) {
-                this.m_requestHeaderMap_.delete("content-length");
+            if (this.m_requestHeaders_.has("content-length")) {
+                this.m_requestHeaders_.delete("content-length");
             }
             this.setRequestHeader("Content-Length", contentLength + "");
         }
         if (!this.m_autoSortRequestHeaders) {
-            for (const [key, value] of this.m_requestHeaderMap_.entries()) {
+            for (const [key, value] of this.m_requestHeaders_.entries()) {
                 this.m_libCurl_impl_.setRequestHeader(key, value);
             }
-            this.m_requestHeaderMap_ = new Headers();
+            this.m_requestHeaders_ = new Headers();
             return;
         }
         if (
-            !this.m_requestHeaderMap_.has("Accept") &&
-            !this.m_requestHeaderMap_.has("accept")
+            !this.m_requestHeaders_.has("Accept") &&
+            !this.m_requestHeaders_.has("accept")
         ) {
-            this.m_requestHeaderMap_.set("Accept", "*/*");
+            this.m_requestHeaders_.set("Accept", "*/*");
         }
         if (
-            !this.m_requestHeaderMap_.has("Accept-Encoding") &&
-            !this.m_requestHeaderMap_.has("accept-encoding")
+            !this.m_requestHeaders_.has("Accept-Encoding") &&
+            !this.m_requestHeaders_.has("accept-encoding")
         ) {
-            this.m_requestHeaderMap_.set(
+            this.m_requestHeaders_.set(
                 "Accept-Encoding",
                 "gzip, deflate, br, zstd",
             );
@@ -668,7 +668,7 @@ export class LibCurl {
 
         const extraHeaders = [];
         const customHeaders = [];
-        for (const [key, value] of this.m_requestHeaderMap_.entries()) {
+        for (const [key, value] of this.m_requestHeaders_.entries()) {
             const _key = key.toLowerCase();
             let _;
             if ((_ = fixedPrefixArr.find((e) => e.toLowerCase() == _key))) {
@@ -737,7 +737,7 @@ export class LibCurl {
         ]) {
             this.m_libCurl_impl_.setRequestHeader(key, value);
         }
-        this.m_requestHeaderMap_ = new Headers();
+        this.m_requestHeaders_ = new Headers();
     }
 
     /**
