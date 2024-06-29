@@ -242,7 +242,7 @@ export class LibCurl {
 
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
-        this.m_requestHeaderMap_ = new Map();
+        this.m_requestHeaderMap_ = new Headers();
     }
     private checkSending(): void {
         if (this.m_isSending_) {
@@ -435,8 +435,12 @@ export class LibCurl {
     public getResponseHeadersMap(): LibCurlHeadersAttr {
         this.checkSending();
         const headers_ = this.m_libCurl_impl_.getResponseHeaders();
-        const lines = headers_.split("\r\n").filter((header: string) => !header.startsWith('HTTP/') && !!header);
-        return new Headers(lines.map((line: string) => line.split(': ')));
+        const lines = headers_
+            .split("\r\n")
+            .filter(
+                (header: string) => !header.startsWith("HTTP/") && !!header,
+            );
+        return new Headers(lines.map((line: string) => line.split(": ")));
     }
 
     /**
@@ -518,7 +522,7 @@ export class LibCurl {
      */
     public setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo): void {
         this.checkSending();
-        const ja3Arr = ja3.replaceAll("\s", "").split(",");
+        const ja3Arr = ja3.replaceAll("s", "").split(",");
         if (ja3Arr.length != 5) {
             throw new LibCurlError("ja3 fingerprint error");
         }
@@ -538,11 +542,7 @@ export class LibCurl {
                     );
                 }
                 if (cipher.startsWith("TLS_")) {
-                    const pos = [
-                        "4865",
-                        "4866",
-                        "4867",
-                    ].indexOf(key);
+                    const pos = ["4865", "4866", "4867"].indexOf(key);
                     if (pos == -1) {
                         throw new LibCurlError(
                             `ja3 fingerprint TLSv1.3 cipher ${key} no support`,
@@ -608,7 +608,7 @@ export class LibCurl {
             for (const [key, value] of this.m_requestHeaderMap_.entries()) {
                 this.m_libCurl_impl_.setRequestHeader(key, value);
             }
-            this.m_requestHeaderMap_.clear();
+            this.m_requestHeaderMap_ = new Headers();
             return;
         }
         if (
@@ -737,7 +737,7 @@ export class LibCurl {
         ]) {
             this.m_libCurl_impl_.setRequestHeader(key, value);
         }
-        this.m_requestHeaderMap_.clear();
+        this.m_requestHeaderMap_ = new Headers();
     }
 
     /**
