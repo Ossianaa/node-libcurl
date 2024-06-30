@@ -158,7 +158,7 @@ export class requests {
     private needSetCookies: boolean;
     private lastJa3: string;
     private randomJa3: boolean;
-    private defaultRequestsHeaderMap: LibCurlHeadersAttr;
+    private defaultRequestsHeaders: LibCurlHeadersAttr;
     protected retryOption: requestsRetryOption = {
         retryNum: 0,
         conditionCallback(resp, error) {
@@ -167,7 +167,7 @@ export class requests {
     };
 
     constructor(option: requestsInitOption = {}) {
-        this.defaultRequestsHeaderMap = new Map();
+        this.defaultRequestsHeaders = new Headers();
         this.option = { ...option };
         const {
             cookies,
@@ -250,7 +250,7 @@ export class requests {
             headers.forEach(
                 (value, key) =>
                     !filterHeaders.includes(key) &&
-                    this.defaultRequestsHeaderMap.set(key, value),
+                    this.defaultRequestsHeaders.set(key, value),
             );
         } else if (typeof headers == "string") {
             headers
@@ -259,14 +259,14 @@ export class requests {
                 .filter((e) => !filterHeaders.includes(e))
                 .forEach((header) => {
                     const [key, value = ""] = header.split(": ");
-                    this.defaultRequestsHeaderMap.set(key, value);
+                    this.defaultRequestsHeaders.set(key, value);
                 });
         } else if (typeof headers == "object") {
             Object.keys(headers)
                 .filter((e) => !filterHeaders.includes(e))
                 .forEach((key) => {
                     const value = headers[key];
-                    this.defaultRequestsHeaderMap.set(key, value);
+                    this.defaultRequestsHeaders.set(key, value);
                 });
         } else {
             throw new TypeError("unkown type");
@@ -319,8 +319,8 @@ export class requests {
             );
         }
         curl.open(method, url_);
-        if (this.defaultRequestsHeaderMap.size) {
-            curl.setRequestHeaders(this.defaultRequestsHeaderMap);
+        if (!this.defaultRequestsHeaders.keys().next().done) {
+            curl.setRequestHeaders(this.defaultRequestsHeaders);
         }
         if (headers) {
             curl.setRequestHeaders(headers);
