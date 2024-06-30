@@ -23,4 +23,11 @@ docker run --rm -v /path/to/your:/output curl_arm64-apple-darwin
 
 Now `libcrypto.a` `libssl.a` `libzstd.a` `libcurl.a` are generated in `/path/to/your`.
 
-Windows dockerfile future...
+### Windows
+```bash
+docker build . -f Dockerfile-x86_64-pc-windows-msvc -t curl_x86_64-pc-windows-msvc
+
+docker run --rm -v /path/to/your:/home/wine/.wine/drive_c/output curl_x86_64-pc-windows-msvc
+```
+
+Now `libcurl.dll` `libcurl_imp.lib` are generated in `/path/to/your`.
