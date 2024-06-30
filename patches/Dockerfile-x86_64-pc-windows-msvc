@@ -1,0 +1,122 @@
+FROM ubuntu:20.04 as stage1
+
+ARG CURL_COMMIT=d755a5f7c009dd63a61b2c745180d8ba937cbfeb
+ARG BORINGSSL_COMMIT=23824fa0fed94f4660ffafb15aaea8b317f2c8a6
+ARG NGHTTP2_COMMIT=05b792901933664e7aeb7ebb8c87db81123d484a
+ARG ZLIB_COMMIT=04f42ceca40f73e2978b50e93806c2a18c1281fc
+ARG ZSTD_COMMIT=a58b48ef0e543980888a4d9d16c9072ff22135ca
+ARG BROTLI_COMMIT=71fe6cac061ac62c0241f410fbd43a04a6b4f303
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
+WORKDIR /src
+
+RUN apt-get update && \
+    apt-get install -y curl patch
+
+RUN curl -L https://github.com/google/brotli/archive/${BROTLI_COMMIT}.tar.gz -o brotli-${BROTLI_COMMIT}.tar.gz && \
+    tar -xf brotli-${BROTLI_COMMIT}.tar.gz
+
+RUN curl -L https://github.com/facebook/zstd/archive/${ZSTD_COMMIT}.tar.gz -o zstd-${ZSTD_COMMIT}.tar.gz && \
+    tar -xf zstd-${ZSTD_COMMIT}.tar.gz
+
+RUN curl -L https://github.com/madler/zlib/archive/${ZLIB_COMMIT}.tar.gz -o zlib-${ZLIB_COMMIT}.tar.gz && \
+    tar -xf zlib-${ZLIB_COMMIT}.tar.gz
+    
+RUN curl -L https://github.com/nghttp2/nghttp2/archive/${NGHTTP2_COMMIT}.tar.gz -o nghttp2-${NGHTTP2_COMMIT}.tar.gz && \
+    tar -xf nghttp2-${NGHTTP2_COMMIT}.tar.gz
+
+RUN curl -L https://github.com/google/boringssl/archive/${BORINGSSL_COMMIT}.tar.gz -o boringssl-${BORINGSSL_COMMIT}.tar.gz && \
+    tar -xf boringssl-${BORINGSSL_COMMIT}.tar.gz
+
+COPY boringssl-${BORINGSSL_COMMIT}.patch boringssl-${BORINGSSL_COMMIT}/
+
+RUN cd boringssl-${BORINGSSL_COMMIT} && \
+    patch -p1 < boringssl-${BORINGSSL_COMMIT}.patch
+
+RUN curl -L https://github.com/curl/curl/archive/${CURL_COMMIT}.tar.gz -o curl-${CURL_COMMIT}.tar.gz && \
+    tar -xf curl-${CURL_COMMIT}.tar.gz
+
+COPY curl-${CURL_COMMIT}.patch curl-${CURL_COMMIT}/
+
+RUN cd curl-${CURL_COMMIT} && \
+    patch -p1 < curl-${CURL_COMMIT}.patch
+
+RUN mv boringssl-${BORINGSSL_COMMIT} boringssl && \
+    mv nghttp2-${NGHTTP2_COMMIT} nghttp2 && \
+    mv brotli-${BROTLI_COMMIT} brotli && \
+    mv zlib-${ZLIB_COMMIT} zlib && \
+    mv zstd-${ZSTD_COMMIT} zstd && \
+    mv curl-${CURL_COMMIT} curl
+
+RUN apt-get install -y zip
+
+RUN curl -L https://go.dev/dl/go1.22.4.windows-amd64.zip -o go1.22.4.windows-amd64.zip && \
+    unzip go1.22.4.windows-amd64.zip
+
+FROM madduci/docker-wine-msvc:17.8-2022 as stage2
+
+COPY --from=stage1 /src /home/wine/.wine/drive_c/
+
+WORKDIR /home/wine/.wine/drive_c/
+
+RUN echo "cd C:/brotli && del build && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed -DBUILD_SHARED_LIBS=0 .. && \
+    cmake --build . --config Release --target install &&\
+    \
+    cd C:/zstd && \
+    cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed ./cmake && \
+    cmake --build . --config Release --target install &&\
+    \
+    cd C:/zlib && del build && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed .. && \
+    cmake --build . --config Release --target install &&\
+    \
+    cd C:/nghttp2 && del build && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed -DENABLE_SHARED_LIB=0 -DENABLE_STATIC_LIB=1 .. && \
+    cmake --build . --config Release --target install &&\
+    \
+    cd C:/boringssl && del build && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./installed -DOPENSSL_NO_ASM=1 -DGO_EXECUTABLE=C:/go/bin/go.exe -DBUILD_SHARED_LIBS=0 -DCMAKE_POSITION_INDEPENDENT_CODE=1 -GNinja .. && \
+    ninja ssl && \
+    mkdir lib && \
+    xcopy ./ssl ./lib /E /I /Y && \
+    xcopy ./crypto ./lib /E /I /Y && \
+    xcopy ../include ./include /E /I /Y &&\
+    \
+    cd C:/curl && del build && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=./installed \
+      -DBUILD_SHARED_LIBS=1 \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCURL_USE_OPENSSL=1 \
+      -DOPENSSL_ROOT_DIR=C:/boringssl/build/ \
+      -DZLIB_INCLUDE_DIR=C:/zlib/build/installed/include \
+      -DZLIB_LIBRARY=C:/zlib/build/installed/lib/zlibstatic.lib \
+      -DUSE_NGHTTP2=1 \
+      -DNGHTTP2_INCLUDE_DIR=C:/nghttp2/build/installed/include \
+      -DNGHTTP2_LIBRARY=C:/nghttp2/build/installed/lib/nghttp2.lib \
+      -DCURL_ZSTD=1 \
+      -DZstd_INCLUDE_DIR=C:/zstd/build/installed/include \
+      -DZstd_LIBRARY=C:/zstd/build/installed/lib/zstd_static.lib \
+      -DCURL_BROTLI=1 \
+      -DBROTLI_INCLUDE_DIR=C:/brotli/build/installed/include \
+      -DBROTLIDEC_LIBRARY=C:/brotli/build/installed/lib/brotlidec.lib \
+      -DBROTLICOMMON_LIBRARY=C:/brotli/build/installed/lib/brotlicommon.lib \
+      -DENABLE_WEBSOCKETS=1 \
+      -DBUILD_CURL_EXE=0 \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=1 \
+      -DCMAKE_C_FLAGS="-DNGHTTP2_STATICLIB=1" \
+      .. && \
+    ninja libcurl_shared && \
+    \
+    xcopy ./lib C:/output /E /I /Y  && \
+    " > build.bat
+
+CMD ["cmd", "/c" ,"build.bat"]
