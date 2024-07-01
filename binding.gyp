@@ -101,10 +101,10 @@
                     'libraries': [
                         "/System/Library/Frameworks/CoreFoundation.framework",
                         "/System/Library/Frameworks/SystemConfiguration.framework",
-                        "<(module_root_dir)/lib/darwin-arm64/libcurl.a",
-                        "<(module_root_dir)/lib/darwin-arm64/libssl.a",
-                        "<(module_root_dir)/lib/darwin-arm64/libcrypto.a",
-                        "<(module_root_dir)/lib/darwin-arm64/libzstd.a"
+                        "<(module_root_dir)/lib/arm64-apple-darwin/libcurl.a",
+                        "<(module_root_dir)/lib/arm64-apple-darwin/libssl.a",
+                        "<(module_root_dir)/lib/arm64-apple-darwin/libcrypto.a",
+                        "<(module_root_dir)/lib/arm64-apple-darwin/libzstd.a"
                     ],
                     'xcode_settings': {
                         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
