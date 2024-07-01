@@ -39,20 +39,13 @@
                         },
                     },
                     'libraries': [
-                        # "<(module_root_dir)/lib/Debug/libcurl-d_imp.lib"
-                        "<(module_root_dir)/lib/Release/win32-x64/libcurl_imp.lib"
+                        "<(module_root_dir)/lib/x86_64-pc-windows-msvc/libcurl_imp.lib"
                     ],
                     "copies": [
-                        # {
-                        #     "destination": "<(module_root_dir)/build/Debug/",
-                        #     "files": [
-                        #         "<(module_root_dir)/lib/Debug/libcurl-d.dll"
-                        #     ]
-                        # },
                         {
-                            "destination": "<(module_root_dir)/build/Release/",
+                            "destination": "<(module_root_dir)/build/Release",
                             "files": [
-                                "<(module_root_dir)/lib/Release/win32-x64/libcurl.dll"
+                                "<(module_root_dir)/lib/x86_64-pc-windows-msvc/libcurl.dll"
                             ]
                         }
                     ]
@@ -70,10 +63,10 @@
                         },
                     },
                     'libraries': [
-                        "<(module_root_dir)/lib/Release/linux-x64/libcurl.a",
-                        "<(module_root_dir)/lib/Release/linux-x64/libssl.a",
-                        "<(module_root_dir)/lib/Release/linux-x64/libcrypto.a",
-                        "<(module_root_dir)/lib/Release/linux-x64/libzstd.a"
+                        "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libcurl.a",
+                        "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libssl.a",
+                        "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libcrypto.a",
+                        "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libzstd.a"
                     ],
                 
                 }],
@@ -87,10 +80,10 @@
                     'libraries': [
                         "/System/Library/Frameworks/CoreFoundation.framework",
                         "/System/Library/Frameworks/SystemConfiguration.framework",
-                        "<(module_root_dir)/lib/Release/darwin-x64/libcurl.a",
-                        "<(module_root_dir)/lib/Release/darwin-x64/libssl.a",
-                        "<(module_root_dir)/lib/Release/darwin-x64/libcrypto.a",
-                        "<(module_root_dir)/lib/Release/darwin-x64/libzstd.a"
+                        "<(module_root_dir)/lib/x86_64-apple-darwin/libcurl.a",
+                        "<(module_root_dir)/lib/x86_64-apple-darwin/libssl.a",
+                        "<(module_root_dir)/lib/x86_64-apple-darwin/libcrypto.a",
+                        "<(module_root_dir)/lib/x86_64-apple-darwin/libzstd.a"
                     ],
                     'xcode_settings': {
                         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
@@ -108,10 +101,10 @@
                     'libraries': [
                         "/System/Library/Frameworks/CoreFoundation.framework",
                         "/System/Library/Frameworks/SystemConfiguration.framework",
-                        "<(module_root_dir)/lib/Release/darwin-arm64/libcurl.a",
-                        "<(module_root_dir)/lib/Release/darwin-arm64/libssl.a",
-                        "<(module_root_dir)/lib/Release/darwin-arm64/libcrypto.a",
-                        "<(module_root_dir)/lib/Release/darwin-arm64/libzstd.a"
+                        "<(module_root_dir)/lib/darwin-arm64/libcurl.a",
+                        "<(module_root_dir)/lib/darwin-arm64/libssl.a",
+                        "<(module_root_dir)/lib/darwin-arm64/libcrypto.a",
+                        "<(module_root_dir)/lib/darwin-arm64/libzstd.a"
                     ],
                     'xcode_settings': {
                         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
