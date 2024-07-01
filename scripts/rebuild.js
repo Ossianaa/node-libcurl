@@ -4,7 +4,7 @@ const { execSync } = require("child_process");
 const tar = require("tar");
 
 const { platform, arch } = process;
-const version = "v1.0.0";
+const { "artifacts-version": version } = require("../package.json");
 
 let platform_ = null;
 
