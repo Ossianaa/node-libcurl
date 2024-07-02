@@ -50,6 +50,8 @@ jobs:
         run: ${{ matrix.settings.setup }}
       - name: Install
         run: npm install --arch=${{ matrix.settings.arch }}
+      - name: Gyp rebuild
+        run: npm run gyp-rebuild --arch=${{ matrix.settings.arch }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
