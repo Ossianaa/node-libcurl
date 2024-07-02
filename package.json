@@ -6,8 +6,8 @@
   },
   "scripts": {
     "test": "node ./test/libcurl_test.js",
-    "preinstall": "node ./scripts/rebuild.js",
-    "install": "node-gyp rebuild",
+    "gyp-rebuild": "node ./scripts/rebuild.js && node-gyp rebuild",
+    "install": ":",
     "unittest": "mocha",
     "tsc": "tsc -watch",
     "artifacts": "node ./scripts/artifacts.js",
