@@ -246,7 +246,7 @@ export class requests {
             return;
         }
         const filterHeaders = ["Content-Length", "Content-Type"];
-        if (headers instanceof Map) {
+        if (headers instanceof Headers) {
             headers.forEach(
                 (value, key) =>
                     !filterHeaders.includes(key) &&
@@ -373,8 +373,8 @@ export class requests {
                 e.some((e) => e.toLocaleLowerCase() == "content-type");
             if (typeof headers == "string") {
                 hasContentType = /content-type/i.test(headers);
-            } else if (headers instanceof Map) {
-                hasContentType = contentTypeFilter([...headers.keys()]);
+            } else if (headers instanceof Headers) {
+                hasContentType = headers.has("content-type");
             } else {
                 hasContentType = contentTypeFilter(Object.keys(headers));
             }
