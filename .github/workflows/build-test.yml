@@ -23,7 +23,6 @@ jobs:
             setup: |
               sudo apt-get update && 
               sudo apt-get install -y --no-install-recommends cmake g++-aarch64-linux-gnu python3-pip
-              sudo pip3 install --break-system-packages conan==1.62.0
               sudo rm -rf /var/lib/apt/lists/* /var/cache/apt/pkgcache.bin /var/cache/apt/srcpkgcache.bin
               export CC="aarch64-linux-gnu-gcc";
               export CXX="aarch64-linux-gnu-g++";
