@@ -21,9 +21,9 @@ jobs:
           - host: ubuntu-latest
             target: arm64-unknown-linux-gnu
             setup: |
-              apt-get update && apt-get install -y --no-install-recommends cmake g++-aarch64-linux-gnu gawk git make build-essential curl golang ninja-build python3-pip
-              pip3 install --break-system-packages conan==1.62.0
-              rm -rf /var/lib/apt/lists/* /var/cache/apt/pkgcache.bin /var/cache/apt/srcpkgcache.bin
+              sudo apt-get update && apt-get install -y --no-install-recommends cmake g++-aarch64-linux-gnu gawk git make build-essential curl golang ninja-build python3-pip
+              sudo pip3 install --break-system-packages conan==1.62.0
+              sudo rm -rf /var/lib/apt/lists/* /var/cache/apt/pkgcache.bin /var/cache/apt/srcpkgcache.bin
               export CC="aarch64-linux-gnu-gcc";
               export CXX="aarch64-linux-gnu-g++";
             arch: arm64
@@ -58,7 +58,9 @@ jobs:
         shell: bash
         run: ${{ matrix.settings.setup }}
       - name: Install
-        run: npm install ${{ matrix.settings.arch }}
+        run: npm install --arch=${{ matrix.settings.arch }}
+      - name: Gyp rebuild
+        run: npm run gyp-rebuild --arch=${{ matrix.settings.arch }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
