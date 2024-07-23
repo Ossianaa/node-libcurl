@@ -24,6 +24,7 @@ jobs:
               sudo rm -rf /var/lib/apt/lists/* /var/cache/apt/pkgcache.bin /var/cache/apt/srcpkgcache.bin
               export CC="/usr/aarch64-linux-gnu-gcc";
               export CXX="/usr/aarch64-linux-gnu-g++";
+              export NODE_ARCH="arm64"
             arch: arm64
         
     runs-on: ${{ matrix.settings.host }}

@@ -3,7 +3,10 @@ const path = require("path");
 const { execSync } = require("child_process");
 const tar = require("tar");
 
-const { platform, arch } = process;
+let { platform, arch } = process;
+if (process.env.NODE_ARCH) {
+    arch = process.env.NODE_ARCH;
+}
 const { "artifacts-version": version } = require("../package.json");
 
 let platform_ = null;
