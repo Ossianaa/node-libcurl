@@ -16,14 +16,8 @@ jobs:
       fail-fast: false
       matrix:
         settings:
-          - host: ubuntu-latest
+          - host: otel-linux-arm64
             target: arm64-unknown-linux-gnu
-            setup: |
-              sudo apt-get update && 
-              sudo apt-get install -y --no-install-recommends g++-aarch64-linux-gnu
-              sudo rm -rf /var/lib/apt/lists/* /var/cache/apt/pkgcache.bin /var/cache/apt/srcpkgcache.bin
-              export CC="/usr/aarch64-linux-gnu-gcc";
-              export CXX="/usr/aarch64-linux-gnu-g++";
             arch: arm64
         
     runs-on: ${{ matrix.settings.host }}

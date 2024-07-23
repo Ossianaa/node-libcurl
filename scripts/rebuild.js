@@ -3,10 +3,7 @@ const path = require("path");
 const { execSync } = require("child_process");
 const tar = require("tar");
 
-let { platform, arch } = process;
-if (process.env.NODE_ARCH) {
-    arch = process.env.NODE_ARCH;
-}
+const { platform, arch } = process;
 const { "artifacts-version": version } = require("../package.json");
 
 let platform_ = null;
@@ -95,7 +92,6 @@ switch (platform) {
     default:
         throw new Error(`Unsupported OS: ${platform}, architecture: ${arch}`);
 }
-console.log(platform, arch);
 if (!fs.existsSync(path.join(__dirname, "..", "lib"))) {
     fs.mkdirSync(path.join(__dirname, "..", "lib"));
 }
