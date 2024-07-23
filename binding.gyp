@@ -51,7 +51,7 @@
                     ]
 
                 }],
-                ['OS=="linux"', {
+                ['OS=="linux" and target_arch=="x64"', {
 
                     "configurations": {
                         'Release': {
@@ -67,6 +67,25 @@
                         "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libssl.a",
                         "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libcrypto.a",
                         "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libzstd.a"
+                    ],
+                
+                }],
+                ['OS=="linux" and target_arch=="arm64"', {
+
+                    "configurations": {
+                        'Release': {
+                            'cflags': [ '-std=c++14', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch' ,'-fPIC'],
+                            'cflags_cc': [ '-std=c++14', '-fexceptions', '-frtti', '-Wno-deprecated', '-Wno-unused-variable', '-Wno-unused-but-set-variable', '-Wno-maybe-uninitialized', '-Wno-sign-compare', '-Wno-reorder', '-Wno-extra', '-Wno-switch','-fPIC']
+                        },
+                        'Debug': {
+                            
+                        },
+                    },
+                    'libraries': [
+                        "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libcurl.a",
+                        "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libssl.a",
+                        "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libcrypto.a",
+                        "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libzstd.a"
                     ],
                 
                 }],

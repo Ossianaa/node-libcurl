@@ -32,6 +32,7 @@
     "@ossiana/node-libcurl-darwin-x64": "1.2.0",
     "@ossiana/node-libcurl-darwin-arm64": "1.2.0",
     "@ossiana/node-libcurl-linux-x64-gnu": "1.2.0",
+    "@ossiana/node-libcurl-linux-arm64-gnu": "1.2.0",
     "@ossiana/node-libcurl-win32-x64-msvc": "1.2.0"
   },
   "main": "./dist/index.js",
