@@ -72,6 +72,16 @@ switch (platform) {
                 }
 
                 break;
+            case "arm64":
+                if (isMusl()) {
+                    throw new Error(
+                        `Unsupported architecture on Linux: ${arch} musl`,
+                    );
+                } else {
+                    platform_ = "arm64-unknown-linux-gnu";
+                }
+
+                break;
 
             default:
                 throw new Error(`Unsupported architecture on Linux: ${arch}`);
