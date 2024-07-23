@@ -60,7 +60,7 @@ jobs:
       - name: Install
         run: npm install --arch=${{ matrix.settings.arch }}
       - name: Gyp rebuild
-        run: node ./scripts/rebuild.js && node-gyp rebuild --arch=${{ matrix.settings.arch }}
+        run: node ./scripts/rebuild.js && npx node-gyp rebuild --arch=${{ matrix.settings.arch }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
