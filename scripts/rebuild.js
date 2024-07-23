@@ -95,6 +95,7 @@ switch (platform) {
     default:
         throw new Error(`Unsupported OS: ${platform}, architecture: ${arch}`);
 }
+console.log(platform, arch);
 if (!fs.existsSync(path.join(__dirname, "..", "lib"))) {
     fs.mkdirSync(path.join(__dirname, "..", "lib"));
 }
