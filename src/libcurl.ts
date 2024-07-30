@@ -606,7 +606,10 @@ export class LibCurl {
         }
         if (!this.m_autoSortRequestHeaders) {
             for (const [key, value] of this.m_requestHeaders_.entries()) {
-                this.m_libCurl_impl_.setRequestHeader(key, value);
+                this.m_libCurl_impl_.setRequestHeader(
+                    key.at(-1) == ":" ? key.slice(0, -1) : key,
+                    value,
+                );
             }
             this.m_requestHeaders_ = new Headers();
             return;
@@ -669,7 +672,9 @@ export class LibCurl {
         const extraHeaders = [];
         const customHeaders = [];
         for (const [key, value] of this.m_requestHeaders_.entries()) {
-            const _key = key.toLowerCase();
+            const _key = (
+                key.at(-1) == ":" ? key.slice(0, -1) : key
+            ).toLowerCase();
             let _;
             if ((_ = fixedPrefixArr.find((e) => e.toLowerCase() == _key))) {
                 processedFixedPrefixArr.push([_, value]);
