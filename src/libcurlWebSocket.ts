@@ -14,6 +14,7 @@ interface LibCurlWebSocketOption {
     userAgent?: string;
     origin?: string;
     cookie?: string;
+    protocol?:string;
     timeout?: number;
     ja3?: LibCurlJA3FingerPrintInfo;
 }
@@ -43,17 +44,24 @@ export class LibCurlWebSocket {
 
     constructor(url: LibCurlURLInfo, option: LibCurlWebSocketOption = {}) {
         const curl = option.instance || new LibCurl();
-        const headers = ["Accept:", "Accept-Encoding:"];
+        
+        // @ts-ignore
+        const impl = curl.m_libCurl_impl_;
+        impl.setRequestHeader("Accept", "");
+        impl.setRequestHeader("Accept-Encoding", "");
         if (option.cookie) {
-            headers.push("Cookie: " + option.cookie);
+            impl.setRequestHeader("Cookie", option.cookie);
         }
         if (option.origin) {
-            headers.push("Origin: " + option.origin);
+            impl.setRequestHeader("Origin", option.origin);
         }
         if (option.userAgent) {
-            headers.push("User-Agent: " + option.userAgent);
+            impl.setRequestHeader("User-Agent", option.userAgent);
         }
-        curl.setRequestHeaders(headers.join("\n"));
+        if (option.protocol) {
+            impl.setRequestHeader("Sec-WebSocket-Protocol", option.protocol);
+        }
+
         if (option.timeout) {
             curl.setTimeout(option.timeout, option.timeout);
         }
@@ -69,7 +77,7 @@ export class LibCurlWebSocket {
             try {
                 this.m_onOpen?.();
             } catch (error) {
-                console.error('LibCurlWebSocket onOpen catch a error', error);
+                console.error("LibCurlWebSocket onOpen catch a error", error);
             }
         });
         ws.setOnClose(() => {
@@ -77,21 +85,24 @@ export class LibCurlWebSocket {
             try {
                 this.m_onClose?.();
             } catch (error) {
-                console.error('LibCurlWebSocket onClose catch a error', error);
+                console.error("LibCurlWebSocket onClose catch a error", error);
             }
         });
         ws.setOnMessage((e) => {
             try {
                 this.m_onMessage?.(e);
             } catch (error) {
-                console.error('LibCurlWebSocket onMessage catch a error', error);
+                console.error(
+                    "LibCurlWebSocket onMessage catch a error",
+                    error,
+                );
             }
         });
         ws.setOnError((e) => {
             try {
                 this.m_onError?.(e);
             } catch (error) {
-                console.error('LibCurlWebSocket onError catch a error', error);
+                console.error("LibCurlWebSocket onError catch a error", error);
             }
         });
         this.open(url);
