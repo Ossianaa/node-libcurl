@@ -3,7 +3,7 @@ import {
     LibCurlBodyInfo,
     LibCurlCookiesAttr,
     LibCurlCookiesInfo,
-    LibCurlHeadersAttr,
+    LibCurlRequestHeadersAttr,
     LibCurlHeadersInfo,
     LibCurlMethodInfo,
     LibCurlProxyInfo,
@@ -37,7 +37,7 @@ interface requestsResponseImp {
     readonly json: object;
     readonly buffer: Uint8Array;
     readonly headers: string;
-    readonly headersMap: LibCurlHeadersAttr;
+    readonly headersMap: Headers;
     readonly status: number;
     readonly contentLength: number;
 }
@@ -64,7 +64,7 @@ class requestsResponse implements requestsResponseImp {
         return this.curl.getResponseHeaders();
     }
 
-    public get headersMap(): LibCurlHeadersAttr {
+    public get headersMap(): Headers {
         return this.curl.getResponseHeadersMap();
     }
 
@@ -158,7 +158,7 @@ export class requests {
     private needSetCookies: boolean;
     private lastJa3: string;
     private randomJa3: boolean;
-    private defaultRequestsHeaders: LibCurlHeadersAttr;
+    private defaultRequestsHeaders: LibCurlRequestHeadersAttr;
     protected retryOption: requestsRetryOption = {
         retryNum: 0,
         conditionCallback(resp, error) {
@@ -167,7 +167,7 @@ export class requests {
     };
 
     constructor(option: requestsInitOption = {}) {
-        this.defaultRequestsHeaders = new Headers();
+        this.defaultRequestsHeaders = new Map();
         this.option = { ...option };
         const {
             cookies,

@@ -9,7 +9,7 @@ import {
     LibCurlCookiesInfo,
     LibCurlInterfaceInfo,
     LibCurlJA3FingerPrintInfo,
-    LibCurlHeadersAttr,
+    LibCurlRequestHeadersAttr,
 } from "./libcurl";
 import { libcurlRandomJA3Fingerprint, libcurlSetCookies } from "./utils";
 
@@ -44,7 +44,7 @@ interface LibCurlResponseInfo {
     arraybuffer: () => Promise<ArrayBuffer>;
     text: () => Promise<string>;
     json: () => Promise<object>;
-    headers: () => Promise<LibCurlHeadersAttr>;
+    headers: () => Promise<Headers>;
     cookies: () => Promise<string>;
     cookiesMap: () => Promise<LibCurlCookiesAttr>;
 }

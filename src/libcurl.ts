@@ -52,7 +52,7 @@ export type LibCurlCookieAttrObject = {
 
 export type LibCurlCookiesAttr = Map<string, LibCurlCookieAttrObject>;
 
-export type LibCurlHeadersAttr = Headers;
+export type LibCurlRequestHeadersAttr = Map<string,string>;
 
 export type LibCurlInterfaceInfo = string;
 
@@ -201,7 +201,7 @@ interface LibCurlCommonHeaders {
 export type LibCurlHeadersInfo =
     | string
     | { [key: string]: string }
-    | LibCurlHeadersAttr
+    | LibCurlRequestHeadersAttr
     | LibCurlCommonHeaders;
 
 export type LibCurlBodyInfo = string | Uint8Array | URLSearchParams | object;
@@ -237,12 +237,12 @@ export class LibCurl {
     private m_libCurl_impl_: any;
     private m_method_: LibCurlMethodInfo;
     private m_isSending_: boolean;
-    private m_requestHeaders_: LibCurlHeadersAttr;
+    private m_requestHeaders_: LibCurlRequestHeadersAttr;
     private m_autoSortRequestHeaders: boolean = false;
 
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
-        this.m_requestHeaders_ = new Headers();
+        this.m_requestHeaders_ = new Map();
     }
     private checkSending(): void {
         if (this.m_isSending_) {
@@ -432,7 +432,7 @@ export class LibCurl {
     /**
      * @returns 返回响应头 Map
      */
-    public getResponseHeadersMap(): LibCurlHeadersAttr {
+    public getResponseHeadersMap(): Headers {
         this.checkSending();
         const headers_ = this.m_libCurl_impl_.getResponseHeaders();
         const lines = headers_
@@ -611,7 +611,7 @@ export class LibCurl {
                     value,
                 );
             }
-            this.m_requestHeaders_ = new Headers();
+            this.m_requestHeaders_ = new Map();
             return;
         }
         if (
@@ -742,7 +742,7 @@ export class LibCurl {
         ]) {
             this.m_libCurl_impl_.setRequestHeader(key, value);
         }
-        this.m_requestHeaders_ = new Headers();
+        this.m_requestHeaders_ = new Map();
     }
 
     /**
