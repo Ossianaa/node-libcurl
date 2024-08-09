@@ -284,7 +284,7 @@ export class LibCurl {
         if (!headers) {
             return;
         }
-        if (headers instanceof Headers) {
+        if (headers instanceof Map) {
             headers.forEach((value, key) => this.setRequestHeader(key, value));
         } else if (typeof headers == "string") {
             headers

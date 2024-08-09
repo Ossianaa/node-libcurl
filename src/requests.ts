@@ -304,7 +304,7 @@ export class requests {
             );
         }
         curl.open(method, url_);
-        if (!this.defaultRequestsHeaders.keys().next().done) {
+        if (this.defaultRequestsHeaders.size) {
             curl.setRequestHeaders(this.defaultRequestsHeaders);
         }
         if (headers) {
