@@ -48,6 +48,8 @@ class requestsResponse implements requestsResponseImp {
     private responseHeadersMap: Headers;
     private responseStatus: number;
     private responseContentLength: number;
+    private responseText: string;
+    private responseJson: object;
     constructor(curl: LibCurl) {
         this.responseBody = curl.getResponseBody();
         this.responseHeaders = curl.getResponseHeaders();
@@ -57,11 +59,13 @@ class requestsResponse implements requestsResponseImp {
     }
 
     public get text(): string {
-        return new TextDecoder().decode(this.responseBody);
+        return (this.responseText ||= new TextDecoder().decode(
+            this.responseBody,
+        ));
     }
 
     public get json(): object {
-        return JSON.parse(this.text);
+        return (this.responseJson ||= JSON.parse(this.text));
     }
 
     public get buffer(): Uint8Array {
