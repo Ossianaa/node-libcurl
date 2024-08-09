@@ -440,7 +440,7 @@ export class LibCurl {
             .filter(
                 (header: string) => !header.startsWith("HTTP/") && !!header,
             );
-        return new Headers(lines.map((line: string) => line.split(": ")));
+        return new Headers(lines.map((line: string) => line.split(": ", 2)));
     }
 
     /**
