@@ -494,7 +494,6 @@ export class requests {
         return resp;
     }
 
-    //暂定6种常用方法
     public static async get(
         url: requestsURLInfo,
         requestOpt?: requestsStaticOption,
