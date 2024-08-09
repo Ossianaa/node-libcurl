@@ -399,13 +399,8 @@ export class requests {
         } else if (data) {
             let sendData = data;
             if (!hasContentType) {
-                if (typeof data == "string") {
+                if (typeof data == "string" || data instanceof URLSearchParams) {
                     curl.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                } else if (data instanceof URLSearchParams) {
-                    curl.setRequestHeader(
-                        "Content-Type",
-                        "application/x-www-form-urlencoded",
-                    );
                 } else if (data instanceof Uint8Array) {
                     curl.setRequestHeader(
                         "Content-Type",
@@ -419,12 +414,11 @@ export class requests {
                 }
             }
 
-            if (data instanceof Uint8Array) {
-                //直接发送
-            } else if (
+            if (
                 !(data instanceof URLSearchParams) &&
                 typeof data == "object" &&
-                data != null
+                data != null &&
+                !(data instanceof Uint8Array)
             ) {
                 sendData = Object.keys(data)
                     .map((e) => {

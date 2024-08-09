@@ -111,7 +111,7 @@ export async function fetch(
         contentLength: () => curl.getResponseContentLength(),
         arraybuffer: async () => curl.getResponseBody().buffer,
         text: async () => curl.getResponseString(),
-        json: async () => curl.getResponseJson(),
+        json: async () => JSON.parse(curl.getResponseString()),
         headers: async () => curl.getResponseHeadersMap(),
         cookies: async () => curl.getCookies(),
         cookiesMap: async () => curl.getCookiesMap(),

@@ -52,7 +52,7 @@ export type LibCurlCookieAttrObject = {
 
 export type LibCurlCookiesAttr = Map<string, LibCurlCookieAttrObject>;
 
-export type LibCurlRequestHeadersAttr = Map<string,string>;
+export type LibCurlRequestHeadersAttr = Map<string, string>;
 
 export type LibCurlInterfaceInfo = string;
 
@@ -246,7 +246,7 @@ export class LibCurl {
     }
     private checkSending(): void {
         if (this.m_isSending_) {
-            throw new Error(
+            throw new LibCurlError(
                 "the last request is sending, don't send one more request on one instance!",
             );
         }
@@ -258,7 +258,7 @@ export class LibCurl {
             return;
         }
         const error: string = this.m_libCurl_impl_.getLastCodeError();
-        throw new Error(error);
+        throw new LibCurlError(error);
     }
 
     public enableAutoSortRequestHeaders(enable: boolean) {
@@ -333,7 +333,7 @@ export class LibCurl {
     public setTimeout(connectTime: number, sendTime: number): void {
         this.checkSending();
         if (connectTime > sendTime) {
-            throw new Error("连接时间大于发送等待时间.");
+            throw new LibCurlError("连接时间大于发送等待时间.");
         }
         this.m_libCurl_impl_.setTimeout(connectTime, sendTime);
     }
@@ -753,8 +753,14 @@ export class LibCurl {
     public send(body?: LibCurlBodyInfo): Promise<undefined> | undefined {
         this.checkSending();
         this.m_isSending_ = true;
+        const isSubmitBody = !["GET", "HEAD"].includes(this.m_method_);
         let promise;
         if (body) {
+            if (!isSubmitBody) {
+                throw new LibCurlError(
+                    "Request with GET/HEAD method cannot have body",
+                );
+            }
             let sendData: Omit<LibCurlBodyInfo, "object">;
             if (body instanceof URLSearchParams) {
                 sendData = body + "";
@@ -769,7 +775,7 @@ export class LibCurl {
             this.beforeProcessRequestHeaders(Buffer.from(sendData).length);
             promise = this.m_libCurl_impl_.sendAsync(sendData);
         } else {
-            if (["POST", "PATCH", "PUT", "DELETE"].includes(this.m_method_)) {
+            if (isSubmitBody) {
                 this.beforeProcessRequestHeaders(0);
             } else {
                 this.beforeProcessRequestHeaders();
@@ -793,10 +799,5 @@ export class LibCurl {
     public getResponseString(): string {
         this.checkSending();
         return this.m_libCurl_impl_.getResponseString();
-    }
-
-    public getResponseJson(): Object {
-        this.checkSending();
-        return JSON.parse(this.getResponseString());
     }
 }
