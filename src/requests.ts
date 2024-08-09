@@ -43,37 +43,45 @@ interface requestsResponseImp {
 }
 
 class requestsResponse implements requestsResponseImp {
-    private curl: LibCurl;
+    private responseBody: Uint8Array;
+    private responseHeaders: string;
+    private responseHeadersMap: Headers;
+    private responseStatus: number;
+    private responseContentLength: number;
     constructor(curl: LibCurl) {
-        this.curl = curl;
+        this.responseBody = curl.getResponseBody();
+        this.responseHeaders = curl.getResponseHeaders();
+        this.responseHeadersMap = curl.getResponseHeadersMap();
+        this.responseStatus = curl.getResponseStatus();
+        this.responseContentLength = curl.getResponseContentLength();
     }
 
     public get text(): string {
-        return this.curl.getResponseString();
+        return new TextDecoder().decode(this.responseBody);
     }
 
     public get json(): object {
-        return this.curl.getResponseJson();
+        return JSON.parse(this.text);
     }
 
     public get buffer(): Uint8Array {
-        return this.curl.getResponseBody();
+        return this.responseBody;
     }
 
     public get headers(): string {
-        return this.curl.getResponseHeaders();
+        return this.responseHeaders;
     }
 
     public get headersMap(): Headers {
-        return this.curl.getResponseHeadersMap();
+        return this.responseHeadersMap;
     }
 
     public get status(): number {
-        return this.curl.getResponseStatus();
+        return this.responseStatus;
     }
 
     public get contentLength(): number {
-        return this.curl.getResponseContentLength();
+        return this.responseContentLength;
     }
 }
 
