@@ -25,7 +25,7 @@ type requestsBodyInfo = LibCurlBodyInfo;
 type requestsCookiesInfo = {
     value: LibCurlCookiesInfo;
     uri: string;
-}
+};
 type requestsMethodInfo = LibCurlMethodInfo;
 
 type requestsProxyInfo = LibCurlProxyInfo;
@@ -90,7 +90,7 @@ class requestsResponse implements requestsResponseImp {
 
 interface requestsInitOption {
     redirect?: boolean;
-    cookies?: requestsCookiesInfo;
+    cookies?: requestsCookiesInfo | requestsCookiesInfo[];
     proxy?: requestsProxyInfo;
     body?: requestsBodyInfo;
 
@@ -194,11 +194,21 @@ export class requests {
         } = option;
         const curl = (this.option.instance ||= new LibCurl());
         if (cookies) {
-            libcurlSetCookies(
-                curl,
-                cookies.value,
-                getUriTopLevelHost(cookies.uri),
-            );
+            if (Array.isArray(cookies)) {
+                cookies.forEach((cookies) => {
+                    libcurlSetCookies(
+                        curl,
+                        cookies.value,
+                        getUriTopLevelHost(cookies.uri),
+                    );
+                });
+            } else {
+                libcurlSetCookies(
+                    curl,
+                    cookies.value,
+                    getUriTopLevelHost(cookies.uri),
+                );
+            }
         }
         if (timeout) {
             curl.setTimeout(timeout, timeout);
@@ -276,11 +286,7 @@ export class requests {
         url: requestsURLInfo,
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
-        const {
-            instance: curl,
-            timeout: timeoutOpt,
-            ja3,
-        } = this.option;
+        const { instance: curl, timeout: timeoutOpt, ja3 } = this.option;
         const {
             headers,
             data,
@@ -372,8 +378,14 @@ export class requests {
         } else if (data) {
             let sendData = data;
             if (!hasContentType) {
-                if (typeof data == "string" || data instanceof URLSearchParams) {
-                    curl.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                if (
+                    typeof data == "string" ||
+                    data instanceof URLSearchParams
+                ) {
+                    curl.setRequestHeader(
+                        "Content-Type",
+                        "application/x-www-form-urlencoded",
+                    );
                 } else if (data instanceof Uint8Array) {
                     curl.setRequestHeader(
                         "Content-Type",
