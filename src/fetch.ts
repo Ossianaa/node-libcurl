@@ -9,7 +9,7 @@ import {
     LibCurlCookiesInfo,
     LibCurlInterfaceInfo,
     LibCurlJA3FingerPrintInfo,
-    LibCurlHeadersAttr,
+    LibCurlRequestHeadersAttr,
 } from "./libcurl";
 import { libcurlRandomJA3Fingerprint, libcurlSetCookies } from "./utils";
 
@@ -44,7 +44,7 @@ interface LibCurlResponseInfo {
     arraybuffer: () => Promise<ArrayBuffer>;
     text: () => Promise<string>;
     json: () => Promise<object>;
-    headers: () => Promise<LibCurlHeadersAttr>;
+    headers: () => Promise<Headers>;
     cookies: () => Promise<string>;
     cookiesMap: () => Promise<LibCurlCookiesAttr>;
 }
@@ -60,7 +60,7 @@ export async function fetch(
         headers,
         redirect = false,
         httpVersion = 0,
-        openInnerLog = false,
+        openInnerLog: verbose = false,
         proxy,
         body,
         cookies,
@@ -83,8 +83,8 @@ export async function fetch(
     if (interface_) {
         curl.setInterface(interface_);
     }
-    if (openInnerLog) {
-        curl.printInnerLogger();
+    if (verbose) {
+        curl.setVerbose(verbose);
     }
     if (cookies) {
         const { hostname } = new URL(url);
@@ -111,7 +111,7 @@ export async function fetch(
         contentLength: () => curl.getResponseContentLength(),
         arraybuffer: async () => curl.getResponseBody().buffer,
         text: async () => curl.getResponseString(),
-        json: async () => curl.getResponseJson(),
+        json: async () => JSON.parse(curl.getResponseString()),
         headers: async () => curl.getResponseHeadersMap(),
         cookies: async () => curl.getCookies(),
         cookiesMap: async () => curl.getCookiesMap(),

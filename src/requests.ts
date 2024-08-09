@@ -3,7 +3,7 @@ import {
     LibCurlBodyInfo,
     LibCurlCookiesAttr,
     LibCurlCookiesInfo,
-    LibCurlHeadersAttr,
+    LibCurlRequestHeadersAttr,
     LibCurlHeadersInfo,
     LibCurlMethodInfo,
     LibCurlProxyInfo,
@@ -22,11 +22,10 @@ import {
 type requestsHttpVersionInfo = LibCurlHttpVersionInfo;
 type requestsHeadersInfo = LibCurlHeadersInfo;
 type requestsBodyInfo = LibCurlBodyInfo;
-type requestsCookiesInfo = LibCurlCookiesInfo;
-type requestsCookiesInfoWithUri = {
-    value: requestsCookiesInfo;
+type requestsCookiesInfo = {
+    value: LibCurlCookiesInfo;
     uri: string;
-};
+}
 type requestsMethodInfo = LibCurlMethodInfo;
 
 type requestsProxyInfo = LibCurlProxyInfo;
@@ -37,49 +36,61 @@ interface requestsResponseImp {
     readonly json: object;
     readonly buffer: Uint8Array;
     readonly headers: string;
-    readonly headersMap: LibCurlHeadersAttr;
+    readonly headersMap: Headers;
     readonly status: number;
     readonly contentLength: number;
 }
 
 class requestsResponse implements requestsResponseImp {
-    private curl: LibCurl;
+    private responseBody: Uint8Array;
+    private responseHeaders: string;
+    private responseHeadersMap: Headers;
+    private responseStatus: number;
+    private responseContentLength: number;
+    private responseText: string;
+    private responseJson: object;
     constructor(curl: LibCurl) {
-        this.curl = curl;
+        this.responseBody = curl.getResponseBody();
+        this.responseHeaders = curl.getResponseHeaders();
+        this.responseHeadersMap = curl.getResponseHeadersMap();
+        this.responseStatus = curl.getResponseStatus();
+        this.responseContentLength = curl.getResponseContentLength();
     }
 
     public get text(): string {
-        return this.curl.getResponseString();
+        return (this.responseText ||= new TextDecoder().decode(
+            this.responseBody,
+        ));
     }
 
     public get json(): object {
-        return this.curl.getResponseJson();
+        return (this.responseJson ||= JSON.parse(this.text));
     }
 
     public get buffer(): Uint8Array {
-        return this.curl.getResponseBody();
+        return this.responseBody;
     }
 
     public get headers(): string {
-        return this.curl.getResponseHeaders();
+        return this.responseHeaders;
     }
 
-    public get headersMap(): LibCurlHeadersAttr {
-        return this.curl.getResponseHeadersMap();
+    public get headersMap(): Headers {
+        return this.responseHeadersMap;
     }
 
     public get status(): number {
-        return this.curl.getResponseStatus();
+        return this.responseStatus;
     }
 
     public get contentLength(): number {
-        return this.curl.getResponseContentLength();
+        return this.responseContentLength;
     }
 }
 
 interface requestsInitOption {
     redirect?: boolean;
-    cookies?: requestsCookiesInfo | requestsCookiesInfoWithUri;
+    cookies?: requestsCookiesInfo;
     proxy?: requestsProxyInfo;
     body?: requestsBodyInfo;
 
@@ -155,10 +166,9 @@ const ja3Md5Map: Map<string, string> = new Map();
 
 export class requests {
     private option: requestsInitOption;
-    private needSetCookies: boolean;
     private lastJa3: string;
     private randomJa3: boolean;
-    private defaultRequestsHeaders: LibCurlHeadersAttr;
+    private defaultRequestsHeaders: LibCurlRequestHeadersAttr;
     protected retryOption: requestsRetryOption = {
         retryNum: 0,
         conditionCallback(resp, error) {
@@ -167,7 +177,7 @@ export class requests {
     };
 
     constructor(option: requestsInitOption = {}) {
-        this.defaultRequestsHeaders = new Headers();
+        this.defaultRequestsHeaders = new Map();
         this.option = { ...option };
         const {
             cookies,
@@ -183,34 +193,18 @@ export class requests {
             defaultRequestHeaders,
         } = option;
         const curl = (this.option.instance ||= new LibCurl());
-        switch (typeof cookies) {
-            case "string":
-                this.needSetCookies = !!cookies;
-                break;
-            case "object":
-                if (cookies !== null) {
-                    if (cookies.value) {
-                        if (cookies.uri) {
-                            libcurlSetCookies(
-                                curl,
-                                cookies.value,
-                                getUriTopLevelHost(cookies.uri),
-                            );
-                        } else {
-                            this.needSetCookies = !!cookies;
-                        }
-                    }
-                }
-                break;
-            default:
-                break;
+        if (cookies) {
+            libcurlSetCookies(
+                curl,
+                cookies.value,
+                getUriTopLevelHost(cookies.uri),
+            );
         }
-
         if (timeout) {
             curl.setTimeout(timeout, timeout);
         }
         if (verbose) {
-            curl.printInnerLogger();
+            curl.setVerbose(verbose);
         }
         if (interface_) {
             curl.setInterface(interface_);
@@ -231,7 +225,7 @@ export class requests {
             this.lastJa3 = ja3;
         }
         if (typeof defaultRequestHeaders != "undefined") {
-            this.setDefaultRequestHeader(defaultRequestHeaders);
+            this.setDefaultRequestHeaders(defaultRequestHeaders);
         }
         if (typeof connectReuse != "undefined") {
             curl.enableConnectReuse(connectReuse);
@@ -241,7 +235,7 @@ export class requests {
         }
     }
 
-    private setDefaultRequestHeader(headers: LibCurlHeadersInfo) {
+    public setDefaultRequestHeaders(headers: LibCurlHeadersInfo) {
         if (!headers) {
             return;
         }
@@ -284,7 +278,6 @@ export class requests {
     ): Promise<requestsResponse> {
         const {
             instance: curl,
-            cookies,
             timeout: timeoutOpt,
             ja3,
         } = this.option;
@@ -304,14 +297,6 @@ export class requests {
             throw new LibCurlError("both data and json exist");
         }
         const url_ = new URL(url);
-        if (this.needSetCookies) {
-            this.needSetCookies = false;
-            libcurlSetCookies(
-                curl,
-                cookies as string,
-                getUriTopLevelHost(url_),
-            ); //放到top域名里去
-        }
         if (params) {
             assignURLSearchParam(
                 url_.searchParams,
@@ -387,13 +372,8 @@ export class requests {
         } else if (data) {
             let sendData = data;
             if (!hasContentType) {
-                if (typeof data == "string") {
-                    curl.setRequestHeader("Content-Type", "text/plain");
-                } else if (data instanceof URLSearchParams) {
-                    curl.setRequestHeader(
-                        "Content-Type",
-                        "application/x-www-form-urlencoded",
-                    );
+                if (typeof data == "string" || data instanceof URLSearchParams) {
+                    curl.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
                 } else if (data instanceof Uint8Array) {
                     curl.setRequestHeader(
                         "Content-Type",
@@ -407,12 +387,11 @@ export class requests {
                 }
             }
 
-            if (data instanceof Uint8Array) {
-                //直接发送
-            } else if (
+            if (
                 !(data instanceof URLSearchParams) &&
                 typeof data == "object" &&
-                data != null
+                data != null &&
+                !(data instanceof Uint8Array)
             ) {
                 sendData = Object.keys(data)
                     .map((e) => {
@@ -488,7 +467,6 @@ export class requests {
         return resp;
     }
 
-    //暂定6种常用方法
     public static async get(
         url: requestsURLInfo,
         requestOpt?: requestsStaticOption,

@@ -52,7 +52,7 @@ export type LibCurlCookieAttrObject = {
 
 export type LibCurlCookiesAttr = Map<string, LibCurlCookieAttrObject>;
 
-export type LibCurlHeadersAttr = Headers;
+export type LibCurlRequestHeadersAttr = Map<string, string>;
 
 export type LibCurlInterfaceInfo = string;
 
@@ -201,7 +201,7 @@ interface LibCurlCommonHeaders {
 export type LibCurlHeadersInfo =
     | string
     | { [key: string]: string }
-    | LibCurlHeadersAttr
+    | LibCurlRequestHeadersAttr
     | LibCurlCommonHeaders;
 
 export type LibCurlBodyInfo = string | Uint8Array | URLSearchParams | object;
@@ -237,16 +237,16 @@ export class LibCurl {
     private m_libCurl_impl_: any;
     private m_method_: LibCurlMethodInfo;
     private m_isSending_: boolean;
-    private m_requestHeaders_: LibCurlHeadersAttr;
+    private m_requestHeaders_: LibCurlRequestHeadersAttr;
     private m_autoSortRequestHeaders: boolean = false;
 
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
-        this.m_requestHeaders_ = new Headers();
+        this.m_requestHeaders_ = new Map();
     }
     private checkSending(): void {
         if (this.m_isSending_) {
-            throw new Error(
+            throw new LibCurlError(
                 "the last request is sending, don't send one more request on one instance!",
             );
         }
@@ -258,7 +258,7 @@ export class LibCurl {
             return;
         }
         const error: string = this.m_libCurl_impl_.getLastCodeError();
-        throw new Error(error);
+        throw new LibCurlError(error);
     }
 
     public enableAutoSortRequestHeaders(enable: boolean) {
@@ -333,7 +333,7 @@ export class LibCurl {
     public setTimeout(connectTime: number, sendTime: number): void {
         this.checkSending();
         if (connectTime > sendTime) {
-            throw new Error("连接时间大于发送等待时间.");
+            throw new LibCurlError("连接时间大于发送等待时间.");
         }
         this.m_libCurl_impl_.setTimeout(connectTime, sendTime);
     }
@@ -432,7 +432,7 @@ export class LibCurl {
     /**
      * @returns 返回响应头 Map
      */
-    public getResponseHeadersMap(): LibCurlHeadersAttr {
+    public getResponseHeadersMap(): Headers {
         this.checkSending();
         const headers_ = this.m_libCurl_impl_.getResponseHeaders();
         const lines = headers_
@@ -472,19 +472,19 @@ export class LibCurl {
 
     /**
      *
-     * @param isAllow 是否允许重定向
+     * @param enable 是否允许重定向
      */
-    public setRedirect(isAllow: boolean): void {
+    public setRedirect(enable: boolean): void {
         this.checkSending();
-        this.m_libCurl_impl_.setRedirect(isAllow);
+        this.m_libCurl_impl_.setRedirect(enable);
     }
 
     /**
      * 打印libcurl内部的 解析信息、连接信息、tls信息等等
      */
-    public printInnerLogger(): void {
+    public setVerbose(enable: boolean): void {
         this.checkSending();
-        this.m_libCurl_impl_.printInnerLogger();
+        this.m_libCurl_impl_.setVerbose(enable);
     }
 
     /**
@@ -611,7 +611,7 @@ export class LibCurl {
                     value,
                 );
             }
-            this.m_requestHeaders_ = new Headers();
+            this.m_requestHeaders_ = new Map();
             return;
         }
         if (
@@ -742,7 +742,7 @@ export class LibCurl {
         ]) {
             this.m_libCurl_impl_.setRequestHeader(key, value);
         }
-        this.m_requestHeaders_ = new Headers();
+        this.m_requestHeaders_ = new Map();
     }
 
     /**
@@ -753,8 +753,14 @@ export class LibCurl {
     public send(body?: LibCurlBodyInfo): Promise<undefined> | undefined {
         this.checkSending();
         this.m_isSending_ = true;
+        const isSubmitBody = !["GET", "HEAD"].includes(this.m_method_);
         let promise;
         if (body) {
+            if (!isSubmitBody) {
+                throw new LibCurlError(
+                    "Request with GET/HEAD method cannot have body",
+                );
+            }
             let sendData: Omit<LibCurlBodyInfo, "object">;
             if (body instanceof URLSearchParams) {
                 sendData = body + "";
@@ -769,7 +775,7 @@ export class LibCurl {
             this.beforeProcessRequestHeaders(Buffer.from(sendData).length);
             promise = this.m_libCurl_impl_.sendAsync(sendData);
         } else {
-            if (["POST", "PATCH", "PUT", "DELETE"].includes(this.m_method_)) {
+            if (isSubmitBody) {
                 this.beforeProcessRequestHeaders(0);
             } else {
                 this.beforeProcessRequestHeaders();
@@ -793,10 +799,5 @@ export class LibCurl {
     public getResponseString(): string {
         this.checkSending();
         return this.m_libCurl_impl_.getResponseString();
-    }
-
-    public getResponseJson(): Object {
-        this.checkSending();
-        return JSON.parse(this.getResponseString());
     }
 }
