@@ -400,7 +400,7 @@ export class requests {
             let sendData = data;
             if (!hasContentType) {
                 if (typeof data == "string") {
-                    curl.setRequestHeader("Content-Type", "text/plain");
+                    curl.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
                 } else if (data instanceof URLSearchParams) {
                     curl.setRequestHeader(
                         "Content-Type",
