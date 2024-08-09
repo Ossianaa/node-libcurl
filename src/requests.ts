@@ -22,11 +22,10 @@ import {
 type requestsHttpVersionInfo = LibCurlHttpVersionInfo;
 type requestsHeadersInfo = LibCurlHeadersInfo;
 type requestsBodyInfo = LibCurlBodyInfo;
-type requestsCookiesInfo = LibCurlCookiesInfo;
-type requestsCookiesInfoWithUri = {
-    value: requestsCookiesInfo;
+type requestsCookiesInfo = {
+    value: LibCurlCookiesInfo;
     uri: string;
-};
+}
 type requestsMethodInfo = LibCurlMethodInfo;
 
 type requestsProxyInfo = LibCurlProxyInfo;
@@ -91,7 +90,7 @@ class requestsResponse implements requestsResponseImp {
 
 interface requestsInitOption {
     redirect?: boolean;
-    cookies?: requestsCookiesInfo | requestsCookiesInfoWithUri;
+    cookies?: requestsCookiesInfo;
     proxy?: requestsProxyInfo;
     body?: requestsBodyInfo;
 
@@ -167,7 +166,6 @@ const ja3Md5Map: Map<string, string> = new Map();
 
 export class requests {
     private option: requestsInitOption;
-    private needSetCookies: boolean;
     private lastJa3: string;
     private randomJa3: boolean;
     private defaultRequestsHeaders: LibCurlRequestHeadersAttr;
@@ -195,29 +193,13 @@ export class requests {
             defaultRequestHeaders,
         } = option;
         const curl = (this.option.instance ||= new LibCurl());
-        switch (typeof cookies) {
-            case "string":
-                this.needSetCookies = !!cookies;
-                break;
-            case "object":
-                if (cookies !== null) {
-                    if (cookies.value) {
-                        if (cookies.uri) {
-                            libcurlSetCookies(
-                                curl,
-                                cookies.value,
-                                getUriTopLevelHost(cookies.uri),
-                            );
-                        } else {
-                            this.needSetCookies = !!cookies;
-                        }
-                    }
-                }
-                break;
-            default:
-                break;
+        if (cookies) {
+            libcurlSetCookies(
+                curl,
+                cookies.value,
+                getUriTopLevelHost(cookies.uri),
+            );
         }
-
         if (timeout) {
             curl.setTimeout(timeout, timeout);
         }
@@ -296,7 +278,6 @@ export class requests {
     ): Promise<requestsResponse> {
         const {
             instance: curl,
-            cookies,
             timeout: timeoutOpt,
             ja3,
         } = this.option;
@@ -316,14 +297,6 @@ export class requests {
             throw new LibCurlError("both data and json exist");
         }
         const url_ = new URL(url);
-        if (this.needSetCookies) {
-            this.needSetCookies = false;
-            libcurlSetCookies(
-                curl,
-                cookies as string,
-                getUriTopLevelHost(url_),
-            ); //放到top域名里去
-        }
         if (params) {
             assignURLSearchParam(
                 url_.searchParams,
