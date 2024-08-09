@@ -243,7 +243,7 @@ export class requests {
             this.lastJa3 = ja3;
         }
         if (typeof defaultRequestHeaders != "undefined") {
-            this.setDefaultRequestHeader(defaultRequestHeaders);
+            this.setDefaultRequestHeaders(defaultRequestHeaders);
         }
         if (typeof connectReuse != "undefined") {
             curl.enableConnectReuse(connectReuse);
@@ -253,7 +253,7 @@ export class requests {
         }
     }
 
-    private setDefaultRequestHeader(headers: LibCurlHeadersInfo) {
+    public setDefaultRequestHeaders(headers: LibCurlHeadersInfo) {
         if (!headers) {
             return;
         }
