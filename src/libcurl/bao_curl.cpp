@@ -281,14 +281,14 @@ void BaoCurl::reset()
 	this->init();
 }
 
-void BaoCurl::setRedirect(bool isAllow)
+void BaoCurl::setRedirect(bool enable)
 {
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_FOLLOWLOCATION, isAllow));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_FOLLOWLOCATION, enable));
 }
-void BaoCurl::printInnerLogger()
+void BaoCurl::setVerbose(bool enable)
 {
-	this->m_verbose = true;
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_VERBOSE, 1L));
+	this->m_verbose = enable;
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_VERBOSE, this->m_verbose ? 1L: 0L));
 }
 
 void BaoCurl::setHttpVersion(BaoCurl::HttpVersion version)

@@ -60,7 +60,7 @@ export async function fetch(
         headers,
         redirect = false,
         httpVersion = 0,
-        openInnerLog = false,
+        openInnerLog: verbose = false,
         proxy,
         body,
         cookies,
@@ -83,8 +83,8 @@ export async function fetch(
     if (interface_) {
         curl.setInterface(interface_);
     }
-    if (openInnerLog) {
-        curl.printInnerLogger();
+    if (verbose) {
+        curl.setVerbose(verbose);
     }
     if (cookies) {
         const { hostname } = new URL(url);

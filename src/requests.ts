@@ -204,7 +204,7 @@ export class requests {
             curl.setTimeout(timeout, timeout);
         }
         if (verbose) {
-            curl.printInnerLogger();
+            curl.setVerbose(verbose);
         }
         if (interface_) {
             curl.setInterface(interface_);

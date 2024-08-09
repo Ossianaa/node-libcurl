@@ -472,19 +472,19 @@ export class LibCurl {
 
     /**
      *
-     * @param isAllow 是否允许重定向
+     * @param enable 是否允许重定向
      */
-    public setRedirect(isAllow: boolean): void {
+    public setRedirect(enable: boolean): void {
         this.checkSending();
-        this.m_libCurl_impl_.setRedirect(isAllow);
+        this.m_libCurl_impl_.setRedirect(enable);
     }
 
     /**
      * 打印libcurl内部的 解析信息、连接信息、tls信息等等
      */
-    public printInnerLogger(): void {
+    public setVerbose(enable: boolean): void {
         this.checkSending();
-        this.m_libCurl_impl_.printInnerLogger();
+        this.m_libCurl_impl_.setVerbose(enable);
     }
 
     /**
