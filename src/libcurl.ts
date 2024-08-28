@@ -484,7 +484,7 @@ export class LibCurl {
      */
     public setVerbose(enable: boolean): void {
         this.checkSending();
-        this.m_libCurl_impl_.setVerbose(enable);
+        this.m_libCurl_impl_.setVerbose(!!enable);
     }
 
     /**
