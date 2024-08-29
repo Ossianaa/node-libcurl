@@ -44,4 +44,4 @@ jobs:
       - name: Install
         run: npm install --arch=${{ matrix.settings.arch }}
       - name: Gyp rebuild
-        run: node ./scripts/rebuild.js --arch=${{ matrix.settings.arch }} && node-gyp rebuild --arch=${{ matrix.settings.arch }}
+        run: node ./scripts/rebuild.js --arch=${{ matrix.settings.arch }} && npx node-gyp rebuild --arch=${{ matrix.settings.arch }}
