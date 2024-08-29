@@ -27,6 +27,7 @@ jobs:
               export AS=aarch64-linux-gnu-as
               export LD=aarch64-linux-gnu-ld
               export STRIP=aarch64-linux-gnu-strip
+              cp /usr/bin/aarch64-linux-gnu-ld /usr/bin/ld
             arch: arm64
       
     runs-on: ${{ matrix.settings.host }}
