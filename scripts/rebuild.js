@@ -3,9 +3,11 @@ const path = require("path");
 const { execSync } = require("child_process");
 const tar = require("tar");
 
-const { platform, arch } = process;
+let { platform, arch } = process;
 const { "artifacts-version": version } = require("../package.json");
-
+if (process.argv.at(-1).startsWith("--arch=")) {
+    arch = process.argv.at(-1).slice(7);
+}
 let platform_ = null;
 
 function isMusl() {
@@ -69,6 +71,16 @@ switch (platform) {
                     );
                 } else {
                     platform_ = "x86_64-unknown-linux-gnu";
+                }
+
+                break;
+            case "arm64":
+                if (isMusl()) {
+                    throw new Error(
+                        `Unsupported architecture on Linux: ${arch} musl`,
+                    );
+                } else {
+                    platform_ = "arm64-unknown-linux-gnu";
                 }
 
                 break;
