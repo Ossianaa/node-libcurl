@@ -1,0 +1,22 @@
+{
+  "name": "@ossiana/node-libcurl-linux-arm64-gnu",
+  "version": "1.0.0",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "description": "",
+  "main": "bao_curl_node_addon.node",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ossianaa/node-libcurl.git"
+  },
+  "author": "Ossian",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ossianaa/node-libcurl/issues"
+  },
+  "homepage": "https://github.com/Ossianaa/node-libcurl#readme"
+}

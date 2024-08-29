@@ -87,7 +87,14 @@ switch (platform) {
                 }
 
                 break;
+            case "arm64":
+                try {
+                    nativeBinding = require("@ossiana/node-libcurl-linux-arm64-gnu");
+                } catch (e) {
+                    loadError = e;
+                }
 
+                break;
             default:
                 throw new Error(`Unsupported architecture on Linux: ${arch}`);
         }
