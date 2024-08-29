@@ -31,6 +31,24 @@ jobs:
               SYSROOT=$(xcrun --sdk macosx --show-sdk-path);
               export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT";
             arch: arm64
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            setup: |
+              sudo apt-get update
+              sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+              export CC=aarch64-linux-gnu-gcc
+              export CXX=aarch64-linux-gnu-g++
+              export AR=aarch64-linux-gnu-ar
+              export AS=aarch64-linux-gnu-as
+              export LD=aarch64-linux-gnu-ld
+              export STRIP=aarch64-linux-gnu-strip
+              sudo cp /usr/bin/aarch64-linux-gnu-gcc /usr/bin/gcc
+              sudo cp /usr/bin/aarch64-linux-gnu-g++ /usr/bin/g++
+              sudo cp /usr/bin/aarch64-linux-gnu-ar /usr/bin/ar
+              sudo cp /usr/bin/aarch64-linux-gnu-as /usr/bin/as
+              sudo cp /usr/bin/aarch64-linux-gnu-ld /usr/bin/ld
+              sudo cp /usr/bin/aarch64-linux-gnu-strip /usr/bin/strip
+            arch: arm64
 
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -51,7 +69,7 @@ jobs:
       - name: Install
         run: npm install --arch=${{ matrix.settings.arch }}
       - name: Gyp rebuild
-        run: npm run gyp-rebuild --arch=${{ matrix.settings.arch }}
+        run: node ./scripts/rebuild.js --arch=${{ matrix.settings.arch }} && npx node-gyp rebuild --arch=${{ matrix.settings.arch }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
