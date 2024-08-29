@@ -23,6 +23,10 @@ jobs:
               sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
               export CC=aarch64-linux-gnu-gcc
               export CXX=aarch64-linux-gnu-g++
+              export AR=aarch64-linux-gnu-ar
+              export AS=aarch64-linux-gnu-as
+              export LD=aarch64-linux-gnu-ld
+              export STRIP=aarch64-linux-gnu-strip
             arch: arm64
       
     runs-on: ${{ matrix.settings.host }}
