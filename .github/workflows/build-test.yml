@@ -27,7 +27,12 @@ jobs:
               export AS=aarch64-linux-gnu-as
               export LD=aarch64-linux-gnu-ld
               export STRIP=aarch64-linux-gnu-strip
+              sudo cp /usr/bin/aarch64-linux-gnu-gcc /usr/bin/gcc
+              sudo cp /usr/bin/aarch64-linux-gnu-g++ /usr/bin/g++
+              sudo cp /usr/bin/aarch64-linux-gnu-ar /usr/bin/ar
+              sudo cp /usr/bin/aarch64-linux-gnu-as /usr/bin/as
               sudo cp /usr/bin/aarch64-linux-gnu-ld /usr/bin/ld
+              sudo cp /usr/bin/aarch64-linux-gnu-strip /usr/bin/strip
             arch: arm64
       
     runs-on: ${{ matrix.settings.host }}
