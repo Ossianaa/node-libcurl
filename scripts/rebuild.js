@@ -6,7 +6,10 @@ const tar = require("tar");
 let { platform, arch } = process;
 const { "artifacts-version": version } = require("../package.json");
 if (process.argv.at(-1).startsWith("--arch=")) {
-    arch = process.argv.at(-1).slice(7);
+    const arch_ = process.argv.at(-1).slice(7);
+    if (arch_) {
+        arch = arch_;
+    }
 }
 let platform_ = null;
 
