@@ -10,6 +10,7 @@ import {
     LibCurlInterfaceInfo,
     LibCurlJA3FingerPrintInfo,
     LibCurlRequestHeadersAttr,
+    LibCurlAkamaiFingerPrintInfo,
 } from "./libcurl";
 import { libcurlRandomJA3Fingerprint, libcurlSetCookies } from "./utils";
 
@@ -29,6 +30,7 @@ interface LibCurlRequestInfo {
      */
     instance?: LibCurl;
     ja3?: LibCurlJA3FingerPrintInfo;
+    akamai?: LibCurlAkamaiFingerPrintInfo;
     connectReuse?: boolean;
 
     /**
@@ -67,6 +69,7 @@ export async function fetch(
         timeout,
         interface: interface_,
         ja3,
+        akamai,
         connectReuse,
         autoSortRequestHeaders,
     } = request;
@@ -99,6 +102,9 @@ export async function fetch(
         curl.setTimeout(timeout, timeout);
     }
     curl.setJA3Fingerprint(ja3 || libcurlRandomJA3Fingerprint());
+    if (akamai) {
+        curl.setAkamaiFingerprint(akamai);
+    }
     if (typeof connectReuse != 'undefined') {
         curl.enableConnectReuse(connectReuse);
     }

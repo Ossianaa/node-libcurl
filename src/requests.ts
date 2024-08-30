@@ -11,6 +11,7 @@ import {
     LibCurlURLInfo,
     LibCurlError,
     LibCurlJA3FingerPrintInfo,
+    LibCurlAkamaiFingerPrintInfo,
 } from "./libcurl";
 import {
     getUriTopLevelHost,
@@ -115,6 +116,8 @@ interface requestsInitOption {
     instance?: LibCurl;
 
     ja3?: LibCurlJA3FingerPrintInfo;
+    
+    akamai?: LibCurlAkamaiFingerPrintInfo;
 
     connectReuse?: boolean;
 
@@ -188,6 +191,7 @@ export class requests {
             httpVersion,
             interface: interface_,
             ja3,
+            akamai,
             connectReuse,
             autoSortRequestHeaders,
             defaultRequestHeaders,
@@ -286,7 +290,7 @@ export class requests {
         url: requestsURLInfo,
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
-        const { instance: curl, timeout: timeoutOpt, ja3 } = this.option;
+        const { instance: curl, timeout: timeoutOpt, ja3, akamai } = this.option;
         const {
             headers,
             data,
@@ -356,6 +360,9 @@ export class requests {
                 this.lastJa3 = libcurlRandomJA3Fingerprint();
                 curl.setJA3Fingerprint(this.lastJa3);
             }
+        }
+        if (akamai) {
+            curl.setAkamaiFingerprint(akamai);
         }
         let hasContentType = false;
         if (headers && (data || json)) {

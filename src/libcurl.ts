@@ -57,6 +57,7 @@ export type LibCurlRequestHeadersAttr = Map<string, string>;
 export type LibCurlInterfaceInfo = string;
 
 export type LibCurlJA3FingerPrintInfo = string;
+export type LibCurlAkamaiFingerPrintInfo = string;
 
 export enum LibCurlJA3TlsVersion {
     TLSv1_2 = 771,
@@ -594,6 +595,21 @@ export class LibCurl {
             String.fromCharCode(...extension_permutation, 0),
             supportGroups.join(":"),
             0,
+        );
+    }
+
+    /**
+     * 设置akamai h2指纹
+     * @param akamai
+     */
+    public setAkamaiFingerprint(akamai: LibCurlAkamaiFingerPrintInfo): void {
+        const [settings, window_update, streams, pseudo_headers_order] =
+            akamai.split("|");
+        this.m_libCurl_impl_.setAkamaiFingerprint(
+            settings.replace(",", ";"),
+            window_update,
+            streams,
+            pseudo_headers_order.replace(",", ""),
         );
     }
 

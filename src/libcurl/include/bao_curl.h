@@ -63,7 +63,7 @@ public:
 	void setVerbose(bool enable);					// 打印内部日志
 	void setInterface(std::string& network); // 指定网卡访问
 	void setJA3Fingerprint(int tls_version, std::string& cipher, std::string& tls13_cipher, std::string& extensions, std::string& support_groups, int ec_point_formats);
-
+	void setAkamaiFingerprint(std::string& settings, int window_update, std::string &streams, std::string &pseudo_headers_order);
 	void setOnPublishCallback(BaoCurlOnPublishCallback callback);
 
 	enum HttpVersion
