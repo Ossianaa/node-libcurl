@@ -354,13 +354,13 @@ void BaoCurl::setJA3Fingerprint(
 void BaoCurl::setAkamaiFingerprint(
 	std::string& settings, int window_update, std::string &streams, std::string &pseudo_headers_order)
 {
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_SETTINGS, settings));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_SETTINGS, settings.c_str()));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_WINDOW_UPDATE, window_update));
 	if (streams != "0")
 	{
-		CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_STREAMS, streams));
+		CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_STREAMS, streams.c_str()));
 	}
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_PSEUDO_HEADERS_ORDER, pseudo_headers_order));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_PSEUDO_HEADERS_ORDER, pseudo_headers_order.c_str()));
 }
 
 void BaoCurl::setOnPublishCallback(BaoCurlOnPublishCallback callback)
