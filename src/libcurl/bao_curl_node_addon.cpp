@@ -632,7 +632,7 @@ Napi::Value BaoLibCurlWarp::setAkamaiFingerprint(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setJA3Fingerprint", 6, argsLen);
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setJA3Fingerprint", 4, argsLen);
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     std::string settings = info[0].As<Napi::String>().Utf8Value();
     REQUEST_TLS_METHOD_CHECK(env, info[1].IsNumber(), "argument 1 is not a number")
