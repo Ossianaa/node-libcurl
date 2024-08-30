@@ -607,7 +607,7 @@ export class LibCurl {
             akamai.split("|");
         this.m_libCurl_impl_.setAkamaiFingerprint(
             settings.replace(",", ";"),
-            window_update,
+            parseInt(window_update),
             streams,
             pseudo_headers_order.replace(",", ""),
         );
