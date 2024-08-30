@@ -606,10 +606,10 @@ export class LibCurl {
         const [settings, window_update, streams, pseudo_headers_order] =
             akamai.split("|");
         this.m_libCurl_impl_.setAkamaiFingerprint(
-            settings.replace(",", ";"),
+            settings.replaceAll(",", ";"),
             parseInt(window_update),
             streams,
-            pseudo_headers_order.replace(",", ""),
+            pseudo_headers_order.replaceAll(",", ""),
         );
     }
 
