@@ -66,7 +66,8 @@
                         "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libcurl.a",
                         "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libssl.a",
                         "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libcrypto.a",
-                        "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libzstd.a"
+                        "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libzstd.a",
+                        "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libcares.a"
                     ],
                 
                 }],
@@ -85,7 +86,8 @@
                         "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libcurl.a",
                         "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libssl.a",
                         "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libcrypto.a",
-                        "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libzstd.a"
+                        "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libzstd.a",
+                        "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libcares.a"
                     ],
                 
                 }],
@@ -102,7 +104,8 @@
                         "<(module_root_dir)/lib/x86_64-apple-darwin/libcurl.a",
                         "<(module_root_dir)/lib/x86_64-apple-darwin/libssl.a",
                         "<(module_root_dir)/lib/x86_64-apple-darwin/libcrypto.a",
-                        "<(module_root_dir)/lib/x86_64-apple-darwin/libzstd.a"
+                        "<(module_root_dir)/lib/x86_64-apple-darwin/libzstd.a",
+                        "<(module_root_dir)/lib/x86_64-apple-darwin/libcares.a"
                     ],
                     'xcode_settings': {
                         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
@@ -123,7 +126,8 @@
                         "<(module_root_dir)/lib/arm64-apple-darwin/libcurl.a",
                         "<(module_root_dir)/lib/arm64-apple-darwin/libssl.a",
                         "<(module_root_dir)/lib/arm64-apple-darwin/libcrypto.a",
-                        "<(module_root_dir)/lib/arm64-apple-darwin/libzstd.a"
+                        "<(module_root_dir)/lib/arm64-apple-darwin/libzstd.a",
+                        "<(module_root_dir)/lib/arm64-apple-darwin/libcares.a"
                     ],
                     'xcode_settings': {
                         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
