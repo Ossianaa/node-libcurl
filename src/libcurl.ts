@@ -438,8 +438,12 @@ export class LibCurl {
         const headers_ = this.m_libCurl_impl_.getResponseHeaders();
         const lines = headers_
             .split("\r\n")
+            .filter(Boolean)
             .filter(
-                (header: string) => !header.startsWith("HTTP/") && !!header,
+                (header: string) => !header.startsWith("HTTP/"),
+            )
+            .filter(
+                (header: string) => header.includes(": "),
             );
         return new Headers(lines.map((line: string) => line.split(": ", 2)));
     }
