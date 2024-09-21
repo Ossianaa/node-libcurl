@@ -140,6 +140,10 @@ interface requestsOption {
     proxy?: requestsProxyInfo;
     interface?: string;
     httpVersion?: requestsHttpVersionInfo;
+    h2config?: {
+        weight: number;
+        streamId: number;
+    }
 }
 
 interface requestsStaticOption
@@ -301,6 +305,7 @@ export class requests {
             redirect,
             proxy,
             httpVersion,
+            h2config,
         } = requestOpt || {};
 
         if (data && json) {
@@ -364,6 +369,12 @@ export class requests {
         if (akamai) {
             curl.setAkamaiFingerprint(akamai);
         }
+
+        if (h2config) {
+            curl.setHttp2NextStreamId(h2config.streamId);
+            curl.setHttp2StreamWeight(h2config.weight);
+        }
+
         let hasContentType = false;
         if (headers && (data || json)) {
             //如果有传入data或json 才用的上
@@ -528,6 +539,12 @@ export class requests {
     ): Promise<requestsResponse> {
         return requests.sendRequestStaic("DELETE", url, requestOpt);
     }
+    public static async options(
+        url: requestsURLInfo,
+        requestOpt?: requestsStaticOption,
+    ): Promise<requestsResponse> {
+        return requests.sendRequestStaic("OPTIONS", url, requestOpt);
+    }
     public async get(
         url: requestsURLInfo,
         requestOpt?: requestsOption,
@@ -569,6 +586,12 @@ export class requests {
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
         return this.sendRequestRetry("DELETE", url, requestOpt);
+    }
+    public async options(
+        url: requestsURLInfo,
+        requestOpt?: requestsOption,
+    ): Promise<requestsResponse> {
+        return this.sendRequestRetry("OPTIONS", url, requestOpt);
     }
 
     public setCookie(

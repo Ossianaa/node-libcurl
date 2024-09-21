@@ -234,6 +234,8 @@ export class LibCurlError extends Error {
     }
 }
 
+const textEncoder = new TextEncoder();
+
 export class LibCurl {
     private m_libCurl_impl_: any;
     private m_method_: LibCurlMethodInfo;
@@ -439,13 +441,15 @@ export class LibCurl {
         const lines = headers_
             .split("\r\n")
             .filter(Boolean)
-            .filter(
-                (header: string) => !header.startsWith("HTTP/"),
-            )
-            .filter(
-                (header: string) => header.includes(": "),
-            );
-        return new Headers(lines.map((line: string) => line.split(": ", 2)));
+            .filter((header: string) => !header.startsWith("HTTP/"))
+            .filter((header: string) => header.includes(": "));
+        return new Headers(
+            lines.map((line: string) =>
+                line
+                    .split(": ", 2)
+                    .map((e) => String.fromCharCode(...textEncoder.encode(e))),
+            ),
+        );
     }
 
     /**
@@ -568,6 +572,10 @@ export class LibCurl {
             })
             .map((e) => parseInt(e));
         const extension_permutation = extensions.map((extension) => {
+            if (extension == 41) {
+                //pre-shared-key
+                return 127;
+            }
             const pos = LibCurlBoringSSLExtensionPermutation.indexOf(extension);
             if (pos == -1) {
                 throw new LibCurlError(
@@ -587,7 +595,6 @@ export class LibCurl {
                 }
                 return LibCurlJA3SupportGroup[key];
             });
-
         /*  const ecPointFormat = LibCurlJA3EcPointFormat[ja3Arr.at(4)];
          if (!ecPointFormat) {
              throw new LibCurlError('ja3 fingerprint ecPointFormat no support')
@@ -615,6 +622,28 @@ export class LibCurl {
             streams,
             pseudo_headers_order.replaceAll(",", ""),
         );
+    }
+
+    /**
+     * 设置h2 stream_id
+     * @param stream_id
+     */
+    public setHttp2NextStreamId(stream_id: number): void {
+        if (stream_id < 1 || stream_id % 2 == 0) {
+            throw new LibCurlError("stream_id error");
+        }
+        this.m_libCurl_impl_.setHttp2NextStreamId(stream_id);
+    }
+
+    /**
+     * 设置h2 weight
+     * @param weight
+     */
+    public setHttp2StreamWeight(weight: number): void {
+        if (weight < 0 || weight > 256) {
+            throw new LibCurlError("weight error");
+        }
+        this.m_libCurl_impl_.setHttp2StreamWeight(weight);
     }
 
     private beforeProcessRequestHeaders(contentLength?: number) {
@@ -773,7 +802,9 @@ export class LibCurl {
     public send(body?: LibCurlBodyInfo): Promise<undefined> | undefined {
         this.checkSending();
         this.m_isSending_ = true;
-        const isSubmitBody = !["GET", "HEAD"].includes(this.m_method_);
+        const isSubmitBody = !["GET", "HEAD", "OPTIONS"].includes(
+            this.m_method_,
+        );
         let promise;
         if (body) {
             if (!isSubmitBody) {
