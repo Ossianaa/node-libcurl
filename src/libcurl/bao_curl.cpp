@@ -58,6 +58,7 @@ void BaoCurl::init()
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIEFILE, NULL));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PRIVATE, this));
+	setHttp2NextStreamId(1);
 	this->setTimeout(15, 15);
 }
 
