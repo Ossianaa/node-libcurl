@@ -368,4 +368,14 @@ void BaoCurl::setOnPublishCallback(BaoCurlOnPublishCallback callback)
 	this->m_publishCallback = callback;
 }
 
+void BaoCurl::setHttp2NextStreamId(int stream_id)
+{
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_STREAM_ID, stream_id));
+}
+
+void BaoCurl::setHttp2StreamWeight(int weight)
+{
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_STREAM_WEIGHT, weight));
+}
+
 NAMESPACE_BAO_END

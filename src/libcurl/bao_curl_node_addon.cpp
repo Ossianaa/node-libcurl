@@ -35,6 +35,8 @@ private:
     Napi::Value setInterface(const Napi::CallbackInfo &info);
     Napi::Value setJA3Fingerprint(const Napi::CallbackInfo &info);
     Napi::Value setAkamaiFingerprint(const Napi::CallbackInfo &info);
+    Napi::Value setHttp2NextStreamId(const Napi::CallbackInfo &info);
+    Napi::Value setHttp2StreamWeight(const Napi::CallbackInfo &info);
     Napi::Value sendAsync(const Napi::CallbackInfo &info);
     Napi::Value getResponseBody(const Napi::CallbackInfo &info);
     Napi::Value getResponseString(const Napi::CallbackInfo &info);
@@ -282,6 +284,8 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod<&BaoLibCurlWarp::setInterface>("setInterface", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setJA3Fingerprint>("setJA3Fingerprint", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setAkamaiFingerprint>("setAkamaiFingerprint", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&BaoLibCurlWarp::setHttp2NextStreamId>("setHttp2NextStreamId", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&BaoLibCurlWarp::setHttp2StreamWeight>("setHttp2StreamWeight", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         StaticMethod<&BaoLibCurlWarp::globalInit>("globalInit", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         StaticMethod<&BaoLibCurlWarp::globalCleanup>("globalCleanup", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         StaticValue("WebSocket", BaoLibCurlWebSocketWarp::Init(env)),
@@ -744,6 +748,34 @@ Napi::Value BaoLibCurlWarp::getResponseString(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
     // size_t argsLen = info.Length();
     return Napi::String::New(env, this->m_curl.getResponseBody());
+}
+
+/*
+    setHttp2NextStreamId(number)
+*/
+Napi::Value BaoLibCurlWarp::setHttp2NextStreamId(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+    size_t argsLen = info.Length();
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setHttp2NextStreamId", 1, argsLen);
+    REQUEST_TLS_METHOD_CHECK(env, info[0].IsNumber(), "argument 0 is not a number")
+    int stream_id = info[0].As<Napi::Number>().Int32Value();
+    this->m_curl.setHttp2NextStreamId(stream_id);
+    return env.Undefined();
+}
+
+/*
+    setHttp2StreamWeight(number)
+*/
+Napi::Value BaoLibCurlWarp::setHttp2StreamWeight(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+    size_t argsLen = info.Length();
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setHttp2StreamWeight", 1, argsLen);
+    REQUEST_TLS_METHOD_CHECK(env, info[0].IsNumber(), "argument 0 is not a number")
+    int weight = info[0].As<Napi::Number>().Int32Value();
+    this->m_curl.setHttp2StreamWeight(weight);
+    return env.Undefined();
 }
 
 Napi::Value BaoLibCurlWarp::globalInit(const Napi::CallbackInfo &info)
