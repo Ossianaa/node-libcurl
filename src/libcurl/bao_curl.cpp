@@ -303,6 +303,11 @@ void BaoCurl::setHttpVersion(BaoCurl::HttpVersion version)
 	case BaoCurl::HttpVersion::http2:
 		temp = CURL_HTTP_VERSION_2;
 		break;
+	case BaoCurl::HttpVersion::http3:
+		temp = CURL_HTTP_VERSION_3;
+	case BaoCurl::HttpVersion::http3_only:
+		temp = CURL_HTTP_VERSION_3ONLY;
+		break;
 	default:
 		printf("error httpVersion!\n");
 		return;

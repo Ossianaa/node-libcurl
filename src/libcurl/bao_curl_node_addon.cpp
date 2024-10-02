@@ -561,6 +561,14 @@ Napi::Value BaoLibCurlWarp::setHttpVersion(const Napi::CallbackInfo &info)
     {
         this->m_curl.setHttpVersion(BaoCurl::HttpVersion::http2);
     }
+    else if (ver == 2)
+    {
+        this->m_curl.setHttpVersion(BaoCurl::HttpVersion::http3);
+    }
+    else if (ver == 3)
+    {
+        this->m_curl.setHttpVersion(BaoCurl::HttpVersion::http3_only);
+    }
     else
     {
         REQUEST_TLS_METHOD_THROW(env, "BaoCurl", "setHttpVersion", "Version Not Support.")

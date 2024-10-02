@@ -72,6 +72,8 @@ public:
 	{
 		http1_1,
 		http2,
+		http3,
+		http3_only,
 	};
 	void setHttpVersion(HttpVersion);
 	void enableConnectReuse(bool);

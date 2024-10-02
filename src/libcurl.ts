@@ -6,6 +6,8 @@ BaoLibCurl.globalInit();
 export enum LibCurlHttpVersionInfo {
     http1_1,
     http2,
+    http3,
+    http3_only,
 }
 
 //Domain         Secure  Path    CORS    TimeStamp       Name    Value
@@ -275,7 +277,7 @@ export class LibCurl {
     }
 
     public setRequestHeader(key: string, value: string): void {
-        this.m_requestHeaders_.set(key, value);
+        this.m_requestHeaders_.set(key.trimStart(), value);
     }
 
     /**
