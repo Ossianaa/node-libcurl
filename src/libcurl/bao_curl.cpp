@@ -58,7 +58,7 @@ void BaoCurl::init()
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIEFILE, NULL));
 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PRIVATE, this));
-	setHttp2NextStreamId(1);
+	// setHttp2NextStreamId(1);
 	this->setTimeout(15, 15);
 }
 
@@ -374,10 +374,10 @@ void BaoCurl::setOnPublishCallback(BaoCurlOnPublishCallback callback)
 	this->m_publishCallback = callback;
 }
 
-void BaoCurl::setHttp2NextStreamId(int stream_id)
-{
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_STREAM_ID, stream_id));
-}
+// void BaoCurl::setHttp2NextStreamId(int stream_id)
+// {
+// 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_STREAM_ID, stream_id));
+// }
 
 void BaoCurl::setHttp2StreamWeight(int weight)
 {

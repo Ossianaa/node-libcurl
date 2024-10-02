@@ -626,16 +626,16 @@ export class LibCurl {
         );
     }
 
-    /**
-     * 设置h2 stream_id
-     * @param stream_id
-     */
-    public setHttp2NextStreamId(stream_id: number): void {
-        if (stream_id < 1 || stream_id % 2 == 0) {
-            throw new LibCurlError("stream_id error");
-        }
-        this.m_libCurl_impl_.setHttp2NextStreamId(stream_id);
-    }
+    // /**
+    //  * 设置h2 stream_id
+    //  * @param stream_id
+    //  */
+    // public setHttp2NextStreamId(stream_id: number): void {
+    //     if (stream_id < 1 || stream_id % 2 == 0) {
+    //         throw new LibCurlError("stream_id error");
+    //     }
+    //     this.m_libCurl_impl_.setHttp2NextStreamId(stream_id);
+    // }
 
     /**
      * 设置h2 weight
