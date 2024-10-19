@@ -31,7 +31,6 @@ interface LibCurlRequestInfo {
     instance?: LibCurl;
     ja3?: LibCurlJA3FingerPrintInfo;
     akamai?: LibCurlAkamaiFingerPrintInfo;
-    connectReuse?: boolean;
 
     /**
      * @experimental
@@ -70,7 +69,6 @@ export async function fetch(
         interface: interface_,
         ja3,
         akamai,
-        connectReuse,
         autoSortRequestHeaders,
     } = request;
     curl.open(method, url + "");
@@ -104,9 +102,6 @@ export async function fetch(
     curl.setJA3Fingerprint(ja3 || libcurlRandomJA3Fingerprint());
     if (akamai) {
         curl.setAkamaiFingerprint(akamai);
-    }
-    if (typeof connectReuse != 'undefined') {
-        curl.enableConnectReuse(connectReuse);
     }
     if (typeof autoSortRequestHeaders != "undefined") {
         curl.enableAutoSortRequestHeaders(autoSortRequestHeaders);

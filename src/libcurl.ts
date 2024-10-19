@@ -509,16 +509,6 @@ export class LibCurl {
     }
 
     /**
-     *
-     * @param enable
-     * 设置连接是否复用 默认复用
-     */
-    public enableConnectReuse(enable: boolean): void {
-        this.checkSending();
-        this.m_libCurl_impl_.enableConnectReuse(enable);
-    }
-
-    /**
      * 指定网卡访问
      * @param network
      */

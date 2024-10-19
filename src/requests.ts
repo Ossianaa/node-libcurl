@@ -119,8 +119,6 @@ interface requestsInitOption {
     
     akamai?: LibCurlAkamaiFingerPrintInfo;
 
-    connectReuse?: boolean;
-
     /**
      * @experimental
      * 自动重排请求头 对标chrome fetch方法
@@ -196,7 +194,6 @@ export class requests {
             interface: interface_,
             ja3,
             akamai,
-            connectReuse,
             autoSortRequestHeaders,
             defaultRequestHeaders,
         } = option;
@@ -244,9 +241,6 @@ export class requests {
         }
         if (typeof defaultRequestHeaders != "undefined") {
             this.setDefaultRequestHeaders(defaultRequestHeaders);
-        }
-        if (typeof connectReuse != "undefined") {
-            curl.enableConnectReuse(connectReuse);
         }
         if (typeof autoSortRequestHeaders != "undefined") {
             curl.enableAutoSortRequestHeaders(autoSortRequestHeaders);

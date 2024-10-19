@@ -31,7 +31,6 @@ private:
     Napi::Value setRedirect(const Napi::CallbackInfo &info);
     Napi::Value setVerbose(const Napi::CallbackInfo &info);
     Napi::Value setHttpVersion(const Napi::CallbackInfo &info);
-    Napi::Value enableConnectReuse(const Napi::CallbackInfo &info);
     Napi::Value setInterface(const Napi::CallbackInfo &info);
     Napi::Value setJA3Fingerprint(const Napi::CallbackInfo &info);
     Napi::Value setAkamaiFingerprint(const Napi::CallbackInfo &info);
@@ -273,7 +272,6 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod<&BaoLibCurlWarp::setRedirect>("setRedirect", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setVerbose>("setVerbose", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setHttpVersion>("setHttpVersion", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-        InstanceMethod<&BaoLibCurlWarp::enableConnectReuse>("enableConnectReuse", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::getResponseBody>("getResponseBody", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::getResponseString>("getResponseString", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::sendAsync>("sendAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -574,20 +572,6 @@ Napi::Value BaoLibCurlWarp::setHttpVersion(const Napi::CallbackInfo &info)
         REQUEST_TLS_METHOD_THROW(env, "BaoCurl", "setHttpVersion", "Version Not Support.")
     }
 
-    return env.Undefined();
-}
-
-/*
-    enableConnectReuse(bool)
-*/
-Napi::Value BaoLibCurlWarp::enableConnectReuse(const Napi::CallbackInfo &info)
-{
-    Napi::Env env = info.Env();
-    size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "enableConnectReuse", 1, argsLen);
-    REQUEST_TLS_METHOD_CHECK(env, info[0].IsBoolean(), "argument 0 is not a boolean")
-    bool enable = info[0].As<Napi::Boolean>().Value();
-    this->m_curl.enableConnectReuse(enable);
     return env.Undefined();
 }
 
