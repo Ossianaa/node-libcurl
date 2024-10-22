@@ -14,7 +14,7 @@ NAMESPACE_BAO_START
 BaoCurlMulti::BaoCurlMulti()
 {
     this->m_pCURLM = curl_multi_init();
-    CHECK_CURLMOK(curl_multi_setopt(this->m_pCURLM, CURLMOPT_PIPELINING, CURLPIPE_MULTIPLEX));
+    CHECK_CURLMOK(curl_multi_setopt(this->m_pCURLM, CURLMOPT_PIPELINING, CURLPIPE_NOTHING));
     this->m_bRunning = true;
 }
 
