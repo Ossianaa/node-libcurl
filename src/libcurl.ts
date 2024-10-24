@@ -690,11 +690,14 @@ export class LibCurl {
             "sec-ch-ua-wow64",
             "sec-ch-ua-full-version-list",
             "sec-ch-ua-form-factors",
-            "User-Agent",
         ];
         const fixedSuffixArr = [
             "Accept",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers",
+            "Access-Control-Request-Private-Network",
             "Origin",
+            "User-Agent",
             "Sec-Fetch-Site",
             "Sec-Fetch-Mode",
             "Sec-Fetch-User",
