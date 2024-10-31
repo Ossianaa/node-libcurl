@@ -140,7 +140,7 @@ interface requestsOption {
     httpVersion?: requestsHttpVersionInfo;
     h2config?: {
         weight: number;
-        // streamId: number;
+        streamId?: number;
     }
 }
 
@@ -365,7 +365,9 @@ export class requests {
         }
 
         if (h2config) {
-            // curl.setHttp2NextStreamId(h2config.streamId);
+            if (typeof h2config.streamId == 'number') {
+                curl.setHttp2NextStreamId(h2config.streamId);
+            }
             curl.setHttp2StreamWeight(h2config.weight);
         }
 
