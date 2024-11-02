@@ -86,7 +86,6 @@
                         "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libcurl.a",
                         "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libssl.a",
                         "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libcrypto.a",
-                        "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libquiche.a",
                         "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libzstd.a"
                     ],
                 
