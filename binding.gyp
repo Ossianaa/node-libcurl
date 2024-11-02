@@ -66,7 +66,7 @@
                         "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libcurl.a",
                         "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libssl.a",
                         "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libcrypto.a",
-                        "<(module_root_dir)/lib/x86_64-apple-darwin/libquiche.a",
+                        "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libquiche.a",
                         "<(module_root_dir)/lib/x86_64-unknown-linux-gnu/libzstd.a"
                     ],
                 
@@ -86,7 +86,7 @@
                         "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libcurl.a",
                         "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libssl.a",
                         "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libcrypto.a",
-                        "<(module_root_dir)/lib/x86_64-apple-darwin/libquiche.a",
+                        "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libquiche.a",
                         "<(module_root_dir)/lib/arm64-unknown-linux-gnu/libzstd.a"
                     ],
                 
@@ -126,7 +126,7 @@
                         "<(module_root_dir)/lib/arm64-apple-darwin/libcurl.a",
                         "<(module_root_dir)/lib/arm64-apple-darwin/libssl.a",
                         "<(module_root_dir)/lib/arm64-apple-darwin/libcrypto.a",
-                        "<(module_root_dir)/lib/x86_64-apple-darwin/libquiche.a",
+                        "<(module_root_dir)/lib/arm64-apple-darwin/libquiche.a",
                         "<(module_root_dir)/lib/arm64-apple-darwin/libzstd.a"
                     ],
                     'xcode_settings': {
