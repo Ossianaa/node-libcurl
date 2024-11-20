@@ -7,13 +7,10 @@
 ## Attention by custom ja3 fingerprint!!!
 * ssl support for node-libcurl is provided by boringssl
 * boringssl does not provided the following support
-* 1. extension support group only support [P-256, P-384, P-521, X25519], but the library was modified to provide dummy support groups, like [ffdhe2048, ffdhe3072] (ja3 is 256,257). if you use them, it may cause an SSL connection error. This depends on whether the server selects these two support groups
+* 1. extension support group only support [P-256, P-384, P-521, X25519, X25519MLKEM768], but the library was modified to provide dummy support groups, like [ffdhe2048, ffdhe3072] (ja3 is 256,257). if you use them, it may cause an SSL connection error. This depends on whether the server selects these two support groups
 * 2. ec_point_format (ja3 is ...,0-1-2) only support 0 (uncompressed)
 * 3. extensions only support (ja3)[0, 65037, 23, 65281, 10, 11, 35, 16, 5, 13, 13172, 18, 30032, 14, 51, 45, 42, 43, 44, 57, 65445, 27, 34, 17513, 28, 41]
 ------------
-
-![support](./static/support.png)
-
 
 ## Build Status
 
