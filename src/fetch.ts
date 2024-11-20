@@ -21,7 +21,7 @@ interface LibCurlRequestInfo {
     redirect?: boolean;
     cookies?: LibCurlCookiesInfo;
     httpVersion?: LibCurlHttpVersionInfo;
-    openInnerLog?: boolean;
+    verbose?: boolean;
     proxy?: LibCurlProxyInfo;
     timeout?: number;
     interface?: LibCurlInterfaceInfo;
@@ -61,7 +61,7 @@ export async function fetch(
         headers,
         redirect = false,
         httpVersion = 0,
-        openInnerLog: verbose = false,
+        verbose = false,
         proxy,
         body,
         cookies,
