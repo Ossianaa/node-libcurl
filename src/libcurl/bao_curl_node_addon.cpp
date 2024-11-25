@@ -202,6 +202,10 @@ Napi::Value BaoLibCurlWebSocketWarp::setOnClose(const Napi::CallbackInfo &info)
             this->_onerror.Unref(env);
             this->_onmessage.Unref(env);
         });
+        this->_onopen.Release();
+        this->_onclose.Release();
+        this->_onerror.Release();
+        this->_onmessage.Release();
         this->m_ref->Unref();
         this->Unref();
     });
@@ -676,7 +680,10 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
 		  {
 			  tsfn.Unref(env);
 			  jsCallback.Call({Napi::Boolean::New(env, success), Napi::String::New(env, errMsg.c_str())});
-		  }); };
+		  }); 
+          
+          tsfn.Release();
+          };
 	this->m_curl.setOnPublishCallback(std::function<void(bool, std::string)>(std::move(callback)));
 
     if (argsLen > 0)
