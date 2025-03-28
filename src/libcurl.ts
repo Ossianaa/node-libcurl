@@ -894,7 +894,7 @@ export class LibCurl {
      * @param body POST PUT PATCH时 发送的body
      * 当body不为string或uint8array时 此函数将用JSON.stringify转换对象
      */
-    public send(body?: LibCurlBodyInfo): Promise<undefined> | undefined {
+    public async send(body?: LibCurlBodyInfo): Promise<undefined> | undefined {
         this.checkSending();
         this.m_isSending_ = true;
         const isSubmitBody = !["GET", "HEAD", "OPTIONS"].includes(
