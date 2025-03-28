@@ -749,7 +749,7 @@ export class LibCurl {
             const userAgent =
                 this.m_requestHeaders_.get("user-agent") ||
                 this.m_requestHeaders_.get("User-Agent");
-            const chromeVersion = userAgent.match(/Chrome\/([\d.]+)/i)?.[1];
+            const chromeVersion = userAgent?.match(/Chrome\/([\d.]+)/i)?.[1];
             if (chromeVersion) {
                 processRequestHeadersFunc =
                     parseInt(chromeVersion) <= 130
