@@ -798,6 +798,7 @@ export class LibCurl {
             "Access-Control-Request-Headers",
             "Access-Control-Request-Private-Network",
             "Origin",
+            "X-Client-Data",
             "Sec-Fetch-Site",
             "Sec-Fetch-Mode",
             "Sec-Fetch-User",
