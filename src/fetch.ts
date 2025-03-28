@@ -11,6 +11,7 @@ import {
     LibCurlJA3FingerPrintInfo,
     LibCurlRequestHeadersAttr,
     LibCurlAkamaiFingerPrintInfo,
+    LibCurlAutoSortRequestHeadersOption,
 } from "./libcurl";
 import { libcurlRandomJA3Fingerprint, libcurlSetCookies } from "./utils";
 
@@ -36,7 +37,7 @@ interface LibCurlRequestInfo {
      * @experimental
      * 自动重排请求头 对标chrome fetch方法
      */
-    autoSortRequestHeaders?: boolean;
+    autoSortRequestHeaders?: LibCurlAutoSortRequestHeadersOption;
 }
 
 interface LibCurlResponseInfo {
@@ -104,7 +105,7 @@ export async function fetch(
         curl.setAkamaiFingerprint(akamai);
     }
     if (typeof autoSortRequestHeaders != "undefined") {
-        curl.enableAutoSortRequestHeaders(autoSortRequestHeaders);
+        curl.setAutoSortRequestHeaders(autoSortRequestHeaders);
     }
     await curl.send(body);
     return {

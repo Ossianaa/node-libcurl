@@ -1,4 +1,8 @@
-import { BaoLibCurl, processRequestHeaders } from "../scripts/bindings";
+import {
+    BaoLibCurl,
+    processRequestHeaders,
+    processRequestHeadersV2,
+} from "../scripts/bindings";
 import { httpCookiesToArray, cookieOptFilter } from "./utils";
 
 BaoLibCurl.globalInit();
@@ -237,6 +241,13 @@ export class LibCurlError extends Error {
     }
 }
 
+export type LibCurlAutoSortRequestHeadersOption =
+    | "auto"
+    | true
+    | false
+    | "chrome<=130"
+    | "chrome>130";
+
 const textEncoder = new TextEncoder();
 
 export class LibCurl {
@@ -244,7 +255,8 @@ export class LibCurl {
     private m_method_: LibCurlMethodInfo;
     private m_isSending_: boolean;
     private m_requestHeaders_: LibCurlRequestHeadersAttr;
-    private m_autoSortRequestHeaders: boolean = false;
+    private m_autoSortRequestHeaders: LibCurlAutoSortRequestHeadersOption =
+        "auto";
 
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
@@ -267,8 +279,10 @@ export class LibCurl {
         throw new LibCurlError(error);
     }
 
-    public enableAutoSortRequestHeaders(enable: boolean) {
-        this.m_autoSortRequestHeaders = enable;
+    public setAutoSortRequestHeaders(
+        option: LibCurlAutoSortRequestHeadersOption,
+    ) {
+        this.m_autoSortRequestHeaders = option;
     }
 
     public open(method: LibCurlMethodInfo, url: LibCurlURLInfo): void {
@@ -642,9 +656,10 @@ export class LibCurl {
     private beforeProcessRequestHeaders(contentLength?: number) {
         if (typeof contentLength == "number") {
             if (this.m_requestHeaders_.has("content-length")) {
-                this.m_requestHeaders_.delete("content-length");
+                this.setRequestHeader("content-length", contentLength + "");
+            } else {
+                this.setRequestHeader("Content-Length", contentLength + "");
             }
-            this.setRequestHeader("Content-Length", contentLength + "");
         }
         if (!this.m_autoSortRequestHeaders) {
             for (const [key, value] of this.m_requestHeaders_.entries()) {
@@ -671,6 +686,36 @@ export class LibCurl {
                 "gzip, deflate, br, zstd",
             );
         }
+
+        let processRequestHeadersFunc = null;
+        if (
+            this.m_autoSortRequestHeaders === "auto" ||
+            this.m_autoSortRequestHeaders === true
+        ) {
+            const userAgent =
+                this.m_requestHeaders_.get("user-agent") ||
+                this.m_requestHeaders_.get("User-Agent");
+            const chromeVersion = userAgent.match(/Chrome\/([\d.]+)/i)?.[1];
+            if (chromeVersion) {
+                processRequestHeadersFunc =
+                    parseInt(chromeVersion) <= 130
+                        ? processRequestHeaders
+                        : processRequestHeadersV2;
+            } else {
+                processRequestHeadersFunc = processRequestHeadersV2;
+            }
+        } else if (this.m_autoSortRequestHeaders === "chrome<=130") {
+            processRequestHeadersFunc = processRequestHeaders;
+        } else if (this.m_autoSortRequestHeaders === "chrome>130") {
+            processRequestHeadersFunc = processRequestHeadersV2;
+        } else {
+            console.error(
+                "[LibCurlAutoSortRequestHeadersOption] unknown option",
+                this.m_autoSortRequestHeaders,
+            );
+            processRequestHeadersFunc = processRequestHeadersV2;
+        }
+
         const fixedPrefixArr = [
             "Host",
             "Connection",
@@ -691,6 +736,7 @@ export class LibCurl {
             "sec-ch-ua-wow64",
             "sec-ch-ua-full-version-list",
             "sec-ch-ua-form-factors",
+            "User-Agent",
         ];
         const fixedSuffixArr = [
             "Accept",
@@ -698,7 +744,6 @@ export class LibCurl {
             "Access-Control-Request-Headers",
             "Access-Control-Request-Private-Network",
             "Origin",
-            "User-Agent",
             "Sec-Fetch-Site",
             "Sec-Fetch-Mode",
             "Sec-Fetch-User",
@@ -769,7 +814,7 @@ export class LibCurl {
                 ? -1
                 : 1,
         );
-        const processedHeaders = processRequestHeaders(
+        const processedHeaders = processRequestHeadersFunc(
             extraHeaders.map((e) => e[0].toLowerCase()),
             customHeaders.map((e) => e[0].toLowerCase()),
         ).reduce((e, key: string) => {

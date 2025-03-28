@@ -198,9 +198,14 @@ namespace WTF {
 		return static_cast<unsigned>(key);
 	}
 
-	inline unsigned intHash(std::string key)
+	inline unsigned stringHash(std::string key)
 	{
 		auto a = WTF::StringHasher::ComputeHashAndMaskTop8Bits(reinterpret_cast<const LChar*>(key.data()), key.size());
+		return a;
+	}
+	inline unsigned stringHashV2(std::string key)
+	{
+		auto a = WTF::StringHasherV2::ComputeHashAndMaskTop8Bits<CaseFoldingHashReader<LChar>>(key.data(), key.size() * 2);
 		return a;
 	}
 
@@ -236,7 +241,12 @@ namespace WTF {
 	};
 
 	struct StringHash {
-		static unsigned hash(std::string key) { return intHash((key)); }
+		static unsigned hash(std::string key) { return stringHash(key); }
+		static bool equal(std::string a, std::string b) { return a == b; }
+		static const bool safeToCompareToEmptyOrDeleted = false;
+	};
+	struct StringHashV2 {
+		static unsigned hash(std::string key) { return stringHashV2(key); }
 		static bool equal(std::string a, std::string b) { return a == b; }
 		static const bool safeToCompareToEmptyOrDeleted = false;
 	};
@@ -344,7 +354,6 @@ namespace WTF {
 	template<> struct DefaultHash<unsigned long> { typedef IntHash<unsigned long> Hash; };
 	template<> struct DefaultHash<long long> { typedef IntHash<unsigned long long> Hash; };
 	template<> struct DefaultHash<unsigned long long> { typedef IntHash<unsigned long long> Hash; };
-	template<> struct DefaultHash<std::string> { typedef StringHash Hash; };
 #if defined(_NATIVE_WCHAR_T_DEFINED)
 	template<> struct DefaultHash<wchar_t> { typedef IntHash<wchar_t> Hash; };
 #endif
@@ -2564,16 +2573,34 @@ std::vector<std::string> split_string(const std::string& input, char delimiter) 
 
 std::vector<std::string> process_requestHeaders(const std::vector<std::string>& extraHeaders, const std::vector<std::string>& customHeaders) {
 	std::vector<std::string> output;
-    auto hashMap = WTF::HashSet<std::string>();
+    auto hashMap = WTF::HashSet<std::string, WTF::StringHash>();
 	for (auto& it : customHeaders) {
 		hashMap.add(it);
 	}
-	auto hashMap2 = WTF::HashSet<std::string>(hashMap);
-	auto hashMap3 = WTF::HashSet<std::string>(hashMap2);
+	auto hashMap2 = WTF::HashSet<std::string, WTF::StringHash>(hashMap);
+	auto hashMap3 = WTF::HashSet<std::string, WTF::StringHash>(hashMap2);
 	for (auto& it : extraHeaders) {
 		hashMap3.add(it);
 	}
-	auto hashMap4 = WTF::HashSet<std::string>(hashMap3);
+	auto hashMap4 = WTF::HashSet<std::string, WTF::StringHash>(hashMap3);
+	for (auto& it : hashMap4) {
+		output.push_back(it);
+	}
+    return output;
+}
+
+std::vector<std::string> process_requestHeadersV2(const std::vector<std::string>& extraHeaders, const std::vector<std::string>& customHeaders) {
+	std::vector<std::string> output;
+    auto hashMap = WTF::HashSet<std::string, WTF::StringHashV2>();
+	for (auto& it : customHeaders) {
+		hashMap.add(it);
+	}
+	auto hashMap2 = WTF::HashSet<std::string, WTF::StringHashV2>(hashMap);
+	auto hashMap3 = WTF::HashSet<std::string, WTF::StringHashV2>(hashMap2);
+	for (auto& it : extraHeaders) {
+		hashMap3.add(it);
+	}
+	auto hashMap4 = WTF::HashSet<std::string, WTF::StringHashV2>(hashMap3);
 	for (auto& it : hashMap4) {
 		output.push_back(it);
 	}

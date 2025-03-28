@@ -12,6 +12,7 @@ import {
     LibCurlError,
     LibCurlJA3FingerPrintInfo,
     LibCurlAkamaiFingerPrintInfo,
+    LibCurlAutoSortRequestHeadersOption,
 } from "./libcurl";
 import {
     getUriTopLevelHost,
@@ -123,7 +124,7 @@ interface requestsInitOption {
      * @experimental
      * 自动重排请求头 对标chrome fetch方法
      */
-    autoSortRequestHeaders?: boolean;
+    autoSortRequestHeaders?: LibCurlAutoSortRequestHeadersOption;
 }
 
 type requestsParamsInfo = URLSearchParams | string | { [key: string]: string };
@@ -243,7 +244,7 @@ export class requests {
             this.setDefaultRequestHeaders(defaultRequestHeaders);
         }
         if (typeof autoSortRequestHeaders != "undefined") {
-            curl.enableAutoSortRequestHeaders(autoSortRequestHeaders);
+            curl.setAutoSortRequestHeaders(autoSortRequestHeaders);
         }
     }
 
