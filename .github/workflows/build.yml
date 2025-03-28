@@ -71,7 +71,7 @@ jobs:
       - name: Gyp rebuild
         run: node ./scripts/rebuild.js --arch=${{ matrix.settings.arch }} && npx node-gyp rebuild --arch=${{ matrix.settings.arch }}
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: bindings-${{ matrix.settings.target }}
           path: |
@@ -99,7 +99,7 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
       - name: List binaries
