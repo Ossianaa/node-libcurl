@@ -5,10 +5,8 @@
     "name": "Ossian"
   },
   "scripts": {
-    "test": "node ./test/libcurl_test.js",
     "gyp-rebuild": "node ./scripts/rebuild.js && node-gyp rebuild",
     "install": ":",
-    "unittest": "mocha",
     "tsc": "tsc -watch",
     "artifacts": "node ./scripts/artifacts.js",
     "publish-binding": "node ./scripts/publish-binding.js",
@@ -19,12 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.15.11",
-    "body-parser": "^1.20.1",
-    "chai": "^4.3.7",
-    "cookie-parser": "^1.4.6",
     "express": "^4.18.2",
-    "heapdump": "^0.3.15",
-    "mocha": "^10.2.0",
     "node-gyp": "^9.3.1",
     "prettier": "^3.2.4",
     "tar": "^7.4.3",
