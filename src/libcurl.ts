@@ -136,7 +136,8 @@ export enum LibCurlJA3Extension {
     TLSEXT_TYPE_key_share = 51,
     TLSEXT_TYPE_renegotiate = 0xff01,
     TLSEXT_TYPE_delegated_credential = 0x22,
-    TLSEXT_TYPE_application_settings = 17513,
+    TLSEXT_TYPE_application_settings_old = 17513,
+    TLSEXT_TYPE_application_settings = 17613,
     TLSEXT_TYPE_encrypted_client_hello = 0xfe0d,
     TLSEXT_TYPE_ech_outer_extensions = 0xfd00,
     TLSEXT_TYPE_certificate_timestamp = 18,
@@ -188,6 +189,7 @@ const LibCurlBoringSSLExtensionPermutation: LibCurlJA3Extension[] = [
     LibCurlJA3Extension.TLSEXT_TYPE_cert_compression,
     LibCurlJA3Extension.TLSEXT_TYPE_delegated_credential,
     LibCurlJA3Extension.TLSEXT_TYPE_application_settings,
+    LibCurlJA3Extension.TLSEXT_TYPE_application_settings_old,
     LibCurlJA3Extension.TLSEXT_TYPE_record_size_limit, //firefox兼容
     LibCurlJA3Extension.TLSEXT_TYPE_pre_shared_key,
 ];

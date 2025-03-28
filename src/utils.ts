@@ -110,7 +110,7 @@ export const libcurlSetCookies = (
 export const libcurlRandomJA3Fingerprint: () => string = () => {
     //default use chrome fp
     const extensions =
-        "0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-65037".split("-");
+        "0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-65037".split("-");
     const randomBytes = crypto.getRandomValues(
         new Uint32Array(extensions.length),
     );
