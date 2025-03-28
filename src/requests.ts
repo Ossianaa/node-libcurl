@@ -13,6 +13,7 @@ import {
     LibCurlJA3FingerPrintInfo,
     LibCurlAkamaiFingerPrintInfo,
     LibCurlAutoSortRequestHeadersOption,
+    LibCurlInterfaceInfo,
 } from "./libcurl";
 import { getUriTopLevelHost, libcurlSetCookies, md5 } from "./utils";
 
@@ -644,5 +645,35 @@ export class requests {
             rq.retryOption.conditionCallback = conditionCallback;
         }
         return rq;
+    }
+
+    public setProxy(proxyOpt: LibCurlProxyInfo): void {
+        this.option.instance.setProxy(proxyOpt);
+    }
+
+    public setTimeout(connectTime: number, sendTime: number): void {
+        this.option.instance.setTimeout(connectTime, sendTime);
+    }
+
+    public setRedirect(enable: boolean): void {
+        this.option.instance.setRedirect(enable);
+    }
+
+    public setHttpVersion(version: LibCurlHttpVersionInfo): void {
+        this.option.instance.setHttpVersion(version);
+    }
+
+    public setInterface(network: LibCurlInterfaceInfo): void {
+        this.option.instance.setInterface(network);
+    }
+
+    public setJA3Fingerprint(
+        ja3: LibCurlJA3FingerPrintInfo = "chrome133",
+    ): void {
+        this.option.ja3 = ja3;
+    }
+
+    public setAkamaiFingerprint(akamai: LibCurlAkamaiFingerPrintInfo): void {
+        this.option.akamai = akamai;
     }
 }
