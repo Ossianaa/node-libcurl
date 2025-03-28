@@ -163,12 +163,8 @@ const assignURLSearchParam = (
     });
 };
 
-const ja3Md5Map: Map<string, string> = new Map();
-
 export class requests {
     private option: requestsInitOption;
-    private lastJa3: string;
-    private randomJa3: boolean;
     private defaultRequestsHeaders: LibCurlRequestHeadersAttr;
     protected retryOption: requestsRetryOption = {
         retryNum: 0,
@@ -188,8 +184,6 @@ export class requests {
             proxy,
             httpVersion,
             interface: interface_,
-            ja3,
-            akamai,
             autoSortRequestHeaders,
             defaultRequestHeaders,
         } = option;
@@ -231,10 +225,6 @@ export class requests {
             curl.setProxy(proxy);
         }
 
-        this.randomJa3 = !ja3;
-        if (ja3) {
-            this.lastJa3 = ja3;
-        }
         if (typeof defaultRequestHeaders != "undefined") {
             this.setDefaultRequestHeaders(defaultRequestHeaders);
         }
@@ -631,28 +621,6 @@ export class requests {
             domain: domain,
             path: path || "/",
         });
-    }
-
-    public getJA3Fingerprint() {
-        if (!this.lastJa3) {
-            return {
-                ja3: "",
-                ja3_hash: "",
-            };
-        }
-        if (!ja3Md5Map.has(this.lastJa3)) {
-            const ja3_hash = md5(this.lastJa3);
-            ja3Md5Map.set(this.lastJa3, ja3_hash);
-            return {
-                ja3: this.lastJa3,
-                ja3_hash,
-            };
-        }
-        const ja3_hash = ja3Md5Map.get(this.lastJa3);
-        return {
-            ja3: this.lastJa3,
-            ja3_hash,
-        };
     }
 
     /**
