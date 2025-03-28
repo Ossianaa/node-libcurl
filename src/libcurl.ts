@@ -62,8 +62,55 @@ export type LibCurlRequestHeadersAttr = Map<string, string>;
 
 export type LibCurlInterfaceInfo = string;
 
-export type LibCurlJA3FingerPrintInfo = string;
-export type LibCurlAkamaiFingerPrintInfo = string;
+export type LibCurlJA3FingerPrintImpl =
+    | "chrome99"
+    | "chrome101"
+    | "chrome110"
+    | "chrome124"
+    | "chrome131"
+    | "chrome133";
+export type LibCurlAkamaiFingerPrintImpl =
+    | "chrome99"
+    | "chrome107"
+    | "chrome119";
+
+const randomStringExtensions = (exts: string) =>
+    exts
+        .split("-")
+        .sort(() => (Math.random() > 0.5 ? 1 : -1))
+        .join("-");
+
+const LibCurlJA3FingerPrintImplMap: Record<
+    LibCurlJA3FingerPrintImpl,
+    () => string
+> = {
+    chrome99: () =>
+        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21,29-23-24,0`,
+    chrome101: () =>
+        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-21,29-23-24,0`,
+    chrome110: () =>
+        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-21")},29-23-24,0`,
+    chrome124: () =>
+        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-21")},25497-29-23-24,0`,
+    chrome131: () =>
+        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-21")},4588-29-23-24,0`,
+    chrome133: () =>
+        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-21")},4588-29-23-24,0`,
+};
+
+const LibCurlAkamaiFingerPrintImplMap: Record<
+    LibCurlAkamaiFingerPrintImpl,
+    () => string
+> = {
+    chrome99: () => `1:65536;3:1000;4:6291456;6:262144`,
+    chrome107: () => `1:65536;2:0;3:1000;4:6291456;6:262144`,
+    chrome119: () => `1:65536;2:0;4:6291456;6:262144`,
+};
+
+export type LibCurlJA3FingerPrintInfo = string | LibCurlJA3FingerPrintImpl;
+export type LibCurlAkamaiFingerPrintInfo =
+    | string
+    | LibCurlAkamaiFingerPrintImpl;
 
 export enum LibCurlJA3TlsVersion {
     TLSv1_2 = 771,
@@ -538,9 +585,13 @@ export class LibCurl {
      * 设置JA3指纹
      * @param ja3
      */
-    public setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo): void {
+    public setJA3Fingerprint(
+        ja3: LibCurlJA3FingerPrintInfo = "chrome133",
+    ): void {
         this.checkSending();
-        const ja3Arr = ja3.split(",");
+        const ja3Arr = (LibCurlJA3FingerPrintImplMap[ja3]?.() || ja3).split(
+            ",",
+        );
         if (ja3Arr.length != 5) {
             throw new LibCurlError("ja3 fingerprint error");
         }
@@ -623,8 +674,9 @@ export class LibCurl {
      * @param akamai
      */
     public setAkamaiFingerprint(akamai: LibCurlAkamaiFingerPrintInfo): void {
-        const [settings, window_update, streams, pseudo_headers_order] =
-            akamai.split("|");
+        const [settings, window_update, streams, pseudo_headers_order] = (
+            LibCurlAkamaiFingerPrintImplMap[akamai]?.() || akamai
+        ).split("|");
         this.m_libCurl_impl_.setAkamaiFingerprint(
             settings.replaceAll(",", ";"),
             parseInt(window_update),

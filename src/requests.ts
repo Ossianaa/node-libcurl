@@ -14,12 +14,7 @@ import {
     LibCurlAkamaiFingerPrintInfo,
     LibCurlAutoSortRequestHeadersOption,
 } from "./libcurl";
-import {
-    getUriTopLevelHost,
-    libcurlRandomJA3Fingerprint,
-    libcurlSetCookies,
-    md5,
-} from "./utils";
+import { getUriTopLevelHost, libcurlSetCookies, md5 } from "./utils";
 
 type requestsHttpVersionInfo = LibCurlHttpVersionInfo;
 type requestsHeadersInfo = LibCurlHeadersInfo;
@@ -117,7 +112,7 @@ interface requestsInitOption {
     instance?: LibCurl;
 
     ja3?: LibCurlJA3FingerPrintInfo;
-    
+
     akamai?: LibCurlAkamaiFingerPrintInfo;
 
     /**
@@ -142,7 +137,7 @@ interface requestsOption {
     h2config?: {
         weight: number;
         streamId?: number;
-    }
+    };
 }
 
 interface requestsStaticOption
@@ -289,7 +284,12 @@ export class requests {
         url: requestsURLInfo,
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
-        const { instance: curl, timeout: timeoutOpt, ja3, akamai } = this.option;
+        const {
+            instance: curl,
+            timeout: timeoutOpt,
+            ja3,
+            akamai,
+        } = this.option;
         const {
             headers,
             data,
@@ -353,20 +353,13 @@ export class requests {
                 curl.setHttpVersion(this.option.httpVersion);
             }
         }
-        if (ja3) {
-            curl.setJA3Fingerprint(ja3);
-        } else {
-            if (this.randomJa3) {
-                this.lastJa3 = libcurlRandomJA3Fingerprint();
-                curl.setJA3Fingerprint(this.lastJa3);
-            }
-        }
+        curl.setJA3Fingerprint(ja3);
         if (akamai) {
             curl.setAkamaiFingerprint(akamai);
         }
 
         if (h2config) {
-            if (typeof h2config.streamId == 'number') {
+            if (typeof h2config.streamId == "number") {
                 curl.setHttp2NextStreamId(h2config.streamId);
             }
             curl.setHttp2StreamWeight(h2config.weight);

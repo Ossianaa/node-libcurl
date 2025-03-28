@@ -13,7 +13,7 @@ import {
     LibCurlAkamaiFingerPrintInfo,
     LibCurlAutoSortRequestHeadersOption,
 } from "./libcurl";
-import { libcurlRandomJA3Fingerprint, libcurlSetCookies } from "./utils";
+import { libcurlSetCookies } from "./utils";
 
 interface LibCurlRequestInfo {
     method?: LibCurlMethodInfo;
@@ -100,7 +100,7 @@ export async function fetch(
     if (timeout) {
         curl.setTimeout(timeout, timeout);
     }
-    curl.setJA3Fingerprint(ja3 || libcurlRandomJA3Fingerprint());
+    curl.setJA3Fingerprint(ja3);
     if (akamai) {
         curl.setAkamaiFingerprint(akamai);
     }
