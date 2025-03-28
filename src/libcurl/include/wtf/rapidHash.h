@@ -46,14 +46,6 @@
   // #include "base/check_op.h"
   // #include "base/compiler_specific.h"
  
- #ifndef uint64_t
- #ifndef __uint64_t
-
- typedef unsigned long long uint64_t;
- 
- #endif
- #endif
- 
  // Chromium has some local modifications to upstream rapidhash,
  // mostly around the concept of HashReaders (including slightly
  // more comments for ease of understanding). Generally, rapidhash
