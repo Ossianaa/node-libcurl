@@ -294,8 +294,8 @@ export type LibCurlAutoSortRequestHeadersOption =
     | "auto"
     | true
     | false
-    | "chrome<=130"
-    | "chrome>130";
+    | "chrome130"
+    | "chrome131";
 
 const textEncoder = new TextEncoder();
 
@@ -758,9 +758,9 @@ export class LibCurl {
             } else {
                 processRequestHeadersFunc = processRequestHeadersV2;
             }
-        } else if (this.m_autoSortRequestHeaders === "chrome<=130") {
+        } else if (this.m_autoSortRequestHeaders === "chrome130") {
             processRequestHeadersFunc = processRequestHeaders;
-        } else if (this.m_autoSortRequestHeaders === "chrome>130") {
+        } else if (this.m_autoSortRequestHeaders === "chrome131") {
             processRequestHeadersFunc = processRequestHeadersV2;
         } else {
             console.error(
