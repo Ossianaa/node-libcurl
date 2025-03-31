@@ -826,8 +826,12 @@ export class LibCurl {
                 continue;
             }
             if ((_ = fixedSuffixArr.find((e) => e.toLowerCase() == _key))) {
-                processedFixedSuffixArr.push([_, value]);
-                continue;
+                if (_key == "accept" && value != "*/*") {
+                    // skip
+                } else {
+                    processedFixedSuffixArr.push([_, value]);
+                    continue;
+                }
             }
             if ((_ = clientHintArr.find((e) => e.toLowerCase() == _key))) {
                 extraHeaders.push([_, value]);
