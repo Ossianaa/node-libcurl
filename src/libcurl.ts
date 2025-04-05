@@ -102,9 +102,9 @@ const LibCurlAkamaiFingerPrintImplMap: Record<
     LibCurlAkamaiFingerPrintImpl,
     () => string
 > = {
-    chrome99: () => `1:65536;3:1000;4:6291456;6:262144`,
-    chrome107: () => `1:65536;2:0;3:1000;4:6291456;6:262144`,
-    chrome119: () => `1:65536;2:0;4:6291456;6:262144`,
+    chrome99: () => `1:65536;3:1000;4:6291456;6:262144|15663105|0|m,a,s,p`,
+    chrome107: () => `1:65536;2:0;3:1000;4:6291456;6:262144|15663105|0|m,a,s,p`,
+    chrome119: () => `1:65536;2:0;4:6291456;6:262144|15663105|0|m,a,s,p`,
 };
 
 export type LibCurlJA3FingerPrintInfo = string | LibCurlJA3FingerPrintImpl;
