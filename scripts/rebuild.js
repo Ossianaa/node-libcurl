@@ -104,7 +104,7 @@ const libPath = path.join(__dirname, "..", "lib", version, platform_);
 const copyPath = path.join(__dirname, "..", "lib", platform_);
 const copyLibrary = () => {
     if (fs.existsSync(copyPath)) {
-        fs.rmdirSync(copyPath, { recursive: true });
+        fs.rm(copyPath, { recursive: true });
     }
     fs.cpSync(libPath, copyPath, { recursive: true });
 };
