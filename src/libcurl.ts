@@ -68,11 +68,13 @@ export type LibCurlJA3FingerPrintImpl =
     | "chrome110"
     | "chrome124"
     | "chrome131"
-    | "chrome133";
+    | "chrome133"
+    | "auto";
 export type LibCurlAkamaiFingerPrintImpl =
     | "chrome99"
     | "chrome107"
-    | "chrome119";
+    | "chrome119"
+    | "auto";
 
 const randomStringExtensions = (exts: string) =>
     exts
@@ -80,10 +82,14 @@ const randomStringExtensions = (exts: string) =>
         .sort(() => (Math.random() > 0.5 ? 1 : -1))
         .join("-");
 
-const LibCurlJA3FingerPrintImplMap: Record<
-    LibCurlJA3FingerPrintImpl,
-    () => string
-> = {
+const LibCurlJA3FingerPrintImplMap: {
+    [K in LibCurlJA3FingerPrintImpl]: K extends Exclude<
+        LibCurlJA3FingerPrintImpl,
+        "auto"
+    >
+        ? () => string
+        : (chromeVersion: number) => string;
+} = {
     chrome99: () =>
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21-41,29-23-24,0`,
     chrome101: () =>
@@ -91,20 +97,48 @@ const LibCurlJA3FingerPrintImplMap: Record<
     chrome110: () =>
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-21")}-41,29-23-24,0`,
     chrome124: () =>
-        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-21")}-41,25497-29-23-24,0`,
+        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-65037-21")}-41,25497-29-23-24,0`,
     chrome131: () =>
-        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-21")}-41,4588-29-23-24,0`,
+        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-65037-21")}-41,4588-29-23-24,0`,
     chrome133: () =>
-        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-21")}-41,4588-29-23-24,0`,
+        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-65037-21")}-41,4588-29-23-24,0`,
+    auto(chromeVersion?: number) {
+        if (chromeVersion < 101) {
+            return this.chrome99();
+        } else if (chromeVersion < 110) {
+            return this.chrome101();
+        } else if (chromeVersion < 124) {
+            return this.chrome110();
+        } else if (chromeVersion < 131) {
+            return this.chrome124();
+        } else if (chromeVersion < 133) {
+            return this.chrome131();
+        } else {
+            return this.chrome133();
+        }
+    },
 };
 
-const LibCurlAkamaiFingerPrintImplMap: Record<
-    LibCurlAkamaiFingerPrintImpl,
-    () => string
-> = {
+const LibCurlAkamaiFingerPrintImplMap: {
+    [K in LibCurlAkamaiFingerPrintImpl]: K extends Exclude<
+        LibCurlAkamaiFingerPrintImpl,
+        "auto"
+    >
+        ? () => string
+        : (chromeVersion: number) => string;
+} = {
     chrome99: () => `1:65536;3:1000;4:6291456;6:262144|15663105|0|m,a,s,p`,
     chrome107: () => `1:65536;2:0;3:1000;4:6291456;6:262144|15663105|0|m,a,s,p`,
     chrome119: () => `1:65536;2:0;4:6291456;6:262144|15663105|0|m,a,s,p`,
+    auto(chromeVersion?: number) {
+        if (chromeVersion < 107) {
+            return this.chrome99();
+        } else if (chromeVersion < 119) {
+            return this.chrome107();
+        } else {
+            return this.chrome119();
+        }
+    },
 };
 
 export type LibCurlJA3FingerPrintInfo = string | LibCurlJA3FingerPrintImpl;
@@ -306,6 +340,7 @@ export class LibCurl {
     private m_requestHeaders_: LibCurlRequestHeadersAttr;
     private m_autoSortRequestHeaders: LibCurlAutoSortRequestHeadersOption =
         "auto";
+    private m_chromeVersion: number = 133;
 
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
@@ -341,7 +376,14 @@ export class LibCurl {
     }
 
     public setRequestHeader(key: string, value: string): void {
-        this.m_requestHeaders_.set(key.trimStart(), value);
+        const _key = key.trimStart();
+        if (/user-agent/i.test(_key)) {
+            const chromeVersion = value.match(/Chrome\/([\d.]+)/i)?.[1];
+            if (chromeVersion) {
+                this.m_chromeVersion = parseInt(chromeVersion);
+            }
+        }
+        this.m_requestHeaders_.set(_key, value);
     }
 
     /**
@@ -585,13 +627,11 @@ export class LibCurl {
      * 设置JA3指纹
      * @param ja3
      */
-    public setJA3Fingerprint(
-        ja3: LibCurlJA3FingerPrintInfo = "chrome133",
-    ): void {
+    public setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo = "auto"): void {
         this.checkSending();
-        const ja3Arr = (LibCurlJA3FingerPrintImplMap[ja3]?.() || ja3).split(
-            ",",
-        );
+        const ja3Arr = (
+            LibCurlJA3FingerPrintImplMap[ja3]?.(this.m_chromeVersion) || ja3
+        ).split(",");
         if (ja3Arr.length != 5) {
             throw new LibCurlError("ja3 fingerprint error");
         }
@@ -673,9 +713,12 @@ export class LibCurl {
      * 设置akamai h2指纹
      * @param akamai
      */
-    public setAkamaiFingerprint(akamai: LibCurlAkamaiFingerPrintInfo): void {
+    public setAkamaiFingerprint(
+        akamai: LibCurlAkamaiFingerPrintInfo = "auto",
+    ): void {
         const [settings, window_update, streams, pseudo_headers_order] = (
-            LibCurlAkamaiFingerPrintImplMap[akamai]?.() || akamai
+            LibCurlAkamaiFingerPrintImplMap[akamai]?.(this.m_chromeVersion) ||
+            akamai
         ).split("|");
         this.m_libCurl_impl_.setAkamaiFingerprint(
             settings.replaceAll(",", ";"),
@@ -746,13 +789,9 @@ export class LibCurl {
             this.m_autoSortRequestHeaders === "auto" ||
             this.m_autoSortRequestHeaders === true
         ) {
-            const userAgent =
-                this.m_requestHeaders_.get("user-agent") ||
-                this.m_requestHeaders_.get("User-Agent");
-            const chromeVersion = userAgent?.match(/Chrome\/([\d.]+)/i)?.[1];
-            if (chromeVersion) {
+            if (this.m_chromeVersion) {
                 processRequestHeadersFunc =
-                    parseInt(chromeVersion) <= 130
+                    this.m_chromeVersion <= 130
                         ? processRequestHeaders
                         : processRequestHeadersV2;
             } else {
