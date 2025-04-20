@@ -141,6 +141,31 @@ const LibCurlAkamaiFingerPrintImplMap: {
     },
 };
 
+const LibCurlAutoSortRequestHeadersImplMap = (
+    opt: LibCurlAutoSortRequestHeadersOption,
+    chromeVersion: number,
+) => {
+    if (opt === "auto" || opt === true) {
+        if (chromeVersion) {
+            return chromeVersion <= 130
+                ? processRequestHeaders
+                : processRequestHeadersV2;
+        } else {
+            return processRequestHeadersV2;
+        }
+    } else if (opt === "chrome130") {
+        return processRequestHeaders;
+    } else if (opt === "chrome131") {
+        return processRequestHeadersV2;
+    } else {
+        console.error(
+            "[LibCurlAutoSortRequestHeadersOption] unknown option",
+            opt,
+        );
+        return processRequestHeadersV2;
+    }
+};
+
 export type LibCurlJA3FingerPrintInfo = string | LibCurlJA3FingerPrintImpl;
 export type LibCurlAkamaiFingerPrintInfo =
     | string
@@ -784,30 +809,10 @@ export class LibCurl {
             );
         }
 
-        let processRequestHeadersFunc = null;
-        if (
-            this.m_autoSortRequestHeaders === "auto" ||
-            this.m_autoSortRequestHeaders === true
-        ) {
-            if (this.m_chromeVersion) {
-                processRequestHeadersFunc =
-                    this.m_chromeVersion <= 130
-                        ? processRequestHeaders
-                        : processRequestHeadersV2;
-            } else {
-                processRequestHeadersFunc = processRequestHeadersV2;
-            }
-        } else if (this.m_autoSortRequestHeaders === "chrome130") {
-            processRequestHeadersFunc = processRequestHeaders;
-        } else if (this.m_autoSortRequestHeaders === "chrome131") {
-            processRequestHeadersFunc = processRequestHeadersV2;
-        } else {
-            console.error(
-                "[LibCurlAutoSortRequestHeadersOption] unknown option",
-                this.m_autoSortRequestHeaders,
-            );
-            processRequestHeadersFunc = processRequestHeadersV2;
-        }
+        let processRequestHeadersFunc = LibCurlAutoSortRequestHeadersImplMap(
+            this.m_autoSortRequestHeaders,
+            this.m_chromeVersion,
+        );
 
         const fixedPrefixArr = [
             "Host",
