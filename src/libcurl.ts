@@ -847,6 +847,7 @@ export class LibCurl {
             "Sec-Fetch-Mode",
             "Sec-Fetch-User",
             "Sec-Fetch-Dest",
+            "Sec-Fetch-Storage-Access",
             "Referer",
             "Accept-Encoding",
             "Accept-Language",
