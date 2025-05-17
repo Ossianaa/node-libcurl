@@ -246,7 +246,7 @@ std::string BaoCurl::getCookie(std::string &key, std::string &domain, std::strin
 		std::vector<std::string> vt = StringSplit(std::string(cookies->data), "\t");
 		if (domain.size() != 0)
 		{
-			if (domain != vt.at(0))
+			if (domain != vt.at(0) && ("#HttpOnly_" + domain) != vt.at(0))
 			{
 				cookies = cookies->next;
 				continue;
