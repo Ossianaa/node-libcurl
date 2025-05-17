@@ -201,13 +201,12 @@ void BaoCurl::sendByte(const char *data, const int len)
 /* Value */
 void BaoCurl::setCookie(std::string &key, std::string &value, std::string &domain, std::string &path)
 {
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("%s\tTRUE\t%s\tFALSE\t0\t%s\t%s", domain.c_str(), path.c_str(), key.c_str(), value.c_str()).c_str()));
-	// CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("Set-Cookie: %s=%s; domain=%s; path=%s;", key.c_str(), value.c_str(), domain.c_str(), path.c_str()).c_str()));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("Set-Cookie: %s=%s; Expires=Fri, 31 Dec 2077 23:59:59 GMT; domain=%s; Path=%s;", key.c_str(), value.c_str(), domain.c_str(), path.c_str()).c_str()));
 }
 
 void BaoCurl::deleteCookie(std::string &key, std::string &domain, std::string &path)
 {
-	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("%s\tTURE\t%s\tFALSE\t1600000000\t%s\t%s", domain.c_str(), path.c_str(), key.c_str(), "").c_str()));
+	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("Set-Cookie: %s=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=%s; Path=%s;", key.c_str(), domain.c_str(), path.c_str()).c_str()));
 }
 
 std::string BaoCurl::getCookies()
@@ -246,7 +245,7 @@ std::string BaoCurl::getCookie(std::string &key, std::string &domain, std::strin
 		std::vector<std::string> vt = StringSplit(std::string(cookies->data), "\t");
 		if (domain.size() != 0)
 		{
-			if (domain != vt.at(0) && ("#HttpOnly_" + domain) != vt.at(0))
+			if (domain != vt.at(0) && (std::string("#HttpOnly_") + domain) != vt.at(0))
 			{
 				cookies = cookies->next;
 				continue;

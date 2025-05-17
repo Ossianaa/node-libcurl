@@ -486,7 +486,7 @@ export class LibCurl {
             cookieOpt.name,
             cookieOpt.value,
             cookieOpt.domain,
-            cookieOpt.path,
+            cookieOpt.path || "/",
         );
     }
 
