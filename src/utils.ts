@@ -121,3 +121,60 @@ export const getUriTopLevelHost = (uri: string | URL) => {
     }
     return getHost(uri_);
 };
+
+export class CaseInsensitiveMap {
+    private map: Map<
+        string,
+        {
+            originalKey: string;
+            value: string;
+        }
+    >;
+    constructor() {
+        this.map = new Map();
+    }
+
+    set(key: string, value: string) {
+        const lowerKey = key.toLowerCase();
+        this.map.set(lowerKey, { originalKey: key, value });
+    }
+
+    get(key: string) {
+        const lowerKey = key.toLowerCase();
+        const entry = this.map.get(lowerKey);
+        return entry ? entry.value : undefined;
+    }
+
+    has(key: string) {
+        return this.map.has(key.toLowerCase());
+    }
+
+    delete(key: string) {
+        return this.map.delete(key.toLowerCase());
+    }
+
+    keys() {
+        return Array.from(this.map.values()).map((entry) => entry.originalKey);
+    }
+
+    entries() {
+        return Array.from(this.map.values()).map(({ originalKey, value }) => [
+            originalKey,
+            value,
+        ]);
+    }
+
+    clear() {
+        this.map.clear();
+    }
+
+    size() {
+        return this.map.size;
+    }
+
+    *[Symbol.iterator]() {
+        for (const { originalKey, value } of this.map.values()) {
+            yield [originalKey, value];
+        }
+    }
+}
