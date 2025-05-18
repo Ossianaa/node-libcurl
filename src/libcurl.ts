@@ -462,15 +462,23 @@ export class LibCurl {
         if (!headers) {
             return;
         }
-        if (headers instanceof Map) {
+        if (headers instanceof CaseInsensitiveMap) {
             headers.forEach((value, key) => this.setRequestHeader(key, value));
         } else if (typeof headers == "string") {
             headers
-                .split("\n")
-                .filter(Boolean)
-                .forEach((header) => {
-                    const [key, value = ""] = header.split(": ");
-                    this.setRequestHeader(key, value);
+                .split(/\r?\n/)
+                .filter((line) => line.trim() !== "")
+                .forEach((line) => {
+                    const match = line.match(/^([^:\r\n]+):\s*([\s\S]*)/);
+                    if (match) {
+                        const key = match[1].trim();
+                        const value = match[2].replace(/^\s+|\s+$/g, "");
+                        if (key) {
+                            this.setRequestHeader(key, value);
+                            return;
+                        }
+                    }
+                    throw new LibCurlError(`setRequestHeader error [${line}]`);
                 });
         } else if (typeof headers == "object") {
             Object.keys(headers).forEach((key) => {
