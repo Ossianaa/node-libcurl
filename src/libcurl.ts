@@ -7,6 +7,7 @@ import {
     httpCookiesToArray,
     cookieOptFilter,
     CaseInsensitiveMap,
+    parseHeadersLine,
 } from "./utils";
 
 BaoLibCurl.globalInit();
@@ -321,6 +322,8 @@ interface LibCurlCommonHeaders {
 export type LibCurlHeadersInfo =
     | string
     | { [key: string]: string }
+    | Array<string>
+    | Array<[string, string]>
     | LibCurlRequestHeadersAttr
     | LibCurlCommonHeaders;
 
@@ -443,6 +446,9 @@ export class LibCurl {
     }
 
     public setRequestHeader(key: string, value: string): void {
+        if (typeof key != "string" || typeof value != "string") {
+            throw new LibCurlError("setRequestHeader type error");
+        }
         const _key = key.trimStart();
         if (/user-agent/i.test(_key)) {
             const chromeVersion = value.match(/Chrome\/([\d.]+)/i)?.[1];
@@ -469,17 +475,51 @@ export class LibCurl {
                 .split(/\r?\n/)
                 .filter((line) => line.trim() !== "")
                 .forEach((line) => {
-                    const match = line.match(/^([^:\r\n]+):\s*([\s\S]*)/);
-                    if (match) {
-                        const key = match[1].trim();
-                        const value = match[2].replace(/^\s+|\s+$/g, "");
-                        if (key) {
-                            this.setRequestHeader(key, value);
-                            return;
-                        }
+                    try {
+                        const { key, value } = parseHeadersLine(line);
+                        this.setRequestHeader(key, value);
+                    } catch (error) {
+                        throw new LibCurlError(
+                            `setRequestHeader error [${line}]`,
+                        );
                     }
-                    throw new LibCurlError(`setRequestHeader error [${line}]`);
                 });
+        } else if (Array.isArray(headers)) {
+            if (typeof headers[0] === "string") {
+                headers.forEach((line) => {
+                    if (typeof line != "string") {
+                        throw new LibCurlError(
+                            `setRequestHeader type error [${line}]`,
+                        );
+                    }
+                    try {
+                        const { key, value } = parseHeadersLine(line);
+                        this.setRequestHeader(key, value);
+                    } catch (error) {
+                        throw new LibCurlError(
+                            `setRequestHeader error [${line}]`,
+                        );
+                    }
+                });
+            } else {
+                headers.forEach((line) => {
+                    if (!Array.isArray(line)) {
+                        throw new LibCurlError(
+                            `setRequestHeader type error [${line}]`,
+                        );
+                    }
+                    try {
+                        const [key, value] = line;
+                        console.log(key, value);
+
+                        this.setRequestHeader(key, value);
+                    } catch (error) {
+                        throw new LibCurlError(
+                            `setRequestHeader error [${line}]`,
+                        );
+                    }
+                });
+            }
         } else if (typeof headers == "object") {
             Object.keys(headers).forEach((key) => {
                 const value = headers[key];

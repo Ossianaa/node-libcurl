@@ -182,3 +182,15 @@ export class CaseInsensitiveMap {
         }
     }
 }
+
+export const parseHeadersLine = (line) => {
+    const match = line.match(/^([^:\r\n]+):\s*([\s\S]*)/);
+    if (match) {
+        const key = match[1].trim();
+        const value = match[2].replace(/^\s+|\s+$/g, "");
+        if (key) {
+            return { key, value };
+        }
+    }
+    throw new Error(`parseHeadersLine error`);
+};
