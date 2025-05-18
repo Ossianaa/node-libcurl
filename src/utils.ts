@@ -168,7 +168,11 @@ export class CaseInsensitiveMap {
         this.map.clear();
     }
 
-    size() {
+    forEach(fn) {
+        this.map.forEach((value, key) => fn(value.value, value.originalKey));
+    }
+
+    get size() {
         return this.map.size;
     }
 
