@@ -510,8 +510,6 @@ export class LibCurl {
                     }
                     try {
                         const [key, value] = line;
-                        console.log(key, value);
-
                         this.setRequestHeader(key, value);
                     } catch (error) {
                         throw new LibCurlError(
