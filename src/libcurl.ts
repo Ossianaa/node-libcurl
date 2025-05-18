@@ -3,7 +3,11 @@ import {
     processRequestHeaders,
     processRequestHeadersV2,
 } from "../scripts/bindings";
-import { httpCookiesToArray, cookieOptFilter } from "./utils";
+import {
+    httpCookiesToArray,
+    cookieOptFilter,
+    CaseInsensitiveMap,
+} from "./utils";
 
 BaoLibCurl.globalInit();
 
@@ -58,7 +62,7 @@ export type LibCurlCookieAttrObject = {
 
 export type LibCurlCookiesAttr = Map<string, LibCurlCookieAttrObject>;
 
-export type LibCurlRequestHeadersAttr = Map<string, string>;
+export type LibCurlRequestHeadersAttr = CaseInsensitiveMap;
 
 export type LibCurlInterfaceInfo = string;
 
@@ -358,6 +362,44 @@ export type LibCurlAutoSortRequestHeadersOption =
 
 const textEncoder = new TextEncoder();
 
+const autoSortRequestHeadersConfig = {
+    prefix: ["host", "connection", "content-length", "pragma", "cache-control"],
+    clientHint: [
+        "upgrade-insecure-requests",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-full-version",
+        "sec-ch-ua-arch",
+        "sec-ch-ua-platform",
+        "sec-ch-ua-platform-version",
+        "sec-ch-ua-model",
+        "sec-ch-ua-bitness",
+        "sec-ch-ua-wow64",
+        "sec-ch-ua-full-version-list",
+        "sec-ch-ua-form-factors",
+        "user-agent",
+    ],
+    suffix: [
+        "accept",
+        "access-control-request-method",
+        "access-control-request-headers",
+        "access-control-request-private-network",
+        "origin",
+        "x-client-data",
+        "sec-fetch-site",
+        "sec-fetch-mode",
+        "sec-fetch-user",
+        "sec-fetch-dest",
+        "sec-fetch-storage-access",
+        "referer",
+        "accept-encoding",
+        "accept-language",
+        "cookie",
+        "priority",
+        "if-none-match",
+    ],
+};
+
 export class LibCurl {
     private m_libCurl_impl_: any;
     private m_method_: LibCurlMethodInfo;
@@ -369,7 +411,7 @@ export class LibCurl {
 
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
-        this.m_requestHeaders_ = new Map();
+        this.m_requestHeaders_ = new CaseInsensitiveMap();
     }
     private checkSending(): void {
         if (this.m_isSending_) {
@@ -777,11 +819,12 @@ export class LibCurl {
 
     private beforeProcessRequestHeaders(contentLength?: number) {
         if (typeof contentLength == "number") {
-            if (this.m_requestHeaders_.has("content-length")) {
-                this.setRequestHeader("content-length", contentLength + "");
-            } else {
+            if (this.m_requestHeaders_.has("Content-Length")) {
                 this.setRequestHeader("Content-Length", contentLength + "");
             }
+        }
+        if (!this.m_requestHeaders_.has("Cookie")) {
+            this.setRequestHeader("Cookie", "");
         }
         if (!this.m_autoSortRequestHeaders) {
             for (const [key, value] of this.m_requestHeaders_.entries()) {
@@ -790,19 +833,13 @@ export class LibCurl {
                     value,
                 );
             }
-            this.m_requestHeaders_ = new Map();
+            this.m_requestHeaders_.clear();
             return;
         }
-        if (
-            !this.m_requestHeaders_.has("Accept") &&
-            !this.m_requestHeaders_.has("accept")
-        ) {
+        if (!this.m_requestHeaders_.has("Accept")) {
             this.m_requestHeaders_.set("Accept", "*/*");
         }
-        if (
-            !this.m_requestHeaders_.has("Accept-Encoding") &&
-            !this.m_requestHeaders_.has("accept-encoding")
-        ) {
+        if (!this.m_requestHeaders_.has("Accept-Encoding")) {
             this.m_requestHeaders_.set(
                 "Accept-Encoding",
                 "gzip, deflate, br, zstd",
@@ -814,48 +851,6 @@ export class LibCurl {
             this.m_chromeVersion,
         );
 
-        const fixedPrefixArr = [
-            "Host",
-            "Connection",
-            "Content-Length",
-            "Pragma",
-            "Cache-Control",
-        ];
-        const clientHintArr = [
-            "Upgrade-Insecure-Requests",
-            "sec-ch-ua",
-            "sec-ch-ua-mobile",
-            "sec-ch-ua-full-version",
-            "sec-ch-ua-arch",
-            "sec-ch-ua-platform",
-            "sec-ch-ua-platform-version",
-            "sec-ch-ua-model",
-            "sec-ch-ua-bitness",
-            "sec-ch-ua-wow64",
-            "sec-ch-ua-full-version-list",
-            "sec-ch-ua-form-factors",
-            "User-Agent",
-        ];
-        const fixedSuffixArr = [
-            "Accept",
-            "Access-Control-Request-Method",
-            "Access-Control-Request-Headers",
-            "Access-Control-Request-Private-Network",
-            "Origin",
-            "X-Client-Data",
-            "Sec-Fetch-Site",
-            "Sec-Fetch-Mode",
-            "Sec-Fetch-User",
-            "Sec-Fetch-Dest",
-            "Sec-Fetch-Storage-Access",
-            "Referer",
-            "Accept-Encoding",
-            "Accept-Language",
-            "priority",
-            "If-None-Match",
-            "Cookie",
-        ];
-
         const processedFixedPrefixArr = [];
         const processedFixedSuffixArr = [];
 
@@ -865,28 +860,27 @@ export class LibCurl {
             const _key = (
                 key.at(-1) == ":" ? key.slice(0, -1) : key
             ).toLowerCase();
-            let _;
-            if ((_ = fixedPrefixArr.find((e) => e.toLowerCase() == _key))) {
-                processedFixedPrefixArr.push([_, value]);
-                continue;
-            }
-            if ((_ = fixedSuffixArr.find((e) => e.toLowerCase() == _key))) {
+            if (autoSortRequestHeadersConfig.prefix.includes(_key)) {
+                processedFixedPrefixArr.push([key, value]);
+            } else if (autoSortRequestHeadersConfig.suffix.includes(_key)) {
                 if (_key == "accept" && value != "*/*") {
                     // skip
                 } else {
-                    processedFixedSuffixArr.push([_, value]);
+                    processedFixedSuffixArr.push([key, value]);
                     continue;
                 }
-            }
-            if ((_ = clientHintArr.find((e) => e.toLowerCase() == _key))) {
-                extraHeaders.push([_, value]);
+            } else if (autoSortRequestHeadersConfig.clientHint.includes(_key)) {
+                extraHeaders.push([key, value]);
             } else {
                 customHeaders.push([key, value]);
             }
         }
 
         extraHeaders.sort((a, b) =>
-            clientHintArr.indexOf(a[0]) < clientHintArr.indexOf(b[0]) ? -1 : 1,
+            autoSortRequestHeadersConfig.clientHint.indexOf(a[0]) <
+            autoSortRequestHeadersConfig.clientHint.indexOf(b[0])
+                ? -1
+                : 1,
         );
 
         customHeaders.sort(function codeUnitCompareIgnoringASCIICase(
@@ -909,19 +903,21 @@ export class LibCurl {
             return l1 > l2 ? 1 : -1;
         });
         processedFixedPrefixArr.sort((a, b) =>
-            fixedPrefixArr.indexOf(a[0]) < fixedPrefixArr.indexOf(b[0])
+            autoSortRequestHeadersConfig.prefix.indexOf(a[0]) <
+            autoSortRequestHeadersConfig.prefix.indexOf(b[0])
                 ? -1
                 : 1,
         );
         processedFixedSuffixArr.sort((a, b) =>
-            fixedSuffixArr.indexOf(a[0]) < fixedSuffixArr.indexOf(b[0])
+            autoSortRequestHeadersConfig.suffix.indexOf(a[0]) <
+            autoSortRequestHeadersConfig.suffix.indexOf(b[0])
                 ? -1
                 : 1,
         );
         const processedHeaders = processRequestHeadersFunc(
             extraHeaders.map((e) => e[0].toLowerCase()),
             customHeaders.map((e) => e[0].toLowerCase()),
-        ).reduce((e, key: string) => {
+        ).reduce((e: Array<[string, string]>, key: string) => {
             const [_key, value] =
                 extraHeaders.find((j) => j[0].toLowerCase() == key) ||
                 customHeaders.find((j) => j[0].toLowerCase() == key);
@@ -936,7 +932,7 @@ export class LibCurl {
         ]) {
             this.m_libCurl_impl_.setRequestHeader(key, value);
         }
-        this.m_requestHeaders_ = new Map();
+        this.m_requestHeaders_.clear();
     }
 
     /**

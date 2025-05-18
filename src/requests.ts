@@ -15,7 +15,7 @@ import {
     LibCurlAutoSortRequestHeadersOption,
     LibCurlInterfaceInfo,
 } from "./libcurl";
-import { getUriTopLevelHost, libcurlSetCookies, md5 } from "./utils";
+import { CaseInsensitiveMap, getUriTopLevelHost, libcurlSetCookies, md5 } from "./utils";
 
 type requestsHttpVersionInfo = LibCurlHttpVersionInfo;
 type requestsHeadersInfo = LibCurlHeadersInfo;
@@ -175,7 +175,7 @@ export class requests {
     };
 
     constructor(option: requestsInitOption = {}) {
-        this.defaultRequestsHeaders = new Map();
+        this.defaultRequestsHeaders = new CaseInsensitiveMap();
         this.option = { ...option };
         const {
             cookies,
