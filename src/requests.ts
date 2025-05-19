@@ -318,10 +318,6 @@ export class requests {
         }
         if (typeof interface_ == "string") {
             curl.setInterface(interface_);
-        } else {
-            if (this.option.interface) {
-                curl.setInterface(this.option.interface);
-            }
         }
         if (typeof redirect == "boolean") {
             curl.setRedirect(redirect);
@@ -332,17 +328,9 @@ export class requests {
         }
         if (proxy) {
             curl.setProxy(proxy);
-        } else {
-            if (this.option.proxy) {
-                curl.setProxy(this.option.proxy);
-            }
         }
         if (typeof httpVersion == "number") {
             curl.setHttpVersion(httpVersion);
-        } else {
-            if (this.option.httpVersion) {
-                curl.setHttpVersion(this.option.httpVersion);
-            }
         }
         curl.setJA3Fingerprint(ja3);
         if (akamai) {
@@ -660,6 +648,7 @@ export class requests {
     }
 
     public setHttpVersion(version: LibCurlHttpVersionInfo): void {
+        this.option.httpVersion = version;
         this.option.instance.setHttpVersion(version);
     }
 

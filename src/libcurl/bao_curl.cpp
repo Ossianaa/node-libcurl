@@ -294,7 +294,7 @@ void BaoCurl::setVerbose(bool enable)
 
 void BaoCurl::setHttpVersion(BaoCurl::HttpVersion version)
 {
-	int temp = CURL_HTTP_VERSION_1_1;
+	int temp;
 	switch (version)
 	{
 	case BaoCurl::HttpVersion::http1_1:
