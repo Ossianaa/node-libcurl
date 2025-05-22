@@ -353,6 +353,7 @@ export type LibCurlURLInfo = string | URL;
 export class LibCurlError extends Error {
     constructor(message: string) {
         super(message);
+        this.name = this.constructor.name;
     }
 }
 
