@@ -44,7 +44,6 @@ private:
     Napi::Value getLastCode(const Napi::CallbackInfo &info);
     Napi::Value getLastCodeError(const Napi::CallbackInfo &info);
 
-    // static Napi::Value multiExecute(const Napi::CallbackInfo &info);
     static Napi::Value globalInit(const Napi::CallbackInfo &info);
     static Napi::Value globalCleanup(const Napi::CallbackInfo &info);
 };
@@ -80,7 +79,6 @@ void initLibCurl()
 {
     curl_global_init(CURL_GLOBAL_ALL);
     g_curlMulti = new BaoCurlMulti();
-    g_curlMulti->startThread();
 }
 
 void uninitLibCurl()
@@ -659,32 +657,33 @@ Napi::Value BaoLibCurlWarp::sendAsync(const Napi::CallbackInfo &info)
     size_t argsLen = info.Length();
     Napi::Promise::Deferred deferred = Napi::Promise::Deferred::New(env);
 
-	Napi::ThreadSafeFunction tsfn = Napi::ThreadSafeFunction::New(
-		env,
-		Napi::Function::New(env, [env, deferred](const Napi::CallbackInfo &info)
-							{
-									bool success = info[0].As<Napi::Boolean>().Value();
-									 		if (success)
-											{
-												deferred.Resolve(env.Undefined());
-											} else {
-												Napi::String errMsg = info[1].As<Napi::String>();
-												deferred.Reject(errMsg);
-											} }),
-		"Test", 0, 1, [tsfn](Napi::Env env)
-		{  });
-	;
-	auto callback = [tsfn](bool success, std::string errMsg)
-	{ tsfn.NonBlockingCall(
-		  [tsfn, success, errMsg](Napi::Env env, Napi::Function jsCallback)
-		  {
-			  tsfn.Unref(env);
-			  jsCallback.Call({Napi::Boolean::New(env, success), Napi::String::New(env, errMsg.c_str())});
-		  }); 
-          
-          tsfn.Release();
-          };
-	this->m_curl.setOnPublishCallback(std::function<void(bool, std::string)>(std::move(callback)));
+    Napi::ThreadSafeFunction tsfn = Napi::ThreadSafeFunction::New(
+                                        env,
+                                        Napi::Function::New(env, [env, deferred](const Napi::CallbackInfo &info)
+    {
+        bool success = info[0].As<Napi::Boolean>().Value();
+        if (success)
+        {
+            deferred.Resolve(env.Undefined());
+        } else {
+            Napi::String errMsg = info[1].As<Napi::String>();
+            deferred.Reject(errMsg);
+        }
+    }),
+    "sendAsync", 0, 1, [tsfn](Napi::Env env)
+    {  });
+    ;
+    auto callback = [tsfn](bool success, std::string errMsg)
+    {   tsfn.NonBlockingCall(
+                [tsfn, success, errMsg](Napi::Env env, Napi::Function jsCallback)
+        {
+            tsfn.Unref(env);
+            jsCallback.Call({Napi::Boolean::New(env, success), Napi::String::New(env, errMsg.c_str())});
+        });
+
+        tsfn.Release();
+    };
+    this->m_curl.setOnPublishCallback(std::function<void(bool, std::string)>(std::move(callback)));
 
     if (argsLen > 0)
     {
@@ -797,11 +796,11 @@ Napi::Value processRequestHeaders(const Napi::CallbackInfo &info)
     std::vector<std::string> _customHeaders;
     for (size_t i = 0; i < extraHeaders.Length(); i++)
     {
-         _extraHeaders.push_back(extraHeaders.Get(i).As<Napi::String>().Utf8Value());
+        _extraHeaders.push_back(extraHeaders.Get(i).As<Napi::String>().Utf8Value());
     }
-     for (size_t i = 0; i < customHeaders.Length(); i++)
+    for (size_t i = 0; i < customHeaders.Length(); i++)
     {
-         _customHeaders.push_back(customHeaders.Get(i).As<Napi::String>().Utf8Value());
+        _customHeaders.push_back(customHeaders.Get(i).As<Napi::String>().Utf8Value());
     }
     std::vector<std::string> result = process_requestHeaders(_extraHeaders, _customHeaders);
     Napi::Array newArray = Napi::Array::New(info.Env(), extraHeaders.Length() + customHeaders.Length());
@@ -820,11 +819,11 @@ Napi::Value processRequestHeadersV2(const Napi::CallbackInfo &info)
     std::vector<std::string> _customHeaders;
     for (size_t i = 0; i < extraHeaders.Length(); i++)
     {
-         _extraHeaders.push_back(extraHeaders.Get(i).As<Napi::String>().Utf8Value());
+        _extraHeaders.push_back(extraHeaders.Get(i).As<Napi::String>().Utf8Value());
     }
-     for (size_t i = 0; i < customHeaders.Length(); i++)
+    for (size_t i = 0; i < customHeaders.Length(); i++)
     {
-         _customHeaders.push_back(customHeaders.Get(i).As<Napi::String>().Utf8Value());
+        _customHeaders.push_back(customHeaders.Get(i).As<Napi::String>().Utf8Value());
     }
     std::vector<std::string> result = process_requestHeadersV2(_extraHeaders, _customHeaders);
     Napi::Array newArray = Napi::Array::New(info.Env(), extraHeaders.Length() + customHeaders.Length());
@@ -839,7 +838,9 @@ Napi::Value processRequestHeadersV2(const Napi::CallbackInfo &info)
 Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
     env.AddCleanupHook([]
-    { uninitLibCurl(); });
+    {
+        uninitLibCurl();
+    });
     BaoLibCurlWarp::Init(env, exports);
     exports.Set("processRequestHeaders", Napi::Function::New(env, processRequestHeaders));
     exports.Set("processRequestHeadersV2", Napi::Function::New(env, processRequestHeadersV2));
