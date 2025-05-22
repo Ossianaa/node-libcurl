@@ -57,6 +57,7 @@ void BaoCurlWebSocket::asyncTask(uv_idle_t* handle) {
 void BaoCurlWebSocket::open(std::string url) {
     curl_easy_setopt(m_curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(m_curl, CURLOPT_CONNECT_ONLY, 2L);
+    curl_easy_setopt(m_curl, CURLOPT_FORBID_REUSE, 0L);
     CURLcode res = curl_easy_perform(m_curl);
     if (res) {
         m_onerror(curl_easy_strerror(res));
