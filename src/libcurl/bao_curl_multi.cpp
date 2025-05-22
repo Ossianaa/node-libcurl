@@ -32,8 +32,7 @@ BaoCurlMulti::~BaoCurlMulti()
 void BaoCurlMulti::pushQueue(BaoCurl &curl)
 {
     CHECK_CURLMOK(curl_multi_add_handle(this->m_pCURLM, curl.m_pCURL));
-    if (!this->idleActive) {
-        this->idleActive = true;
+    if (!idle.isActive()) {
         idle.start();
     }
 }
@@ -92,7 +91,6 @@ void BaoCurlMulti::asyncTask(uv_idle_t* handle) {
     };
 
     if (runningNum == 0) {
-        instance->idleActive = false;
         instance->idle.stop();
     } else {
         instance->idle.start();

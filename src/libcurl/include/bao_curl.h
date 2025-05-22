@@ -2,7 +2,7 @@
 #ifndef _CURL_H
 #define _CURL_H
 
-#include "uv.h"
+#include "safe_uv_idle.h"
 #include "curl/curl.h"
 #include "utils.h"
 
@@ -14,33 +14,6 @@ struct Stream_st
 {
     std::string header;
     std::string responseText;
-};
-
-class SafeUvIdle {
-public:
-    SafeUvIdle(void* data, uv_idle_cb cb) {
-        _handle = new uv_idle_t;
-        uv_idle_init(uv_default_loop(), _handle);
-        _handle->data = data;
-        this->cb = cb;
-    }
-    ~SafeUvIdle() {
-        uv_close((uv_handle_t*)_handle, [](uv_handle_t* h) {
-            delete (uv_idle_t*)h;
-        });
-    }
-
-    void start() {
-        uv_idle_start(_handle, this->cb);
-    }
-
-    void stop() {
-        uv_idle_stop(_handle);
-    }
-
-private:
-    uv_idle_t* _handle;
-    uv_idle_cb cb;
 };
 
 
@@ -141,7 +114,6 @@ private:
     CURLMcode m_lastCode;
 
 	SafeUvIdle idle;
-	bool idleActive = false;
     static void asyncTask(uv_idle_t*);
 
 };

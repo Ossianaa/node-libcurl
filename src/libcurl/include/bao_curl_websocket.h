@@ -6,6 +6,7 @@
 #include <functional>
 #include <mutex>
 #include "utils.h"
+#include "safe_uv_idle.h"
 
 NAMESPACE_BAO_START
 
@@ -31,7 +32,7 @@ public:
     void send(uint8_t* data, size_t size);
     void send(std::string& text);
     void close(bool forward);
-
+    static void asyncTask(uv_idle_t*);
 private:
     CURL* m_curl;
     bool m_isOpen = false;
@@ -39,8 +40,7 @@ private:
     std::function<void()> m_onclose;
     std::function<void(std::string)> m_onerror;
     std::function<void(uint8_t* data, size_t size)> m_onmessage;
-    std::thread m_thread;
-    std::mutex m_lock;
+    SafeUvIdle idle;
 
 protected:
     std::function<void()> m_onopen_default = []() {
