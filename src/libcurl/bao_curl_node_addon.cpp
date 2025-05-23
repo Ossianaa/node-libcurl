@@ -36,6 +36,7 @@ private:
     Napi::Value setAkamaiFingerprint(const Napi::CallbackInfo &info);
     Napi::Value setHttp2NextStreamId(const Napi::CallbackInfo &info);
     Napi::Value setHttp2StreamWeight(const Napi::CallbackInfo &info);
+    Napi::Value setSSLCert(const Napi::CallbackInfo &info);
     Napi::Value sendAsync(const Napi::CallbackInfo &info);
     Napi::Value getResponseBody(const Napi::CallbackInfo &info);
     Napi::Value getResponseString(const Napi::CallbackInfo &info);
@@ -148,7 +149,7 @@ Napi::Value BaoLibCurlWebSocketWarp::send(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
     REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl.WebSocket", "send", 1, argsLen)
-    REQUEST_TLS_METHOD_CHECK(env, info[0].IsTypedArray() || info[0].IsString(), "argument 0 is not a TypedArray or String")
+    REQUEST_TLS_METHOD_CHECK(env, info[0].IsTypedArray() || info[0].IsString(), "argument 0 is not a typedArray or String")
     if (info[0].Type() == napi_string)
     {
         std::string str = info[0].As<Napi::String>().Utf8Value();
@@ -286,6 +287,7 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod<&BaoLibCurlWarp::setAkamaiFingerprint>("setAkamaiFingerprint", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setHttp2NextStreamId>("setHttp2NextStreamId", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setHttp2StreamWeight>("setHttp2StreamWeight", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&BaoLibCurlWarp::setSSLCert>("setSSLCert", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         StaticMethod<&BaoLibCurlWarp::globalInit>("globalInit", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         StaticMethod<&BaoLibCurlWarp::globalCleanup>("globalCleanup", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         StaticValue("WebSocket", BaoLibCurlWebSocketWarp::Init(env)),
@@ -773,6 +775,30 @@ Napi::Value BaoLibCurlWarp::setHttp2StreamWeight(const Napi::CallbackInfo &info)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsNumber(), "argument 0 is not a number")
     int weight = info[0].As<Napi::Number>().Int32Value();
     this->m_curl.setHttp2StreamWeight(weight);
+    return env.Undefined();
+}
+
+/*
+    setSSLCert()
+*/
+Napi::Value BaoLibCurlWarp::setSSLCert(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+    size_t argsLen = info.Length();
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setSSLCert", 3, argsLen);
+    REQUEST_TLS_METHOD_CHECK(env, info[0].IsTypedArray(), "argument 0 is not a typedArray")
+    REQUEST_TLS_METHOD_CHECK(env, info[1].IsTypedArray() || info[1].IsNull(), "argument 1 is not a typedArray or null")
+    REQUEST_TLS_METHOD_CHECK(env, info[2].IsString(), "argument 2 is not a string")
+    REQUEST_TLS_METHOD_CHECK(env, info[3].IsString(), "argument 3 is not a string")
+    Napi::Uint8Array sslCertBuffer = info[0].As<Napi::Uint8Array>();
+    std::string type = info[2].As<Napi::String>().Utf8Value();
+    std::string password = info[3].As<Napi::String>().Utf8Value();
+    if (info[1].IsNull()) {
+        this->m_curl.setSSLCert((void *)sslCertBuffer.Data(), sslCertBuffer.ByteLength(), NULL, 0, type, password);
+    } else {
+        Napi::Uint8Array sslPrivateKeyBuffer = info[1].As<Napi::Uint8Array>();
+        this->m_curl.setSSLCert((void *)sslCertBuffer.Data(), sslCertBuffer.ByteLength(), (void *)sslPrivateKeyBuffer.Data(), sslPrivateKeyBuffer.ByteLength(), type, password);
+    }
     return env.Undefined();
 }
 

@@ -72,6 +72,7 @@ public:
     void setOnPublishCallback(BaoCurlOnPublishCallback callback);
     void setHttp2NextStreamId(int stream_id);
     void setHttp2StreamWeight(int weight);
+    void setSSLCert(void* sslCertBuffer, size_t sslCertBufferSize, void* sslPrivateKeyBuffer, size_t sslPrivateKeyBufferSize, std::string& type, std::string& password);
 
     enum HttpVersion
     {

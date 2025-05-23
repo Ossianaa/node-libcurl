@@ -14,8 +14,14 @@ import {
     LibCurlAkamaiFingerPrintInfo,
     LibCurlAutoSortRequestHeadersOption,
     LibCurlInterfaceInfo,
+    LibCurlSSLCertType,
+    LibCurlSSLBlob,
 } from "./libcurl";
-import { CaseInsensitiveMap, getUriTopLevelHost, libcurlSetCookies, md5 } from "./utils";
+import {
+    CaseInsensitiveMap,
+    getUriTopLevelHost,
+    libcurlSetCookies,
+} from "./utils";
 
 type requestsHttpVersionInfo = LibCurlHttpVersionInfo;
 type requestsHeadersInfo = LibCurlHeadersInfo;
@@ -117,10 +123,16 @@ interface requestsInitOption {
     akamai?: LibCurlAkamaiFingerPrintInfo;
 
     /**
-     * @experimental
      * 自动重排请求头 对标chrome fetch方法
      */
     autoSortRequestHeaders?: LibCurlAutoSortRequestHeadersOption;
+
+    sslCert?: {
+        certBlob: LibCurlSSLBlob;
+        privateKeyBlob?: LibCurlSSLBlob;
+        type: LibCurlSSLCertType;
+        password?: string;
+    };
 }
 
 type requestsParamsInfo = URLSearchParams | string | { [key: string]: string };
@@ -187,6 +199,7 @@ export class requests {
             interface: interface_,
             autoSortRequestHeaders,
             defaultRequestHeaders,
+            sslCert,
         } = option;
         const curl = (this.option.instance ||= new LibCurl());
         if (cookies) {
@@ -231,6 +244,10 @@ export class requests {
         }
         if (typeof autoSortRequestHeaders != "undefined") {
             curl.setAutoSortRequestHeaders(autoSortRequestHeaders);
+        }
+
+        if (typeof sslCert != "undefined") {
+            curl.setSSLCert(sslCert.certBlob, sslCert.privateKeyBlob, sslCert.type, sslCert.password);
         }
     }
 

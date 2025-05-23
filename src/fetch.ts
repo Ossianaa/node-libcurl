@@ -12,6 +12,8 @@ import {
     LibCurlRequestHeadersAttr,
     LibCurlAkamaiFingerPrintInfo,
     LibCurlAutoSortRequestHeadersOption,
+    LibCurlSSLCertType,
+    LibCurlSSLBlob,
 } from "./libcurl";
 import { libcurlSetCookies } from "./utils";
 
@@ -38,6 +40,13 @@ interface LibCurlRequestInfo {
      * 自动重排请求头 对标chrome fetch方法
      */
     autoSortRequestHeaders?: LibCurlAutoSortRequestHeadersOption;
+
+    sslCert?: {
+        certBlob: LibCurlSSLBlob;
+        privateKeyBlob: LibCurlSSLBlob;
+        type: LibCurlSSLCertType;
+        password?: string;
+    };
 }
 
 interface LibCurlResponseInfo {
@@ -71,6 +80,7 @@ export async function fetch(
         ja3,
         akamai,
         autoSortRequestHeaders,
+        sslCert,
     } = request;
     curl.open(method, url + "");
     if (headers) {
@@ -106,6 +116,14 @@ export async function fetch(
     }
     if (typeof autoSortRequestHeaders != "undefined") {
         curl.setAutoSortRequestHeaders(autoSortRequestHeaders);
+    }
+    if (typeof sslCert != "undefined") {
+        curl.setSSLCert(
+            sslCert.certBlob,
+            sslCert.privateKeyBlob,
+            sslCert.type,
+            sslCert.password,
+        );
     }
     await curl.send(body);
     return {

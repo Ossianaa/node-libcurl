@@ -350,6 +350,9 @@ export type LibCurlProxyInfo = string | LibCurlProxyWithAccountInfo;
 
 export type LibCurlURLInfo = string | URL;
 
+export type LibCurlSSLBlob = Uint8Array | Buffer;
+export type LibCurlSSLCertType = "PEM" | "DER" | "P12";
+
 export class LibCurlError extends Error {
     constructor(message: string) {
         super(message);
@@ -862,6 +865,20 @@ export class LibCurl {
             throw new LibCurlError("weight error");
         }
         this.m_libCurl_impl_.setHttp2StreamWeight(weight);
+    }
+
+    public setSSLCert(
+        certBlob: LibCurlSSLBlob,
+        privateKeyBlob: LibCurlSSLBlob = null,
+        type: LibCurlSSLCertType = "PEM",
+        password: string = "",
+    ): void {
+        this.m_libCurl_impl_.setSSLCert(
+            certBlob,
+            privateKeyBlob || null,
+            type,
+            password,
+        );
     }
 
     private beforeProcessRequestHeaders(contentLength?: number) {
