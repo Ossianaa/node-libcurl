@@ -883,9 +883,7 @@ export class LibCurl {
 
     private beforeProcessRequestHeaders(contentLength?: number) {
         if (typeof contentLength == "number") {
-            if (this.m_requestHeaders_.has("Content-Length")) {
-                this.setRequestHeader("Content-Length", contentLength + "");
-            }
+            this.setRequestHeader("Content-Length", contentLength + "");
         }
         if (!this.m_requestHeaders_.has("Cookie")) {
             this.setRequestHeader("Cookie", "");
@@ -941,7 +939,9 @@ export class LibCurl {
         }
 
         extraHeaders.sort((a, b) =>
-            autoSortRequestHeadersConfig.clientHint.indexOf(a[0].toLowerCase()) <
+            autoSortRequestHeadersConfig.clientHint.indexOf(
+                a[0].toLowerCase(),
+            ) <
             autoSortRequestHeadersConfig.clientHint.indexOf(b[0].toLowerCase())
                 ? -1
                 : 1,
