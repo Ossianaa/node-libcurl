@@ -446,8 +446,7 @@ export class LibCurlError extends Error {
 
 export type LibCurlAutoSortRequestHeadersOption =
     | "auto"
-    | true
-    | false
+    | boolean
     | "chrome130"
     | "chrome131";
 
