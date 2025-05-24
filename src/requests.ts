@@ -178,7 +178,7 @@ const assignURLSearchParam = (
 
 export class requests {
     private option: requestsInitOption;
-    private defaultRequestsHeaders: LibCurlHeadersInfo;
+    private defaultRequestsHeaders: LibCurlHeadersInfo | null = null;
     protected retryOption: requestsRetryOption = {
         retryNum: 0,
         conditionCallback(resp, error) {
@@ -187,7 +187,6 @@ export class requests {
     };
 
     constructor(option: requestsInitOption = {}) {
-        this.defaultRequestsHeaders = new CaseInsensitiveMap();
         this.option = { ...option };
         const {
             cookies,
