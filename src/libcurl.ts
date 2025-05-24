@@ -941,8 +941,8 @@ export class LibCurl {
         }
 
         extraHeaders.sort((a, b) =>
-            autoSortRequestHeadersConfig.clientHint.indexOf(a[0]) <
-            autoSortRequestHeadersConfig.clientHint.indexOf(b[0])
+            autoSortRequestHeadersConfig.clientHint.indexOf(a[0].toLowerCase()) <
+            autoSortRequestHeadersConfig.clientHint.indexOf(b[0].toLowerCase())
                 ? -1
                 : 1,
         );
@@ -967,14 +967,14 @@ export class LibCurl {
             return l1 > l2 ? 1 : -1;
         });
         processedFixedPrefixArr.sort((a, b) =>
-            autoSortRequestHeadersConfig.prefix.indexOf(a[0]) <
-            autoSortRequestHeadersConfig.prefix.indexOf(b[0])
+            autoSortRequestHeadersConfig.prefix.indexOf(a[0].toLowerCase()) <
+            autoSortRequestHeadersConfig.prefix.indexOf(b[0].toLowerCase())
                 ? -1
                 : 1,
         );
         processedFixedSuffixArr.sort((a, b) =>
-            autoSortRequestHeadersConfig.suffix.indexOf(a[0]) <
-            autoSortRequestHeadersConfig.suffix.indexOf(b[0])
+            autoSortRequestHeadersConfig.suffix.indexOf(a[0].toLowerCase()) <
+            autoSortRequestHeadersConfig.suffix.indexOf(b[0].toLowerCase())
                 ? -1
                 : 1,
         );
