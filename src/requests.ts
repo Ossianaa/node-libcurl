@@ -178,7 +178,7 @@ const assignURLSearchParam = (
 
 export class requests {
     private option: requestsInitOption;
-    private defaultRequestsHeaders: LibCurlRequestHeadersAttr;
+    private defaultRequestsHeaders: LibCurlHeadersInfo;
     protected retryOption: requestsRetryOption = {
         retryNum: 0,
         conditionCallback(resp, error) {
@@ -247,40 +247,17 @@ export class requests {
         }
 
         if (typeof sslCert != "undefined") {
-            curl.setSSLCert(sslCert.certBlob, sslCert.privateKeyBlob, sslCert.type, sslCert.password);
+            curl.setSSLCert(
+                sslCert.certBlob,
+                sslCert.privateKeyBlob,
+                sslCert.type,
+                sslCert.password,
+            );
         }
     }
 
     public setDefaultRequestHeaders(headers: LibCurlHeadersInfo) {
-        if (!headers) {
-            return;
-        }
-        const filterHeaders = ["Content-Length", "Content-Type"];
-        if (headers instanceof Headers) {
-            headers.forEach(
-                (value, key) =>
-                    !filterHeaders.includes(key) &&
-                    this.defaultRequestsHeaders.set(key, value),
-            );
-        } else if (typeof headers == "string") {
-            headers
-                .split("\n")
-                .filter(Boolean)
-                .filter((e) => !filterHeaders.includes(e))
-                .forEach((header) => {
-                    const [key, value = ""] = header.split(": ");
-                    this.defaultRequestsHeaders.set(key, value);
-                });
-        } else if (typeof headers == "object") {
-            Object.keys(headers)
-                .filter((e) => !filterHeaders.includes(e))
-                .forEach((key) => {
-                    const value = headers[key];
-                    this.defaultRequestsHeaders.set(key, value);
-                });
-        } else {
-            throw new TypeError("unkown type");
-        }
+        this.defaultRequestsHeaders = headers;
     }
 
     public static session(option: requestsInitOption = {}): requests {
@@ -322,7 +299,7 @@ export class requests {
             );
         }
         curl.open(method, url_);
-        if (this.defaultRequestsHeaders.size) {
+        if (this.defaultRequestsHeaders) {
             curl.setRequestHeaders(this.defaultRequestsHeaders);
         }
         if (headers) {
