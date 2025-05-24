@@ -146,6 +146,90 @@ const LibCurlAkamaiFingerPrintImplMap: {
     },
 };
 
+const autoSortRequestHeadersConfig = {
+    prefix: [
+        "host",
+        "connection",
+        "content-length",
+        "cookie",
+        "pragma",
+        "cache-control",
+    ],
+    clientHint: [
+        "upgrade-insecure-requests",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-full-version",
+        "sec-ch-ua-arch",
+        "sec-ch-ua-platform",
+        "sec-ch-ua-platform-version",
+        "sec-ch-ua-model",
+        "sec-ch-ua-bitness",
+        "sec-ch-ua-wow64",
+        "sec-ch-ua-full-version-list",
+        "sec-ch-ua-form-factors",
+        "user-agent",
+    ],
+    suffix: [
+        "accept",
+        "access-control-request-method",
+        "access-control-request-headers",
+        "access-control-request-private-network",
+        "origin",
+        "x-client-data",
+        "sec-fetch-site",
+        "sec-fetch-mode",
+        "sec-fetch-user",
+        "sec-fetch-dest",
+        "sec-fetch-storage-access",
+        "referer",
+        "accept-encoding",
+        "accept-language",
+        "priority",
+        "if-none-match",
+    ],
+    processFunction: processRequestHeaders,
+};
+
+const autoSortRequestHeadersConfigV2 = {
+    prefix: ["host", "connection", "content-length", "pragma", "cache-control"],
+    clientHint: [
+        "upgrade-insecure-requests",
+        "sec-ch-ua",
+        "sec-ch-ua-mobile",
+        "sec-ch-ua-full-version",
+        "sec-ch-ua-arch",
+        "sec-ch-ua-platform",
+        "sec-ch-ua-platform-version",
+        "sec-ch-ua-model",
+        "sec-ch-ua-bitness",
+        "sec-ch-ua-wow64",
+        "sec-ch-ua-full-version-list",
+        "sec-ch-ua-form-factors",
+        "user-agent",
+    ],
+    suffix: [
+        "accept",
+        "access-control-request-method",
+        "access-control-request-headers",
+        "access-control-request-private-network",
+        "origin",
+        "x-client-data",
+        "sec-fetch-site",
+        "sec-fetch-mode",
+        "sec-fetch-user",
+        "sec-fetch-dest",
+        "sec-fetch-storage-access",
+        "referer",
+        "accept-encoding",
+        "accept-language",
+        "cookie",
+        "priority",
+        "if-none-match",
+    ],
+    processFunction: processRequestHeadersV2,
+};
+
 const LibCurlAutoSortRequestHeadersImplMap = (
     opt: LibCurlAutoSortRequestHeadersOption,
     chromeVersion: number,
@@ -153,21 +237,21 @@ const LibCurlAutoSortRequestHeadersImplMap = (
     if (opt === "auto" || opt === true) {
         if (chromeVersion) {
             return chromeVersion <= 130
-                ? processRequestHeaders
-                : processRequestHeadersV2;
+                ? autoSortRequestHeadersConfig
+                : autoSortRequestHeadersConfigV2;
         } else {
-            return processRequestHeadersV2;
+            return autoSortRequestHeadersConfigV2;
         }
     } else if (opt === "chrome130") {
-        return processRequestHeaders;
+        return autoSortRequestHeadersConfig;
     } else if (opt === "chrome131") {
-        return processRequestHeadersV2;
+        return autoSortRequestHeadersConfigV2;
     } else {
         console.error(
             "[LibCurlAutoSortRequestHeadersOption] unknown option",
             opt,
         );
-        return processRequestHeadersV2;
+        return autoSortRequestHeadersConfigV2;
     }
 };
 
@@ -368,44 +452,6 @@ export type LibCurlAutoSortRequestHeadersOption =
     | "chrome131";
 
 const textEncoder = new TextEncoder();
-
-const autoSortRequestHeadersConfig = {
-    prefix: ["host", "connection", "content-length", "pragma", "cache-control"],
-    clientHint: [
-        "upgrade-insecure-requests",
-        "sec-ch-ua",
-        "sec-ch-ua-mobile",
-        "sec-ch-ua-full-version",
-        "sec-ch-ua-arch",
-        "sec-ch-ua-platform",
-        "sec-ch-ua-platform-version",
-        "sec-ch-ua-model",
-        "sec-ch-ua-bitness",
-        "sec-ch-ua-wow64",
-        "sec-ch-ua-full-version-list",
-        "sec-ch-ua-form-factors",
-        "user-agent",
-    ],
-    suffix: [
-        "accept",
-        "access-control-request-method",
-        "access-control-request-headers",
-        "access-control-request-private-network",
-        "origin",
-        "x-client-data",
-        "sec-fetch-site",
-        "sec-fetch-mode",
-        "sec-fetch-user",
-        "sec-fetch-dest",
-        "sec-fetch-storage-access",
-        "referer",
-        "accept-encoding",
-        "accept-language",
-        "cookie",
-        "priority",
-        "if-none-match",
-    ],
-};
 
 export class LibCurl {
     private m_libCurl_impl_: any;
@@ -908,7 +954,7 @@ export class LibCurl {
             );
         }
 
-        let processRequestHeadersFunc = LibCurlAutoSortRequestHeadersImplMap(
+        let config = LibCurlAutoSortRequestHeadersImplMap(
             this.m_autoSortRequestHeaders,
             this.m_chromeVersion,
         );
@@ -922,16 +968,16 @@ export class LibCurl {
             const _key = (
                 key.at(-1) == ":" ? key.slice(0, -1) : key
             ).toLowerCase();
-            if (autoSortRequestHeadersConfig.prefix.includes(_key)) {
+            if (config.prefix.includes(_key)) {
                 processedFixedPrefixArr.push([key, value]);
-            } else if (autoSortRequestHeadersConfig.suffix.includes(_key)) {
+            } else if (config.suffix.includes(_key)) {
                 if (_key == "accept" && value != "*/*") {
                     extraHeaders.push([key, value]);
                 } else {
                     processedFixedSuffixArr.push([key, value]);
                     continue;
                 }
-            } else if (autoSortRequestHeadersConfig.clientHint.includes(_key)) {
+            } else if (config.clientHint.includes(_key)) {
                 extraHeaders.push([key, value]);
             } else {
                 customHeaders.push([key, value]);
@@ -939,10 +985,8 @@ export class LibCurl {
         }
 
         extraHeaders.sort((a, b) =>
-            autoSortRequestHeadersConfig.clientHint.indexOf(
-                a[0].toLowerCase(),
-            ) <
-            autoSortRequestHeadersConfig.clientHint.indexOf(b[0].toLowerCase())
+            config.clientHint.indexOf(a[0].toLowerCase()) <
+            config.clientHint.indexOf(b[0].toLowerCase())
                 ? -1
                 : 1,
         );
@@ -967,27 +1011,29 @@ export class LibCurl {
             return l1 > l2 ? 1 : -1;
         });
         processedFixedPrefixArr.sort((a, b) =>
-            autoSortRequestHeadersConfig.prefix.indexOf(a[0].toLowerCase()) <
-            autoSortRequestHeadersConfig.prefix.indexOf(b[0].toLowerCase())
+            config.prefix.indexOf(a[0].toLowerCase()) <
+            config.prefix.indexOf(b[0].toLowerCase())
                 ? -1
                 : 1,
         );
         processedFixedSuffixArr.sort((a, b) =>
-            autoSortRequestHeadersConfig.suffix.indexOf(a[0].toLowerCase()) <
-            autoSortRequestHeadersConfig.suffix.indexOf(b[0].toLowerCase())
+            config.suffix.indexOf(a[0].toLowerCase()) <
+            config.suffix.indexOf(b[0].toLowerCase())
                 ? -1
                 : 1,
         );
-        const processedHeaders = processRequestHeadersFunc(
-            extraHeaders.map((e) => e[0].toLowerCase()),
-            customHeaders.map((e) => e[0].toLowerCase()),
-        ).reduce((e: Array<[string, string]>, key: string) => {
-            const [_key, value] =
-                extraHeaders.find((j) => j[0].toLowerCase() == key) ||
-                customHeaders.find((j) => j[0].toLowerCase() == key);
-            e.push([_key, value]);
-            return e;
-        }, []);
+        const processedHeaders = config
+            .processFunction(
+                extraHeaders.map((e) => e[0].toLowerCase()),
+                customHeaders.map((e) => e[0].toLowerCase()),
+            )
+            .reduce((e: Array<[string, string]>, key: string) => {
+                const [_key, value] =
+                    extraHeaders.find((j) => j[0].toLowerCase() == key) ||
+                    customHeaders.find((j) => j[0].toLowerCase() == key);
+                e.push([_key, value]);
+                return e;
+            }, []);
 
         for (const [key, value] of [
             ...processedFixedPrefixArr,
