@@ -528,7 +528,7 @@ export class LibCurl {
                 this.setRequestHeader(key, value);
             });
         } else {
-            throw new TypeError("unkown type");
+            throw new LibCurlError("setRequestHeader unkown type");
         }
     }
 
