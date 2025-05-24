@@ -926,7 +926,7 @@ export class LibCurl {
                 processedFixedPrefixArr.push([key, value]);
             } else if (autoSortRequestHeadersConfig.suffix.includes(_key)) {
                 if (_key == "accept" && value != "*/*") {
-                    customHeaders.push([key, value]);
+                    extraHeaders.push([key, value]);
                 } else {
                     processedFixedSuffixArr.push([key, value]);
                     continue;
