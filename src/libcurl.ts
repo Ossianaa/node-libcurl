@@ -450,6 +450,8 @@ export type LibCurlAutoSortRequestHeadersOption =
     | "chrome130"
     | "chrome131";
 
+export type LibCurlRequestHeadersOrder = Array<string> | null;
+
 const textEncoder = new TextEncoder();
 
 export class LibCurl {
@@ -459,6 +461,7 @@ export class LibCurl {
     private m_requestHeaders_: LibCurlRequestHeadersAttr;
     private m_autoSortRequestHeaders: LibCurlAutoSortRequestHeadersOption =
         "auto";
+    private m_nextRequestHeadersOrderMap: CaseInsensitiveMap = null;
     private m_chromeVersion: number = 133;
 
     constructor() {
@@ -486,6 +489,14 @@ export class LibCurl {
         option: LibCurlAutoSortRequestHeadersOption,
     ) {
         this.m_autoSortRequestHeaders = option;
+    }
+
+    public setNextRequestHeadersOrder(
+        headerKeysOrder: LibCurlRequestHeadersOrder,
+    ) {
+        const map = new CaseInsensitiveMap();
+        headerKeysOrder.forEach((key) => map.set(key, ""));
+        this.m_nextRequestHeadersOrderMap = map;
     }
 
     public open(method: LibCurlMethodInfo, url: LibCurlURLInfo): void {
@@ -933,12 +944,27 @@ export class LibCurl {
         if (!this.m_requestHeaders_.has("Cookie")) {
             this.setRequestHeader("Cookie", "");
         }
+        if (this.m_nextRequestHeadersOrderMap) {
+            const keys = this.m_requestHeaders_.keys();
+            const sortedKeys = this.m_nextRequestHeadersOrderMap
+                .keys()
+                .filter((key) => this.m_requestHeaders_.has(key));
+            const unsortedKeys = keys.filter(
+                (key) => !this.m_nextRequestHeadersOrderMap.has(key),
+            );
+            for (const key of [...sortedKeys, ...unsortedKeys]) {
+                this.m_libCurl_impl_.setRequestHeader(
+                    key,
+                    this.m_requestHeaders_.get(key),
+                );
+            }
+            this.m_requestHeaders_.clear();
+            this.m_nextRequestHeadersOrderMap = null;
+            return;
+        }
         if (!this.m_autoSortRequestHeaders) {
             for (const [key, value] of this.m_requestHeaders_.entries()) {
-                this.m_libCurl_impl_.setRequestHeader(
-                    key.at(-1) == ":" ? key.slice(0, -1) : key,
-                    value,
-                );
+                this.m_libCurl_impl_.setRequestHeader(key, value);
             }
             this.m_requestHeaders_.clear();
             return;
