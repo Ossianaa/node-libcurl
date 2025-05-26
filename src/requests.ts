@@ -16,6 +16,7 @@ import {
     LibCurlInterfaceInfo,
     LibCurlSSLCertType,
     LibCurlSSLBlob,
+    LibCurlRequestHeadersOrder,
 } from "./libcurl";
 import {
     CaseInsensitiveMap,
@@ -23,17 +24,10 @@ import {
     libcurlSetCookies,
 } from "./utils";
 
-type requestsHttpVersionInfo = LibCurlHttpVersionInfo;
-type requestsHeadersInfo = LibCurlHeadersInfo;
-type requestsBodyInfo = LibCurlBodyInfo;
 type requestsCookiesInfo = {
     value: LibCurlCookiesInfo;
     uri: string;
 };
-type requestsMethodInfo = LibCurlMethodInfo;
-
-type requestsProxyInfo = LibCurlProxyInfo;
-type requestsURLInfo = LibCurlURLInfo;
 
 interface requestsResponseImp {
     readonly text: string;
@@ -95,12 +89,12 @@ class requestsResponse implements requestsResponseImp {
 interface requestsInitOption {
     redirect?: boolean;
     cookies?: requestsCookiesInfo | requestsCookiesInfo[];
-    proxy?: requestsProxyInfo;
-    body?: requestsBodyInfo;
+    proxy?: LibCurlProxyInfo;
+    body?: LibCurlBodyInfo;
 
-    defaultRequestHeaders?: requestsHeadersInfo;
+    defaultRequestHeaders?: LibCurlHeadersInfo;
 
-    httpVersion?: requestsHttpVersionInfo;
+    httpVersion?: LibCurlHttpVersionInfo;
     /**
      * 打印curl内部访问日志
      */
@@ -138,19 +132,20 @@ interface requestsInitOption {
 type requestsParamsInfo = URLSearchParams | string | { [key: string]: string };
 
 interface requestsOption {
-    headers?: requestsHeadersInfo;
+    headers?: LibCurlHeadersInfo;
     params?: requestsParamsInfo;
     json?: object;
-    data?: requestsBodyInfo;
+    data?: LibCurlBodyInfo;
     timeout?: number;
     redirect?: boolean;
-    proxy?: requestsProxyInfo;
+    proxy?: LibCurlProxyInfo;
     interface?: string;
-    httpVersion?: requestsHttpVersionInfo;
+    httpVersion?: LibCurlHttpVersionInfo;
     h2config?: {
         weight: number;
         streamId?: number;
     };
+    headersOrder?: LibCurlRequestHeadersOrder;
 }
 
 interface requestsStaticOption
@@ -264,8 +259,8 @@ export class requests {
     }
 
     private async sendRequest(
-        method: requestsMethodInfo,
-        url: requestsURLInfo,
+        method: LibCurlMethodInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
         const {
@@ -285,6 +280,7 @@ export class requests {
             proxy,
             httpVersion,
             h2config,
+            headersOrder,
         } = requestOpt || {};
 
         if (data && json) {
@@ -335,6 +331,10 @@ export class requests {
                 curl.setHttp2NextStreamId(h2config.streamId);
             }
             curl.setHttp2StreamWeight(h2config.weight);
+        }
+
+        if (typeof headersOrder != 'undefined' && Array.isArray(headersOrder)) {
+            curl.setNextRequestHeadersOrder(headersOrder);
         }
 
         let hasContentType = false;
@@ -419,8 +419,8 @@ export class requests {
     }
 
     private static async sendRequestStaic(
-        method: requestsMethodInfo,
-        url: requestsURLInfo,
+        method: LibCurlMethodInfo,
+        url: LibCurlURLInfo,
         requestStaticOpt?: requestsStaticOption,
     ) {
         return requests
@@ -429,8 +429,8 @@ export class requests {
     }
 
     private async sendRequestRetry(
-        method: requestsMethodInfo,
-        url: requestsURLInfo,
+        method: LibCurlMethodInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
         let isSuccess = false,
@@ -460,97 +460,97 @@ export class requests {
     }
 
     public static async get(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsStaticOption,
     ): Promise<requestsResponse> {
         return requests.sendRequestStaic("GET", url, requestOpt);
     }
     public static async post(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsStaticOption,
     ): Promise<requestsResponse> {
         return requests.sendRequestStaic("POST", url, requestOpt);
     }
     public static async put(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsStaticOption,
     ): Promise<requestsResponse> {
         return requests.sendRequestStaic("PUT", url, requestOpt);
     }
     public static async patch(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsStaticOption,
     ): Promise<requestsResponse> {
         return requests.sendRequestStaic("PATCH", url, requestOpt);
     }
     public static async trace(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsStaticOption,
     ): Promise<requestsResponse> {
         return requests.sendRequestStaic("TRACE", url, requestOpt);
     }
     public static async head(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsStaticOption,
     ): Promise<requestsResponse> {
         return requests.sendRequestStaic("HEAD", url, requestOpt);
     }
     public static async delete(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsStaticOption,
     ): Promise<requestsResponse> {
         return requests.sendRequestStaic("DELETE", url, requestOpt);
     }
     public static async options(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsStaticOption,
     ): Promise<requestsResponse> {
         return requests.sendRequestStaic("OPTIONS", url, requestOpt);
     }
     public async get(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
         return this.sendRequestRetry("GET", url, requestOpt);
     }
     public async post(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
         return this.sendRequestRetry("POST", url, requestOpt);
     }
     public async put(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
         return this.sendRequestRetry("PUT", url, requestOpt);
     }
     public async patch(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
         return this.sendRequestRetry("PATCH", url, requestOpt);
     }
     public async trace(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
         return this.sendRequestRetry("TRACE", url, requestOpt);
     }
     public async head(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
         return this.sendRequestRetry("HEAD", url, requestOpt);
     }
     public async delete(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
         return this.sendRequestRetry("DELETE", url, requestOpt);
     }
     public async options(
-        url: requestsURLInfo,
+        url: LibCurlURLInfo,
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
         return this.sendRequestRetry("OPTIONS", url, requestOpt);
