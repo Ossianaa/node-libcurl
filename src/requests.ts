@@ -622,6 +622,7 @@ export class requests {
             ...this.option,
         });
         rq.retryOption.retryNum = retryNum;
+        rq.defaultRequestsHeaders = this.defaultRequestsHeaders;
         if (typeof conditionCallback == "function") {
             rq.retryOption.conditionCallback = conditionCallback;
         }
