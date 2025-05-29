@@ -151,7 +151,6 @@ const autoSortRequestHeadersConfig = {
         "host",
         "connection",
         "content-length",
-        "cookie",
         "pragma",
         "cache-control",
     ],
@@ -185,6 +184,7 @@ const autoSortRequestHeadersConfig = {
         "referer",
         "accept-encoding",
         "accept-language",
+        "cookie",
         "priority",
         "if-none-match",
     ],
@@ -988,7 +988,7 @@ export class LibCurl {
         const processedFixedSuffixArr = [];
 
         const extraHeaders = [];
-        const customHeaders = [];
+        let customHeaders = [];
         for (const [key, value] of this.m_requestHeaders_.entries()) {
             const _key = (
                 key.at(-1) == ":" ? key.slice(0, -1) : key
@@ -1015,26 +1015,6 @@ export class LibCurl {
                 ? -1
                 : 1,
         );
-
-        customHeaders.sort(function codeUnitCompareIgnoringASCIICase(
-            [str1],
-            [str2],
-        ) {
-            str1 = str1.toLowerCase();
-            str2 = str2.toLowerCase();
-            let pos = 0;
-            let l1 = str1.length,
-                l2 = str2.length;
-            const lmin = Math.min(str1.length, str2.length);
-            while (pos < lmin && str1[pos] == str2[pos]) {
-                ++pos;
-            }
-            if (pos < lmin) {
-                return str1[pos] > str2[pos] ? 1 : -1;
-            }
-            if (l1 == l2) return 0;
-            return l1 > l2 ? 1 : -1;
-        });
         processedFixedPrefixArr.sort((a, b) =>
             config.prefix.indexOf(a[0].toLowerCase()) <
             config.prefix.indexOf(b[0].toLowerCase())
