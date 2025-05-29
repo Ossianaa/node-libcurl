@@ -415,7 +415,7 @@ export type LibCurlAutoSortRequestHeadersOption =
     | "chrome131";
 
 export type LibCurlRequestHeadersOrder = Array<string> | null;
-
+export type LibCurlRequestType = "fetch" | "XMLHttpRequest";
 const textEncoder = new TextEncoder();
 
 export class LibCurl {
@@ -426,6 +426,7 @@ export class LibCurl {
     private m_autoSortRequestHeaders: LibCurlAutoSortRequestHeadersOption =
         "auto";
     private m_nextRequestHeadersOrderMap: CaseInsensitiveMap = null;
+    private m_requestType: LibCurlRequestType = "fetch";
     private m_chromeVersion: number = 133;
 
     constructor() {
@@ -453,6 +454,10 @@ export class LibCurl {
         option: LibCurlAutoSortRequestHeadersOption,
     ) {
         this.m_autoSortRequestHeaders = option;
+    }
+
+    public setRequestType(requestType: LibCurlRequestType) {
+        this.m_requestType = requestType;
     }
 
     public setNextRequestHeadersOrder(
@@ -971,6 +976,31 @@ export class LibCurl {
             } else {
                 customHeaders.push([key, value]);
             }
+        }
+
+        if (this.m_requestType == "fetch") {
+            // only reorder in fetch mode
+            // because fetch headers type is Header
+            // it will reorder internally
+            customHeaders.sort(function codeUnitCompareIgnoringASCIICase(
+                [str1],
+                [str2],
+            ) {
+                str1 = str1.toLowerCase();
+                str2 = str2.toLowerCase();
+                let pos = 0;
+                let l1 = str1.length,
+                    l2 = str2.length;
+                const lmin = Math.min(str1.length, str2.length);
+                while (pos < lmin && str1[pos] == str2[pos]) {
+                    ++pos;
+                }
+                if (pos < lmin) {
+                    return str1[pos] > str2[pos] ? 1 : -1;
+                }
+                if (l1 == l2) return 0;
+                return l1 > l2 ? 1 : -1;
+            });
         }
 
         extraHeaders.sort((a, b) =>

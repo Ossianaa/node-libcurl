@@ -17,6 +17,7 @@ import {
     LibCurlSSLCertType,
     LibCurlSSLBlob,
     LibCurlRequestHeadersOrder,
+    LibCurlRequestType,
 } from "./libcurl";
 import {
     CaseInsensitiveMap,
@@ -121,6 +122,8 @@ interface requestsInitOption {
      */
     autoSortRequestHeaders?: LibCurlAutoSortRequestHeadersOption;
 
+    requestType?: LibCurlRequestType;
+
     sslCert?: {
         certBlob: LibCurlSSLBlob;
         privateKeyBlob?: LibCurlSSLBlob;
@@ -194,6 +197,7 @@ export class requests {
             autoSortRequestHeaders,
             defaultRequestHeaders,
             sslCert,
+            requestType,
         } = option;
         const curl = (this.option.instance ||= new LibCurl());
         if (cookies) {
@@ -232,14 +236,15 @@ export class requests {
         if (proxy) {
             curl.setProxy(proxy);
         }
-
         if (typeof defaultRequestHeaders != "undefined") {
             this.setDefaultRequestHeaders(defaultRequestHeaders);
         }
         if (typeof autoSortRequestHeaders != "undefined") {
             curl.setAutoSortRequestHeaders(autoSortRequestHeaders);
         }
-
+        if (typeof requestType == "string") {
+            curl.setRequestType(requestType);
+        }
         if (typeof sslCert != "undefined") {
             curl.setSSLCert(
                 sslCert.certBlob,
@@ -333,7 +338,7 @@ export class requests {
             curl.setHttp2StreamWeight(h2config.weight);
         }
 
-        if (typeof headersOrder != 'undefined' && Array.isArray(headersOrder)) {
+        if (typeof headersOrder != "undefined" && Array.isArray(headersOrder)) {
             curl.setNextRequestHeadersOrder(headersOrder);
         }
 
