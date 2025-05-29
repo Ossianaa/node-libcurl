@@ -146,52 +146,7 @@ const LibCurlAkamaiFingerPrintImplMap: {
     },
 };
 
-const autoSortRequestHeadersConfig = {
-    prefix: [
-        "host",
-        "connection",
-        "content-length",
-        "pragma",
-        "cache-control",
-    ],
-    clientHint: [
-        "upgrade-insecure-requests",
-        "sec-ch-ua",
-        "sec-ch-ua-mobile",
-        "sec-ch-ua-full-version",
-        "sec-ch-ua-arch",
-        "sec-ch-ua-platform",
-        "sec-ch-ua-platform-version",
-        "sec-ch-ua-model",
-        "sec-ch-ua-bitness",
-        "sec-ch-ua-wow64",
-        "sec-ch-ua-full-version-list",
-        "sec-ch-ua-form-factors",
-        "user-agent",
-    ],
-    suffix: [
-        "accept",
-        "access-control-request-method",
-        "access-control-request-headers",
-        "access-control-request-private-network",
-        "origin",
-        "x-client-data",
-        "sec-fetch-site",
-        "sec-fetch-mode",
-        "sec-fetch-user",
-        "sec-fetch-dest",
-        "sec-fetch-storage-access",
-        "referer",
-        "accept-encoding",
-        "accept-language",
-        "cookie",
-        "priority",
-        "if-none-match",
-    ],
-    processFunction: processRequestHeaders,
-};
-
-const autoSortRequestHeadersConfigV2 = {
+const defaultSortRequestHeadersConfig = {
     prefix: ["host", "connection", "content-length", "pragma", "cache-control"],
     clientHint: [
         "upgrade-insecure-requests",
@@ -227,6 +182,15 @@ const autoSortRequestHeadersConfigV2 = {
         "priority",
         "if-none-match",
     ],
+};
+
+const autoSortRequestHeadersConfig = {
+    ...defaultSortRequestHeadersConfig,
+    processFunction: processRequestHeaders,
+};
+
+const autoSortRequestHeadersConfigV2 = {
+    ...defaultSortRequestHeadersConfig,
     processFunction: processRequestHeadersV2,
 };
 
