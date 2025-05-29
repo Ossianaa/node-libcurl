@@ -149,6 +149,7 @@ interface requestsOption {
         streamId?: number;
     };
     headersOrder?: LibCurlRequestHeadersOrder;
+    requestType?: LibCurlRequestType;
 }
 
 interface requestsStaticOption
@@ -286,6 +287,7 @@ export class requests {
             httpVersion,
             h2config,
             headersOrder,
+            requestType,
         } = requestOpt || {};
 
         if (data && json) {
@@ -340,6 +342,10 @@ export class requests {
 
         if (typeof headersOrder != "undefined" && Array.isArray(headersOrder)) {
             curl.setNextRequestHeadersOrder(headersOrder);
+        }
+
+        if (typeof requestType == "string") {
+            curl.setRequestType(requestType);
         }
 
         let hasContentType = false;
