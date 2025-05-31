@@ -16,7 +16,6 @@ NAMESPACE_BAO_START
 BaoCurlMulti::BaoCurlMulti(): idle(this, &BaoCurlMulti::asyncTask)
 {
     this->m_pCURLM = curl_multi_init();
-    CHECK_CURLMOK(curl_multi_setopt(this->m_pCURLM, CURLMOPT_PIPELINING, CURLPIPE_NOTHING));
 }
 
 BaoCurlMulti::~BaoCurlMulti()

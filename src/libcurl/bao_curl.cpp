@@ -37,19 +37,27 @@ BaoCurl::BaoCurl()
 BaoCurl::~BaoCurl()
 {
     assert(this->m_pCURL);
+    assert(this->m_pSHARE);
     if (this->m_pHeaders)
     {
         curl_slist_free_all(this->m_pHeaders);
         this->m_pHeaders = NULL;
     }
     curl_easy_cleanup(this->m_pCURL);
+    curl_share_cleanup(this->m_pSHARE);
 }
 
 void BaoCurl::init()
 {
     this->m_pCURL = curl_easy_init();
+    this->m_pSHARE = curl_share_init();
     assert(this->m_pCURL);
-    CHECK_CURLSHOK(curl_share_setopt(this->m_pCURL, CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS));
+    assert(this->m_pSHARE);
+    CHECK_CURLSHOK(curl_share_setopt(this->m_pSHARE, CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS));
+    CHECK_CURLSHOK(curl_share_setopt(this->m_pSHARE, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION));
+    CHECK_CURLSHOK(curl_share_setopt(this->m_pSHARE, CURLSHOPT_SHARE, CURL_LOCK_DATA_CONNECT));
+    CHECK_CURLSHOK(curl_share_setopt(this->m_pSHARE, CURLSHOPT_SHARE, CURL_LOCK_DATA_PSL));
+    CHECK_CURLSHOK(curl_share_setopt(this->m_pSHARE, CURLSHOPT_SHARE, CURL_LOCK_DATA_HSTS));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_VERIFYPEER, 0L));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_VERIFYHOST, 0L));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_CIPHER_LIST, "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:DH-RSA-AES128-GCM-SHA256:AES128-SHA:AES256-SHA"));
@@ -58,8 +66,9 @@ void BaoCurl::init()
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIEFILE, NULL));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PRIVATE, this));
-    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_FORBID_REUSE, 1L));
-    setHttp2NextStreamId(1);
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SHARE, this->m_pSHARE));
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_UNRESTRICTED_AUTH, 1L));
+	setHttp2NextStreamId(1);
     this->setTimeout(15, 15);
 }
 
@@ -369,11 +378,6 @@ void BaoCurl::setOnPublishCallback(BaoCurlOnPublishCallback callback)
 {
     this->m_publishCallback = callback;
 }
-
-// void BaoCurl::setHttp2NextStreamId(int stream_id)
-// {
-// 	CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_STREAM_ID, stream_id));
-// }
 
 void BaoCurl::setHttp2NextStreamId(int stream_id)
 {

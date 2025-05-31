@@ -88,6 +88,7 @@ public:
     friend class BaoCurlMulti;
 
     CURL* m_pCURL = NULL;
+    CURL* m_pSHARE = NULL;
 private:
     struct curl_slist* m_pHeaders = NULL;
     std::string m_method = "GET";
