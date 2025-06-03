@@ -14,6 +14,7 @@ import {
     LibCurlAutoSortRequestHeadersOption,
     LibCurlSSLCertType,
     LibCurlSSLBlob,
+    LibCurlSSLVerifyConfig,
 } from "./libcurl";
 import { libcurlSetCookies } from "./utils";
 
@@ -47,6 +48,8 @@ interface LibCurlRequestInfo {
         type: LibCurlSSLCertType;
         password?: string;
     };
+
+    sslVerify?: LibCurlSSLVerifyConfig;
 }
 
 interface LibCurlResponseInfo {
@@ -81,6 +84,7 @@ export async function fetch(
         akamai,
         autoSortRequestHeaders,
         sslCert,
+        sslVerify,
     } = request;
     curl.open(method, url + "");
     if (headers) {
@@ -124,6 +128,9 @@ export async function fetch(
             sslCert.type,
             sslCert.password,
         );
+    }
+    if (typeof sslVerify != "undefined") {
+        curl.setSSLVerify(sslVerify);
     }
     await curl.send(body);
     return {

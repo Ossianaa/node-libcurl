@@ -18,6 +18,7 @@ import {
     LibCurlSSLBlob,
     LibCurlRequestHeadersOrder,
     LibCurlRequestType,
+    LibCurlSSLVerifyConfig,
 } from "./libcurl";
 import {
     CaseInsensitiveMap,
@@ -130,6 +131,8 @@ interface requestsInitOption {
         type: LibCurlSSLCertType;
         password?: string;
     };
+
+    sslVerify?: LibCurlSSLVerifyConfig;
 }
 
 type requestsParamsInfo = URLSearchParams | string | { [key: string]: string };
@@ -198,6 +201,7 @@ export class requests {
             autoSortRequestHeaders,
             defaultRequestHeaders,
             sslCert,
+            sslVerify,
             requestType,
         } = option;
         const curl = (this.option.instance ||= new LibCurl());
@@ -253,6 +257,9 @@ export class requests {
                 sslCert.type,
                 sslCert.password,
             );
+        }
+        if (typeof sslVerify != "undefined") {
+            curl.setSSLVerify(sslVerify);
         }
     }
 

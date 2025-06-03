@@ -28,6 +28,7 @@ private:
     Napi::Value getCookie(const Napi::CallbackInfo &info);
     Napi::Value getResponseStatus(const Napi::CallbackInfo &info);
     Napi::Value reset(const Napi::CallbackInfo &info);
+    Napi::Value setSSLVerify(const Napi::CallbackInfo &info);
     Napi::Value setRedirect(const Napi::CallbackInfo &info);
     Napi::Value setVerbose(const Napi::CallbackInfo &info);
     Napi::Value setHttpVersion(const Napi::CallbackInfo &info);
@@ -273,6 +274,7 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod<&BaoLibCurlWarp::getResponseStatus>("getResponseStatus", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::reset>("reset", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setRedirect>("setRedirect", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&BaoLibCurlWarp::setSSLVerify>("setSSLVerify", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setVerbose>("setVerbose", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setHttpVersion>("setHttpVersion", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::getResponseBody>("getResponseBody", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -520,7 +522,21 @@ Napi::Value BaoLibCurlWarp::reset(const Napi::CallbackInfo &info)
 }
 
 /*
-    setRedirect(isAllow)
+    setSSLVerify(string)
+*/
+Napi::Value BaoLibCurlWarp::setSSLVerify(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+    size_t argsLen = info.Length();
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setSSLVerify", 1, argsLen)
+    REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
+    std::string caPath = info[0].As<Napi::String>().Utf8Value();
+    this->m_curl.setSSLVerify(caPath);
+    return env.Undefined();
+}
+
+/*
+    setRedirect(bool)
 */
 Napi::Value BaoLibCurlWarp::setRedirect(const Napi::CallbackInfo &info)
 {

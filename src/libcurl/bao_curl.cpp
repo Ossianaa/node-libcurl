@@ -193,18 +193,8 @@ void BaoCurl::sendByte(const char *data, const int len)
         CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDSIZE, len));
     }
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_NOBODY, this->m_method == "HEAD" ? 1L : 0L));
-    /*CHECK_CURLOK(curl_easy_perform(this->m_pCURL));
-    curl_slist_free_all(this->m_pHeaders);
-    this->m_pHeaders = NULL;*/
 }
 
-/* Hostname */
-/* Include subdomains */
-/* Path */
-/* Secure */
-/* Expiry in epoch time format. 0 == Session */
-/* Name */
-/* Value */
 void BaoCurl::setCookie(std::string &key, std::string &value, std::string &domain, std::string &path)
 {
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_COOKIELIST, StringFormat("Set-Cookie: %s=%s; Expires=Fri, 31 Dec 2077 23:59:59 GMT; domain=%s; Path=%s;", key.c_str(), value.c_str(), domain.c_str(), path.c_str()).c_str()));
@@ -288,10 +278,18 @@ void BaoCurl::reset()
     this->init();
 }
 
+void BaoCurl::setSSLVerify(std::string &caPath)
+{
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_CAINFO, caPath.c_str()));
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_VERIFYPEER, 1L));
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_VERIFYHOST, 1L));
+}
+
 void BaoCurl::setRedirect(bool enable)
 {
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_FOLLOWLOCATION, enable));
 }
+
 void BaoCurl::setVerbose(bool enable)
 {
     this->m_verbose = enable;

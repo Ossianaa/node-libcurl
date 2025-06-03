@@ -407,6 +407,10 @@ export type LibCurlURLInfo = string | URL;
 export type LibCurlSSLBlob = Uint8Array | Buffer;
 export type LibCurlSSLCertType = "PEM" | "DER" | "P12";
 
+export type LibCurlSSLVerifyConfig = {
+    caPath: string;
+}
+
 export class LibCurlError extends Error {
     constructor(message: string) {
         super(message);
@@ -738,6 +742,15 @@ export class LibCurl {
     public reset(): void {
         this.checkSending();
         this.m_libCurl_impl_.reset();
+    }
+
+    /**
+     *
+     * @param config 是否验证证书和名称
+     */
+    public setSSLVerify(config: LibCurlSSLVerifyConfig): void {
+        this.checkSending();
+        this.m_libCurl_impl_.setSSLVerify(config.caPath);
     }
 
     /**

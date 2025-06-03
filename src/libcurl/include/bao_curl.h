@@ -26,33 +26,18 @@ public:
     void setRequestHeader(std::string&, std::string&);
     void setRequestHeader(std::string&);
     void setRequestHeaders(std::string&);
-    /*
-     * setProxy必须在open后 send前设置
-     * 在send后失效 需重新设置
-     */
+    
     void setProxy(std::string&);
     void setProxy(std::string&, std::string&,
                   std::string&);
-    /*
-     * setTimeout必须在open后 send前设置
-     * 在send后失效 需重新设置
-     * 单位:秒   例子:setTimeout(10,10);
-     */
+                  
     void setTimeout(
         int connectTime,
         int sendTime);
-    /*
-     * 设置单条Cookie
-     */
+
     void setCookie(std::string& key, std::string& value, std::string& domain, std::string& path);
-    /*
-     * 移除单条Cookie
-     */
     void deleteCookie(std::string& key, std::string& domain, std::string& path);
     void sendByte(const char*, const int);
-    /*
-     * 重置Curl 此前的操作全部失效
-     */
     void reset();
 
     std::string getCookies();
@@ -64,6 +49,7 @@ public:
         return this->m_stream.responseText;
     };
     long getResponseStatus();
+    void setSSLVerify(std::string &caPath);
     void setRedirect(bool enable);
     void setVerbose(bool enable);
     void setInterface(std::string& network);
@@ -120,7 +106,7 @@ private:
     static void asyncTask(uv_idle_t*);
     static int timerCallback(CURLM* multi, long timeout_ms, void* userp);
     static void onTimeout(uv_timer_t* handle);
-    
+
     void processFinishedHandles();
 };
 
