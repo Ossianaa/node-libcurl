@@ -27,7 +27,6 @@ private:
     Napi::Value getCookies(const Napi::CallbackInfo &info);
     Napi::Value getCookie(const Napi::CallbackInfo &info);
     Napi::Value getResponseStatus(const Napi::CallbackInfo &info);
-    Napi::Value reset(const Napi::CallbackInfo &info);
     Napi::Value setSSLVerify(const Napi::CallbackInfo &info);
     Napi::Value setRedirect(const Napi::CallbackInfo &info);
     Napi::Value setVerbose(const Napi::CallbackInfo &info);
@@ -272,7 +271,6 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod<&BaoLibCurlWarp::getCookies>("getCookies", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::getCookie>("getCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::getResponseStatus>("getResponseStatus", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
-        InstanceMethod<&BaoLibCurlWarp::reset>("reset", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setRedirect>("setRedirect", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setSSLVerify>("setSSLVerify", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setVerbose>("setVerbose", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -507,18 +505,6 @@ Napi::Value BaoLibCurlWarp::getLastCodeError(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     return Napi::String::New(env, this->m_curl.getLastCurlCodeError());
-}
-
-/*
-    reset()
-*/
-Napi::Value BaoLibCurlWarp::reset(const Napi::CallbackInfo &info)
-{
-    Napi::Env env = info.Env();
-    // size_t argsLen = info.Length();
-
-    this->m_curl.reset();
-    return env.Undefined();
 }
 
 /*

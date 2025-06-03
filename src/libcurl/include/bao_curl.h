@@ -38,7 +38,6 @@ public:
     void setCookie(std::string& key, std::string& value, std::string& domain, std::string& path);
     void deleteCookie(std::string& key, std::string& domain, std::string& path);
     void sendByte(const char*, const int);
-    void reset();
 
     std::string getCookies();
     std::string getCookie(std::string& key, std::string& domain, std::string& path);

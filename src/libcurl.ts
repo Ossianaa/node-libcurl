@@ -737,14 +737,6 @@ export class LibCurl {
     }
 
     /**
-     * 重置curl 包括之前的所有设定
-     */
-    public reset(): void {
-        this.checkSending();
-        this.m_libCurl_impl_.reset();
-    }
-
-    /**
      *
      * @param config 是否验证证书和名称
      */
