@@ -26,9 +26,11 @@ BaoCurlMulti::~BaoCurlMulti()
 {
     if (this->m_pCURLM != nullptr)
     {
+        m_timeoutTimer.data = nullptr;
         uv_timer_stop(&m_timeoutTimer);
         idle.stop();
         curl_multi_cleanup(this->m_pCURLM);
+        uv_close(reinterpret_cast<uv_handle_t*>(&m_timeoutTimer), nullptr);
         this->m_pCURLM = nullptr;
     }
 }
@@ -70,6 +72,8 @@ void BaoCurlMulti::pushQueue(BaoCurl &curl)
 }
 
 void BaoCurlMulti::processFinishedHandles() {
+    if (!m_pCURLM) return;
+    
     int msgq = 0;
     CURLMsg* msg = nullptr;
 
