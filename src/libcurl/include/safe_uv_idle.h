@@ -4,9 +4,8 @@
 class SafeUvIdle {
 public:
     SafeUvIdle(void* data, uv_idle_cb cb)
-        : _cb(cb), _handle(nullptr)
+        : _cb(cb), _handle(new uv_idle_t)
     {
-        _handle = new (std::nothrow) uv_idle_t;
         if (!_handle) return;
 
         int ret = uv_idle_init(uv_default_loop(), _handle);
