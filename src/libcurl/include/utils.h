@@ -14,6 +14,7 @@
 #include <thread>
 #include <chrono>
 #include <algorithm>
+#include <unordered_map>
 
 #define NAMESPACE_BAO_START namespace bao {
 #define NAMESPACE_BAO_END }

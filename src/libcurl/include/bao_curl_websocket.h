@@ -32,15 +32,17 @@ public:
     void send(uint8_t* data, size_t size);
     void send(std::string& text);
     void close(bool forward);
-    static void asyncTask(uv_idle_t*);
 private:
     CURL* m_curl;
+    uv_timer_t m_pingTimer;
+    uv_poll_t m_poll;
+
     bool m_isOpen = false;
     std::function<void()> m_onopen;
     std::function<void()> m_onclose;
     std::function<void(std::string)> m_onerror;
     std::function<void(uint8_t* data, size_t size)> m_onmessage;
-    SafeUvIdle idle;
+    static void pollCallback(uv_poll_t* handle, int status, int events);
 
 protected:
     std::function<void()> m_onopen_default = []() {
