@@ -36,15 +36,20 @@ BaoCurl::BaoCurl()
 
 BaoCurl::~BaoCurl()
 {
-    assert(this->m_pCURL);
-    assert(this->m_pSHARE);
+	
     if (this->m_pHeaders)
     {
         curl_slist_free_all(this->m_pHeaders);
         this->m_pHeaders = NULL;
     }
-    curl_easy_cleanup(this->m_pCURL);
-    curl_share_cleanup(this->m_pSHARE);
+	if (this->m_pCURL) {
+		curl_easy_cleanup(this->m_pCURL);
+		this->m_pCURL = NULL;
+	}
+	if (this->m_pSHARE) {
+		curl_share_cleanup(this->m_pSHARE);
+		this->m_pSHARE = NULL;
+	}
 }
 
 void BaoCurl::init()
@@ -184,7 +189,7 @@ void BaoCurl::sendByte(const char *data, const int len)
     if (this->m_method == "POST" || this->m_method == "PUT" || this->m_method == "PATCH" || this->m_method == "DELETE")
     {
 
-        m_postdata = std::unique_ptr<const char[]>(new char[len]);
+        m_postdata = std::make_unique<char[]>(len);
         if (len != 0)
         {
             memcpy((void *)m_postdata.get(), data, len);
@@ -272,11 +277,6 @@ long BaoCurl::getResponseStatus()
     CHECK_CURLOK(curl_easy_getinfo(this->m_pCURL, CURLINFO_RESPONSE_CODE, &http_code));
     return http_code;
 }
-void BaoCurl::reset()
-{
-    curl_easy_cleanup(this->m_pCURL);
-    this->init();
-}
 
 void BaoCurl::setSSLVerify(std::string &caPath)
 {
@@ -309,6 +309,7 @@ void BaoCurl::setHttpVersion(BaoCurl::HttpVersion version)
         break;
     case BaoCurl::HttpVersion::http3:
         temp = CURL_HTTP_VERSION_3;
+		break;
     case BaoCurl::HttpVersion::http3_only:
         temp = CURL_HTTP_VERSION_3ONLY;
         break;

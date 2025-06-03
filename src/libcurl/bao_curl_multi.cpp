@@ -73,7 +73,7 @@ void BaoCurlMulti::pushQueue(BaoCurl &curl)
 
 void BaoCurlMulti::processFinishedHandles() {
     if (!m_pCURLM) return;
-    
+
     int msgq = 0;
     CURLMsg* msg = nullptr;
 
@@ -90,11 +90,6 @@ void BaoCurlMulti::processFinishedHandles() {
             if (curl) {
                 curl->m_postdata.reset();
                 curl->m_lastCode = result;
-
-                if (result == CURLE_OPERATION_TIMEDOUT) {
-                    std::string url;
-                    curl_easy_getinfo(easy_handle, CURLINFO_EFFECTIVE_URL, &url);
-                }
 
                 if (curl->m_publishCallback) {
                     bool success = (result == CURLE_OK);
