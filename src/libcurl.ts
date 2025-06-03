@@ -12,12 +12,18 @@ import {
 
 BaoLibCurl.globalInit();
 
-export enum LibCurlHttpVersionInfo {
+enum LibCurlHttpVersionInfoEnum {
     http1_1,
     http2,
     http3,
     http3_only,
 }
+
+export type LibCurlHttpVersionInfo =
+    | LibCurlHttpVersionInfoEnum
+    | "http1.1"
+    | "http2"
+    | "http3";
 
 //Domain         Secure  Path    CORS    TimeStamp       Name    Value
 export type LibCurlSetCookieOption = {
@@ -349,7 +355,7 @@ const LibCurlBoringSSLExtensionPermutation: LibCurlJA3Extension[] = [
     LibCurlJA3Extension.TLSEXT_TYPE_delegated_credential,
     LibCurlJA3Extension.TLSEXT_TYPE_application_settings,
     LibCurlJA3Extension.TLSEXT_TYPE_application_settings_old,
-    LibCurlJA3Extension.TLSEXT_TYPE_record_size_limit, //firefox兼容
+    LibCurlJA3Extension.TLSEXT_TYPE_record_size_limit, //firefox
     LibCurlJA3Extension.TLSEXT_TYPE_pre_shared_key,
 ];
 
@@ -427,6 +433,7 @@ export class LibCurl {
         "auto";
     private m_nextRequestHeadersOrderMap: CaseInsensitiveMap = null;
     private m_requestType: LibCurlRequestType = "fetch";
+    private m_nextRequestType: LibCurlRequestType | null = null;
     private m_chromeVersion: number = 133;
 
     constructor() {
@@ -458,6 +465,10 @@ export class LibCurl {
 
     public setRequestType(requestType: LibCurlRequestType) {
         this.m_requestType = requestType;
+    }
+
+    public setNextRequestType(requestType: LibCurlRequestType) {
+        this.m_nextRequestType = requestType;
     }
 
     public setNextRequestHeadersOrder(
@@ -753,6 +764,15 @@ export class LibCurl {
      */
     public setHttpVersion(version: LibCurlHttpVersionInfo): void {
         this.checkSending();
+        let _version = version;
+        if (version == "http1.1") {
+            _version = 0;
+        } else if (version == "http2") {
+            _version = 1;
+        }
+        if (version == "http3") {
+            _version = 2;
+        }
         this.m_libCurl_impl_.setHttpVersion(version);
     }
 
@@ -977,8 +997,12 @@ export class LibCurl {
                 customHeaders.push([key, value]);
             }
         }
-
-        if (this.m_requestType == "fetch") {
+        let requestType = this.m_requestType;
+        if (this.m_nextRequestType) {
+            requestType = this.m_nextRequestType;
+            this.m_nextRequestType = null;
+        }
+        if (requestType == "fetch") {
             // only reorder in fetch mode
             // because fetch headers type is Header
             // it will reorder internally

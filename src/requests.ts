@@ -345,7 +345,7 @@ export class requests {
         }
 
         if (typeof requestType == "string") {
-            curl.setRequestType(requestType);
+            curl.setNextRequestType(requestType);
         }
 
         let hasContentType = false;
