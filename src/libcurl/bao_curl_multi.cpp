@@ -16,15 +16,48 @@ NAMESPACE_BAO_START
 BaoCurlMulti::BaoCurlMulti(): idle(this, &BaoCurlMulti::asyncTask)
 {
     this->m_pCURLM = curl_multi_init();
+    uv_timer_init(uv_default_loop(), &m_timeoutTimer);
+    m_timeoutTimer.data = this;
+    curl_multi_setopt(m_pCURLM, CURLMOPT_TIMERFUNCTION, &BaoCurlMulti::timerCallback);
+    curl_multi_setopt(m_pCURLM, CURLMOPT_TIMERDATA, this);
 }
 
 BaoCurlMulti::~BaoCurlMulti()
 {
     if (this->m_pCURLM != nullptr)
     {
+        uv_timer_stop(&m_timeoutTimer);
         idle.stop();
         curl_multi_cleanup(this->m_pCURLM);
         this->m_pCURLM = nullptr;
+    }
+}
+
+int BaoCurlMulti::timerCallback(CURLM* multi, long timeout_ms, void* userp) {
+    BaoCurlMulti* self = static_cast<BaoCurlMulti*>(userp);
+
+    if (timeout_ms < 0) {
+        uv_timer_stop(&self->m_timeoutTimer);
+    } else {
+        uv_timer_start(&self->m_timeoutTimer, onTimeout,
+                       (timeout_ms == 0 ? 1 : timeout_ms), 0);
+    }
+    return 0;
+}
+
+void BaoCurlMulti::onTimeout(uv_timer_t* handle) {
+    BaoCurlMulti* self = static_cast<BaoCurlMulti*>(handle->data);
+    int running_handles = 0;
+
+    curl_multi_socket_action(self->m_pCURLM,
+                             CURL_SOCKET_TIMEOUT,
+                             0,
+                             &running_handles);
+
+    self->processFinishedHandles();
+
+    if (running_handles == 0) {
+        self->idle.stop();
     }
 }
 
@@ -36,63 +69,57 @@ void BaoCurlMulti::pushQueue(BaoCurl &curl)
     }
 }
 
-void BaoCurlMulti::asyncTask(uv_idle_t* handle) {
-    BaoCurlMulti* instance = static_cast<BaoCurlMulti*>(handle->data);
-    int runningNum;
-    CURLMcode mc = curl_multi_perform(instance->m_pCURLM, &runningNum);
-    _CHECK_CURLMOK(instance, mc);
-    if (!mc && runningNum)
-    {
-        mc = curl_multi_poll(instance->m_pCURLM, NULL, 0, 1000, NULL);
-        if (mc)
-        {
-            _CHECK_CURLMOK(instance, mc);
-            instance->idle.start();
-            return;
-        }
-    }
-    if (mc)
-    {
-        _CHECK_CURLMOK(instance, mc);
-        instance->idle.start();
-        return;
-    }
-    int ret = 0;
-    while (true)
-    {
-        CURLMsg *msg = curl_multi_info_read(instance->m_pCURLM, &ret);
-        if (!(msg && msg->msg == CURLMSG_DONE))
-        {
-            break;
-        }
-        CURL *handle = msg->easy_handle;
-        CURLcode result = msg->data.result;
-        _CHECK_CURLMOK(instance, curl_multi_remove_handle(instance->m_pCURLM, handle));
-        BaoCurl *pCurl = nullptr;
-        curl_easy_getinfo(handle, CURLINFO_PRIVATE, &pCurl);
-        if (pCurl)
-        {
-            pCurl->m_postdata.reset(); // 释放内存
-            pCurl->m_lastCode = result;
-            if (pCurl->m_publishCallback)
-            {
-                bool success = pCurl->m_lastCode == CURLE_OK;
-                std::string errMsg = success ? "" : pCurl->getLastCurlCodeError();
-                auto callbackPtr = pCurl->m_publishCallback;
-                callbackPtr(success, errMsg);
+void BaoCurlMulti::processFinishedHandles() {
+    int msgq = 0;
+    CURLMsg* msg = nullptr;
+
+    while ((msg = curl_multi_info_read(m_pCURLM, &msgq))) {
+        if (msg->msg == CURLMSG_DONE) {
+            CURL* easy_handle = msg->easy_handle;
+            CURLcode result = msg->data.result;
+
+            CHECK_CURLMOK(curl_multi_remove_handle(m_pCURLM, easy_handle));
+
+            BaoCurl* curl = nullptr;
+            curl_easy_getinfo(easy_handle, CURLINFO_PRIVATE, &curl);
+
+            if (curl) {
+                curl->m_postdata.reset();
+                curl->m_lastCode = result;
+
+                if (result == CURLE_OPERATION_TIMEDOUT) {
+                    std::string url;
+                    curl_easy_getinfo(easy_handle, CURLINFO_EFFECTIVE_URL, &url);
+                    printf("Request timed out: %s\n", url.c_str());
+                }
+
+                if (curl->m_publishCallback) {
+                    bool success = (result == CURLE_OK);
+                    std::string err = success ? "" : curl_easy_strerror(result);
+                    curl->m_publishCallback(success, err);
+                }
             }
         }
-        else
-        {
-            std::cout << "ptr is null" << std::endl;
-        }
-         break;
-    };
+    }
+}
 
-    if (runningNum == 0) {
-        instance->idle.stop();
+void BaoCurlMulti::asyncTask(uv_idle_t* handle) {
+    BaoCurlMulti* self = static_cast<BaoCurlMulti*>(handle->data);
+    int runningNum = 0;
+
+    CURLMcode mc = curl_multi_perform(self->m_pCURLM, &runningNum);
+    _CHECK_CURLMOK(self, mc);
+
+    self->processFinishedHandles();
+
+    if (runningNum > 0) {
+        mc = curl_multi_poll(self->m_pCURLM, nullptr, 0, 0, nullptr);
+        if (mc) {
+            _CHECK_CURLMOK(self, mc);
+        }
+        self->idle.start();
     } else {
-        instance->idle.start();
+        self->idle.stop();
     }
 }
 
