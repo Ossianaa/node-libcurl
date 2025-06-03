@@ -2,9 +2,9 @@
 #ifndef _CURL_H
 #define _CURL_H
 
-#include "safe_uv_idle.h"
 #include "curl/curl.h"
 #include "utils.h"
+#include "uv.h"
 
 NAMESPACE_BAO_START
 
@@ -26,11 +26,11 @@ public:
     void setRequestHeader(std::string&, std::string&);
     void setRequestHeader(std::string&);
     void setRequestHeaders(std::string&);
-    
+
     void setProxy(std::string&);
     void setProxy(std::string&, std::string&,
                   std::string&);
-                  
+
     void setTimeout(
         int connectTime,
         int sendTime);
@@ -100,11 +100,13 @@ private:
     CURLM* m_pCURLM = nullptr;
     CURLMcode m_lastCode;
     uv_timer_t m_timeoutTimer;
+    std::unordered_map<curl_socket_t, uv_poll_t*> m_socketMap;
 
-	SafeUvIdle idle;
     static void asyncTask(uv_idle_t*);
     static int timerCallback(CURLM* multi, long timeout_ms, void* userp);
     static void onTimeout(uv_timer_t* handle);
+    static void socketCallback(uv_poll_t* handle, int status, int events);
+    static int socketFunction(CURL* easy, curl_socket_t s, int action, void* userp, void* socketp);
 
     void processFinishedHandles();
 };
