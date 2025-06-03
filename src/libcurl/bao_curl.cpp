@@ -162,11 +162,6 @@ void BaoCurl::setTimeout(
     int connectTime,
     int sendTime)
 {
-    /*
-    	CURLOPT_CONNECTTIMEOUT：连接对方主机时的最长等待时间，此设置限制的是建立连接过程的时间，其它过程的时间不在控制范围
-    	CURLOPT_TIMEOUT：整个cURL函数执行过程的最长等待时间，也就是说，这个时间是包含连接等待时间的
-    	CURLOPT_TIMEOUT的值应比CURLOPT_CONNECTTIMEOUT大
-    */
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_CONNECTTIMEOUT, connectTime));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TIMEOUT, sendTime));
 }
