@@ -16,7 +16,6 @@ struct Stream_st
     std::string responseText;
 };
 
-
 class BaoCurl
 {
 public:
@@ -102,13 +101,16 @@ private:
     uv_timer_t m_timeoutTimer;
     std::unordered_map<curl_socket_t, uv_poll_t*> m_socketMap;
 
-    static void asyncTask(uv_idle_t*);
     static int timerCallback(CURLM* multi, long timeout_ms, void* userp);
-    static void onTimeout(uv_timer_t* handle);
     static void socketCallback(uv_poll_t* handle, int status, int events);
     static int socketFunction(CURL* easy, curl_socket_t s, int action, void* userp, void* socketp);
 
     void processFinishedHandles();
+};
+
+struct PollContext {
+    BaoCurlMulti* multi;
+    curl_socket_t sockfd;
 };
 
 NAMESPACE_BAO_END

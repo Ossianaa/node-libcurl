@@ -34,7 +34,11 @@ BaoCurlMulti::~BaoCurlMulti()
         uv_close(reinterpret_cast<uv_handle_t*>(&m_timeoutTimer), nullptr);
         this->m_pCURLM = nullptr;
     }
-    for (auto& [sock, poller] : m_socketMap) {
+    for (auto& it : m_socketMap) {
+        curl_socket_t sock = it.first;
+        uv_poll_t* poller = it.second;
+        PollContext* ctx = static_cast<PollContext*>(poller->data);
+        delete ctx;
         uv_poll_stop(poller);
         uv_close((uv_handle_t*)poller, [](uv_handle_t* h) {
             delete (uv_poll_t*)h;
@@ -43,24 +47,29 @@ BaoCurlMulti::~BaoCurlMulti()
 }
 
 void BaoCurlMulti::socketCallback(uv_poll_t* handle, int status, int events) {
-    BaoCurlMulti* self = static_cast<BaoCurlMulti*>(handle->data);
+    PollContext* ctx = static_cast<PollContext*>(handle->data);
+    BaoCurlMulti* self = ctx->multi;
+    curl_socket_t sockfd = ctx->sockfd;
     int action = 0;
     if (events & UV_READABLE) action |= CURL_CSELECT_IN;
     if (events & UV_WRITABLE) action |= CURL_CSELECT_OUT;
 
     int running;
-    curl_multi_socket_action(self->m_pCURLM, handle->socket, action, &running);
+    curl_multi_socket_action(self->m_pCURLM, sockfd, action, &running);
     self->processFinishedHandles();
 }
 
 int BaoCurlMulti::socketFunction(CURL* easy, curl_socket_t s, int action, void* userp, void* socketp) {
     BaoCurlMulti* self = static_cast<BaoCurlMulti*>(userp);
-
     if (action == CURL_POLL_REMOVE || action == CURL_POLL_INOUT) {
         if (auto it = self->m_socketMap.find(s); it != self->m_socketMap.end()) {
-            uv_poll_stop(it->second);
-            uv_close((uv_handle_t*)it->second, [](uv_handle_t* h) {
-                delete (uv_poll_t*)h;
+            uv_poll_t* poller = it->second;
+            PollContext* ctx = static_cast<PollContext*>(poller->data);
+            delete ctx;
+
+            uv_poll_stop(poller);
+            uv_close((uv_handle_t*)poller, [](uv_handle_t* h) {
+                delete reinterpret_cast<uv_poll_t*>(h);
             });
             self->m_socketMap.erase(it);
         }
@@ -68,9 +77,9 @@ int BaoCurlMulti::socketFunction(CURL* easy, curl_socket_t s, int action, void* 
 
     if (action == CURL_POLL_IN || action == CURL_POLL_OUT || action == CURL_POLL_INOUT) {
         if (!self->m_socketMap.count(s)) {
-            uv_poll_t* poller = new uv_poll_t;
-            poller->data = self;
-            poller->socket = s;
+            uv_poll_t* poller = new uv_poll_t();
+            PollContext* ctx = new PollContext{self, s};
+            poller->data = ctx;
             uv_poll_init_socket(uv_default_loop(), poller, s);
             self->m_socketMap[s] = poller;
         }
@@ -90,22 +99,15 @@ int BaoCurlMulti::timerCallback(CURLM* multi, long timeout_ms, void* userp) {
     if (timeout_ms < 0) {
         uv_timer_stop(&self->m_timeoutTimer);
     } else {
-        uv_timer_start(&self->m_timeoutTimer, onTimeout,
-                       (timeout_ms == 0 ? 1 : timeout_ms), 0);
+        uv_timer_start(&self->m_timeoutTimer, [](uv_timer_t* handle) {
+            auto self = static_cast<BaoCurlMulti*>(handle->data);
+            int running_handles = 0;
+            curl_multi_socket_action(self->m_pCURLM,CURL_SOCKET_TIMEOUT,0,&running_handles);
+            self->processFinishedHandles();
+        },
+        (timeout_ms == 0 ? 1 : timeout_ms), 0);
     }
     return 0;
-}
-
-void BaoCurlMulti::onTimeout(uv_timer_t* handle) {
-    BaoCurlMulti* self = static_cast<BaoCurlMulti*>(handle->data);
-    int running_handles = 0;
-
-    curl_multi_socket_action(self->m_pCURLM,
-                             CURL_SOCKET_TIMEOUT,
-                             0,
-                             &running_handles);
-
-    self->processFinishedHandles();
 }
 
 void BaoCurlMulti::pushQueue(BaoCurl &curl)
@@ -138,23 +140,6 @@ void BaoCurlMulti::processFinishedHandles() {
                     curl->m_publishCallback(success, err);
                 }
             }
-        }
-    }
-}
-
-void BaoCurlMulti::asyncTask(uv_idle_t* handle) {
-    BaoCurlMulti* self = static_cast<BaoCurlMulti*>(handle->data);
-    int runningNum = 0;
-
-    CURLMcode mc = curl_multi_perform(self->m_pCURLM, &runningNum);
-    _CHECK_CURLMOK(self, mc);
-
-    self->processFinishedHandles();
-
-    if (runningNum > 0) {
-        mc = curl_multi_poll(self->m_pCURLM, nullptr, 0, 0, nullptr);
-        if (mc) {
-            _CHECK_CURLMOK(self, mc);
         }
     }
 }
