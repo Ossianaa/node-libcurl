@@ -90,7 +90,6 @@ void BaoCurlMulti::processFinishedHandles() {
                 if (result == CURLE_OPERATION_TIMEDOUT) {
                     std::string url;
                     curl_easy_getinfo(easy_handle, CURLINFO_EFFECTIVE_URL, &url);
-                    printf("Request timed out: %s\n", url.c_str());
                 }
 
                 if (curl->m_publishCallback) {
