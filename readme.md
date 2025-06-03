@@ -29,6 +29,7 @@ import { LibCurl, fetch, requests } from '@ossiana/node-libcurl'
 ```
 
 ```javascript
+// nonstandard
 fetch("https://www.google.com").then(e => e.json())
 ```
 
