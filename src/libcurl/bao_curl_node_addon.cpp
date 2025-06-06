@@ -820,6 +820,7 @@ Napi::Value processRequestHeaders(const Napi::CallbackInfo &info)
 {
     Napi::Array extraHeaders = info[0].As<Napi::Array>();
     Napi::Array customHeaders = info[1].As<Napi::Array>();
+    bool isFetch = info[2].As<Napi::Boolean>().Value();
     std::vector<std::string> _extraHeaders;
     std::vector<std::string> _customHeaders;
     for (size_t i = 0; i < extraHeaders.Length(); i++)
@@ -830,7 +831,7 @@ Napi::Value processRequestHeaders(const Napi::CallbackInfo &info)
     {
         _customHeaders.push_back(customHeaders.Get(i).As<Napi::String>().Utf8Value());
     }
-    std::vector<std::string> result = process_requestHeaders(_extraHeaders, _customHeaders);
+    std::vector<std::string> result = process_requestHeaders(_extraHeaders, _customHeaders, isFetch);
     Napi::Array newArray = Napi::Array::New(info.Env(), extraHeaders.Length() + customHeaders.Length());
     for (size_t i = 0; i < result.size(); i++)
     {
@@ -843,6 +844,7 @@ Napi::Value processRequestHeadersV2(const Napi::CallbackInfo &info)
 {
     Napi::Array extraHeaders = info[0].As<Napi::Array>();
     Napi::Array customHeaders = info[1].As<Napi::Array>();
+    bool isFetch = info[2].As<Napi::Boolean>().Value();
     std::vector<std::string> _extraHeaders;
     std::vector<std::string> _customHeaders;
     for (size_t i = 0; i < extraHeaders.Length(); i++)
@@ -853,7 +855,7 @@ Napi::Value processRequestHeadersV2(const Napi::CallbackInfo &info)
     {
         _customHeaders.push_back(customHeaders.Get(i).As<Napi::String>().Utf8Value());
     }
-    std::vector<std::string> result = process_requestHeadersV2(_extraHeaders, _customHeaders);
+    std::vector<std::string> result = process_requestHeadersV2(_extraHeaders, _customHeaders, isFetch);
     Napi::Array newArray = Napi::Array::New(info.Env(), extraHeaders.Length() + customHeaders.Length());
     for (size_t i = 0; i < result.size(); i++)
     {
