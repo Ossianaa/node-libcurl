@@ -409,7 +409,7 @@ export type LibCurlSSLCertType = "PEM" | "DER" | "P12";
 
 export type LibCurlSSLVerifyConfig = {
     caPath: string;
-}
+};
 
 export class LibCurlError extends Error {
     constructor(message: string) {
@@ -1007,30 +1007,6 @@ export class LibCurl {
             requestType = this.m_nextRequestType;
             this.m_nextRequestType = null;
         }
-        if (requestType == "fetch") {
-            // only reorder in fetch mode
-            // because fetch headers type is Header
-            // it will reorder internally
-            customHeaders.sort(function codeUnitCompareIgnoringASCIICase(
-                [str1],
-                [str2],
-            ) {
-                str1 = str1.toLowerCase();
-                str2 = str2.toLowerCase();
-                let pos = 0;
-                let l1 = str1.length,
-                    l2 = str2.length;
-                const lmin = Math.min(str1.length, str2.length);
-                while (pos < lmin && str1[pos] == str2[pos]) {
-                    ++pos;
-                }
-                if (pos < lmin) {
-                    return str1[pos] > str2[pos] ? 1 : -1;
-                }
-                if (l1 == l2) return 0;
-                return l1 > l2 ? 1 : -1;
-            });
-        }
 
         extraHeaders.sort((a, b) =>
             config.clientHint.indexOf(a[0].toLowerCase()) <
@@ -1054,6 +1030,7 @@ export class LibCurl {
             .processFunction(
                 extraHeaders.map((e) => e[0].toLowerCase()),
                 customHeaders.map((e) => e[0].toLowerCase()),
+                requestType === "fetch",
             )
             .reduce((e: Array<[string, string]>, key: string) => {
                 const [_key, value] =
