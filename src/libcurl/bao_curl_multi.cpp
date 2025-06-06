@@ -31,7 +31,9 @@ BaoCurlMulti::~BaoCurlMulti()
         m_timeoutTimer.data = nullptr;
         uv_timer_stop(&m_timeoutTimer);
         curl_multi_cleanup(this->m_pCURLM);
-        uv_close(reinterpret_cast<uv_handle_t*>(&m_timeoutTimer), nullptr);
+        uv_handle_t* timeoutHandle = reinterpret_cast<uv_handle_t*>(&m_timeoutTimer);
+        if (uv_is_active(timeoutHandle))
+            uv_close(timeoutHandle, nullptr);
         this->m_pCURLM = nullptr;
     }
     for (auto& it : m_socketMap) {
