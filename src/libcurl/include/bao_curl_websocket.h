@@ -43,7 +43,7 @@ private:
     std::function<void(std::string)> m_onerror;
     std::function<void(uint8_t* data, size_t size)> m_onmessage;
     static void pollCallback(uv_poll_t* handle, int status, int events);
-
+    std::vector<uint8_t> m_payload;
 protected:
     std::function<void()> m_onopen_default = []() {
     };
