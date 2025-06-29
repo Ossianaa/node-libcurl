@@ -19,8 +19,7 @@ BaoCurlWebSocket::~BaoCurlWebSocket() {
 
 void BaoCurlWebSocket::pollCallback(uv_poll_t* handle, int status, int events) {
     BaoCurlWebSocket* instance = static_cast<BaoCurlWebSocket*>(handle->data);
-
-    if (!instance->m_isOpen) return;
+    if (!instance || !instance->m_isOpen) return;
 
     long sockfd;
     curl_easy_getinfo(instance->m_curl, CURLINFO_ACTIVESOCKET, &sockfd);
@@ -37,19 +36,36 @@ void BaoCurlWebSocket::pollCallback(uv_poll_t* handle, int status, int events) {
     if (res == CURLE_AGAIN) {
         return;
     }
-    else if (res == CURLE_OK) {
-        if (meta->flags == CURLWS_CLOSE) {
-            instance->close(false);
-        }
-        else if (meta->flags == CURLWS_BINARY || meta->flags == CURLWS_TEXT) {
-            auto _buffer = std::make_unique<uint8_t[]>(rlen);
-            memcpy(_buffer.get(), buffer, rlen);
-            instance->m_onmessage(_buffer.get(), rlen);
-        }
-    }
-    else {
+    else if (res != CURLE_OK) {
         instance->m_onerror(curl_easy_strerror(res));
         instance->close(false);
+        return;
+    }
+
+
+    if (meta->flags & CURLWS_CLOSE) {
+        instance->close(false);
+        return;
+    }
+    else if (meta->flags & CURLWS_PING) {
+
+        curl_ws_send(instance->m_curl, buffer, rlen, nullptr, 0, CURLWS_PONG);
+        return;
+    }
+    const uint8_t* dataPtr = reinterpret_cast<const uint8_t*>(buffer);
+    instance->m_payload.insert(
+                           instance->m_payload.end(),
+                           dataPtr,
+                           dataPtr + rlen
+                       );
+    if (meta->bytesleft == 0) {
+        if (instance->m_onmessage) {
+            instance->m_onmessage(
+                instance->m_payload.data(),
+                instance->m_payload.size()
+            );
+        }
+        instance->m_payload.clear();
     }
 }
 
