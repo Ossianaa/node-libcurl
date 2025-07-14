@@ -336,9 +336,7 @@ export class requests {
             curl.setHttpVersion(httpVersion);
         }
         curl.setJA3Fingerprint(ja3);
-        if (akamai) {
-            curl.setAkamaiFingerprint(akamai);
-        }
+        curl.setAkamaiFingerprint(akamai);
 
         if (h2config) {
             if (typeof h2config.streamId == "number") {
@@ -668,13 +666,13 @@ export class requests {
         this.option.instance.setInterface(network);
     }
 
-    public setJA3Fingerprint(
-        ja3: LibCurlJA3FingerPrintInfo = "chrome133",
-    ): void {
+    public setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo = "auto"): void {
         this.option.ja3 = ja3;
     }
 
-    public setAkamaiFingerprint(akamai: LibCurlAkamaiFingerPrintInfo): void {
+    public setAkamaiFingerprint(
+        akamai: LibCurlAkamaiFingerPrintInfo = "auto",
+    ): void {
         this.option.akamai = akamai;
     }
 }
