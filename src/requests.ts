@@ -675,4 +675,8 @@ export class requests {
     ): void {
         this.option.akamai = akamai;
     }
+
+    public getLastEffectiveUrl(): string {
+        return this.option.instance.getLastEffectiveUrl();
+    }
 }

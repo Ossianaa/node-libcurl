@@ -47,6 +47,8 @@ public:
         return this->m_stream.responseText;
     };
     long getResponseStatus();
+    std::string getLastEffectiveUrl();
+
     void setSSLVerify(std::string &caPath);
     void setRedirect(bool enable);
     void setVerbose(bool enable);

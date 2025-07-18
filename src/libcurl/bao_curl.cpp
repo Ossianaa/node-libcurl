@@ -36,20 +36,20 @@ BaoCurl::BaoCurl()
 
 BaoCurl::~BaoCurl()
 {
-	
+
     if (this->m_pHeaders)
     {
         curl_slist_free_all(this->m_pHeaders);
         this->m_pHeaders = NULL;
     }
-	if (this->m_pCURL) {
-		curl_easy_cleanup(this->m_pCURL);
-		this->m_pCURL = NULL;
-	}
-	if (this->m_pSHARE) {
-		curl_share_cleanup(this->m_pSHARE);
-		this->m_pSHARE = NULL;
-	}
+    if (this->m_pCURL) {
+        curl_easy_cleanup(this->m_pCURL);
+        this->m_pCURL = NULL;
+    }
+    if (this->m_pSHARE) {
+        curl_share_cleanup(this->m_pSHARE);
+        this->m_pSHARE = NULL;
+    }
 }
 
 void BaoCurl::init()
@@ -73,7 +73,7 @@ void BaoCurl::init()
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PRIVATE, this));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SHARE, this->m_pSHARE));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_UNRESTRICTED_AUTH, 1L));
-	setHttp2NextStreamId(1);
+    setHttp2NextStreamId(1);
     this->setTimeout(15, 15);
 }
 
@@ -309,7 +309,7 @@ void BaoCurl::setHttpVersion(BaoCurl::HttpVersion version)
         break;
     case BaoCurl::HttpVersion::http3:
         temp = CURL_HTTP_VERSION_3;
-		break;
+        break;
     case BaoCurl::HttpVersion::http3_only:
         temp = CURL_HTTP_VERSION_3ONLY;
         break;
@@ -328,6 +328,13 @@ unsigned int BaoCurl::getLastCurlCode()
 const char *BaoCurl::getLastCurlCodeError()
 {
     return curl_easy_strerror(this->m_lastCode);
+}
+
+std::string BaoCurl::getLastEffectiveUrl()
+{
+    char *effective_url = NULL;
+    CHECK_CURLOK(curl_easy_getinfo(this->m_pCURL, CURLINFO_EFFECTIVE_URL, &effective_url));
+    return effective_url ? std::string(effective_url) : std::string();
 }
 
 curl_off_t BaoCurl::getResponseContentLength()
