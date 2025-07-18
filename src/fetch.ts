@@ -61,6 +61,7 @@ interface LibCurlResponseInfo {
     headers: () => Promise<Headers>;
     cookies: () => Promise<string>;
     cookiesMap: () => Promise<LibCurlCookiesAttr>;
+    lastEffectiveUrl: () => Promise<string>;
 }
 
 export async function fetch(
@@ -142,5 +143,6 @@ export async function fetch(
         headers: async () => curl.getResponseHeadersMap(),
         cookies: async () => curl.getCookies(),
         cookiesMap: async () => curl.getCookiesMap(),
+        lastEffectiveUrl: async () => curl.getLastEffectiveUrl(),
     } as LibCurlResponseInfo;
 }

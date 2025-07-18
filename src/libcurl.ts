@@ -1107,4 +1107,9 @@ export class LibCurl {
         this.checkSending();
         return this.m_libCurl_impl_.getResponseString();
     }
+    
+    public getLastEffectiveUrl(): string {
+        this.checkSending();
+        return this.m_libCurl_impl_.getLastEffectiveUrl();
+    }
 }
