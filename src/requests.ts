@@ -362,6 +362,11 @@ export class requests {
                 hasContentType = /content-type/i.test(headers);
             } else if (headers instanceof Headers) {
                 hasContentType = headers.has("content-type");
+            } else if (Array.isArray(headers)) {
+                hasContentType = headers.some(
+                    (e) =>
+                        /content-type/i.test(e[0]) || /content-type/i.test(e),
+                );
             } else {
                 hasContentType = contentTypeFilter(Object.keys(headers));
             }
