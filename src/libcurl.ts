@@ -778,7 +778,7 @@ export class LibCurl {
         if (version == "http3") {
             _version = 2;
         }
-        this.m_libCurl_impl_.setHttpVersion(version);
+        this.m_libCurl_impl_.setHttpVersion(_version);
     }
 
     /**
