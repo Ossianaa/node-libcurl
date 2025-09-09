@@ -62,8 +62,9 @@ void BaoCurlMulti::socketCallback(uv_poll_t* handle, int status, int events) {
 }
 
 int BaoCurlMulti::socketFunction(CURL* easy, curl_socket_t s, int action, void* userp, void* socketp) {
+    if (s == CURL_SOCKET_BAD || s == 0) return 0;
     BaoCurlMulti* self = static_cast<BaoCurlMulti*>(userp);
-    if (action == CURL_POLL_REMOVE || action == CURL_POLL_INOUT) {
+    if (action == CURL_POLL_REMOVE) {
         if (auto it = self->m_socketMap.find(s); it != self->m_socketMap.end()) {
             uv_poll_t* poller = it->second;
             PollContext* ctx = static_cast<PollContext*>(poller->data);
