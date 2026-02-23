@@ -80,6 +80,7 @@ export type LibCurlJA3FingerPrintImpl =
     | "chrome124"
     | "chrome131"
     | "chrome133"
+    | "chrome146"
     | "auto";
 export type LibCurlAkamaiFingerPrintImpl =
     | "chrome99"
@@ -113,6 +114,8 @@ const LibCurlJA3FingerPrintImplMap: {
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-65037-21")}-41,4588-29-23-24,0`,
     chrome133: () =>
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-65037-21")}-41,4588-29-23-24,0`,
+    chrome146: () =>
+        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-65037-51764-21")}-41,4588-29-23-24,0`,
     auto(chromeVersion?: number) {
         if (chromeVersion < 101) {
             return this.chrome99();
@@ -124,8 +127,10 @@ const LibCurlJA3FingerPrintImplMap: {
             return this.chrome124();
         } else if (chromeVersion < 133) {
             return this.chrome131();
-        } else {
+        } else if (chromeVersion < 146) {
             return this.chrome133();
+        } else {
+            return this.chrome146();
         }
     },
 };
@@ -310,6 +315,8 @@ export enum LibCurlJA3Extension {
     TLSEXT_TYPE_channel_id = 30032,
     TLSEXT_TYPE_record_size_limit = 28,
     TLSEXT_TYPE_delegated_credentials = 34,
+    TLSEXT_TYPE_pake = 0x8a3b,
+    TLSEXT_TYPE_trust_anchors = 0xca34,
 }
 
 export enum LibCurlJA3SupportGroup {
@@ -356,6 +363,8 @@ const LibCurlBoringSSLExtensionPermutation: LibCurlJA3Extension[] = [
     LibCurlJA3Extension.TLSEXT_TYPE_application_settings,
     LibCurlJA3Extension.TLSEXT_TYPE_application_settings_old,
     LibCurlJA3Extension.TLSEXT_TYPE_record_size_limit, //firefox
+    LibCurlJA3Extension.TLSEXT_TYPE_pake,
+    LibCurlJA3Extension.TLSEXT_TYPE_trust_anchors,
     LibCurlJA3Extension.TLSEXT_TYPE_pre_shared_key,
 ];
 
