@@ -55,6 +55,7 @@ interface LibCurlRequestInfo {
 interface LibCurlResponseInfo {
     status: () => number;
     contentLength: () => number;
+    encodedBodySize: () => number;
     arraybuffer: () => Promise<ArrayBuffer>;
     text: () => Promise<string>;
     json: () => Promise<object>;
@@ -137,6 +138,7 @@ export async function fetch(
     return {
         status: () => curl.getResponseStatus(),
         contentLength: () => curl.getResponseContentLength(),
+        encodedBodySize: () => curl.getResponseEncodedBodySize(),
         arraybuffer: async () => curl.getResponseBody().buffer,
         text: async () => curl.getResponseString(),
         json: async () => JSON.parse(curl.getResponseString()),

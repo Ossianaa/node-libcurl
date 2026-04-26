@@ -760,6 +760,15 @@ export class LibCurl {
 
     /**
      *
+     * @returns 返回传输层编码正文大小(未解压前)
+     */
+    public getResponseEncodedBodySize(): number {
+        this.checkSending();
+        return this.m_libCurl_impl_.getResponseEncodedBodySize();
+    }
+
+    /**
+     *
      * @param config 是否验证证书和名称
      */
     public setSSLVerify(config: LibCurlSSLVerifyConfig): void {

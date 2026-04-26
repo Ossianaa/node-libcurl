@@ -71,6 +71,7 @@ public:
     unsigned int getLastCurlCode();
     const char* getLastCurlCodeError();
     curl_off_t getResponseContentLength();
+    curl_off_t getResponseEncodedBodySize();
     friend class BaoCurlMulti;
 
     CURL* m_pCURL = NULL;

@@ -39,6 +39,7 @@ interface requestsResponseImp {
     readonly headersMap: Headers;
     readonly status: number;
     readonly contentLength: number;
+    readonly encodedBodySize: number;
 }
 
 class requestsResponse implements requestsResponseImp {
@@ -47,6 +48,7 @@ class requestsResponse implements requestsResponseImp {
     private responseHeadersMap: Headers;
     private responseStatus: number;
     private responseContentLength: number;
+    private responseEncodedBodySize: number;
     private responseText?: string;
     private responseJson?: object;
     constructor(curl: LibCurl) {
@@ -55,6 +57,7 @@ class requestsResponse implements requestsResponseImp {
         this.responseHeadersMap = curl.getResponseHeadersMap();
         this.responseStatus = curl.getResponseStatus();
         this.responseContentLength = curl.getResponseContentLength();
+        this.responseEncodedBodySize = curl.getResponseEncodedBodySize();
     }
 
     public get text(): string {
@@ -85,6 +88,10 @@ class requestsResponse implements requestsResponseImp {
 
     public get contentLength(): number {
         return this.responseContentLength;
+    }
+
+    public get encodedBodySize(): number {
+        return this.responseEncodedBodySize;
     }
 }
 
