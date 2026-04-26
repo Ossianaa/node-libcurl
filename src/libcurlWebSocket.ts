@@ -14,7 +14,7 @@ interface LibCurlWebSocketOption {
     userAgent?: string;
     origin?: string;
     cookie?: string;
-    protocol?:string;
+    protocol?: string;
     timeout?: number;
     ja3?: LibCurlJA3FingerPrintInfo;
 }
@@ -37,14 +37,14 @@ export class LibCurlWebSocket {
     private m_libcurlWebSocket_impl_: any;
     private m_isOpen: boolean = false;
 
-    private m_onOpen: LibCurlWebSocketOnOpenEvent;
-    private m_onClose: LibCurlWebSocketOnCloseEvent;
-    private m_onMessage: LibCurlWebSocketOnMessageEvent;
-    private m_onError: LibCurlWebSocketOnErrorEvent;
+    private m_onOpen: LibCurlWebSocketOnOpenEvent = () => {};
+    private m_onClose: LibCurlWebSocketOnCloseEvent = () => {};
+    private m_onMessage: LibCurlWebSocketOnMessageEvent = () => {};
+    private m_onError: LibCurlWebSocketOnErrorEvent = () => {};
 
     constructor(url: LibCurlURLInfo, option: LibCurlWebSocketOption = {}) {
         const curl = option.instance || new LibCurl();
-        
+
         // @ts-ignore
         const impl = curl.m_libCurl_impl_;
         impl.setRequestHeader("Accept", "");

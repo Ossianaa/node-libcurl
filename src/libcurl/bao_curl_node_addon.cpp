@@ -42,6 +42,7 @@ private:
     Napi::Value getResponseString(const Napi::CallbackInfo &info);
     Napi::Value getResponseHeaders(const Napi::CallbackInfo &info);
     Napi::Value getResponseContentLength(const Napi::CallbackInfo &info);
+    Napi::Value getResponseEncodedBodySize(const Napi::CallbackInfo &info);
     Napi::Value getLastEffectiveUrl(const Napi::CallbackInfo &info);
     Napi::Value getLastCode(const Napi::CallbackInfo &info);
     Napi::Value getLastCodeError(const Napi::CallbackInfo &info);
@@ -281,6 +282,7 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod<&BaoLibCurlWarp::sendAsync>("sendAsync", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::getResponseHeaders>("getResponseHeaders", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::getResponseContentLength>("getResponseContentLength", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&BaoLibCurlWarp::getResponseEncodedBodySize>("getResponseEncodedBodySize", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::getLastEffectiveUrl>("getLastEffectiveUrl", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::getLastCode>("getLastCode", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::getLastCodeError>("getLastCodeError", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -491,6 +493,15 @@ Napi::Value BaoLibCurlWarp::getResponseContentLength(const Napi::CallbackInfo &i
 {
     Napi::Env env = info.Env();
     return Napi::Number::New(env, this->m_curl.getResponseContentLength());
+}
+
+/*
+    getResponseEncodedBodySize()
+*/
+Napi::Value BaoLibCurlWarp::getResponseEncodedBodySize(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+    return Napi::Number::New(env, this->m_curl.getResponseEncodedBodySize());
 }
 /*
     getLastCode()

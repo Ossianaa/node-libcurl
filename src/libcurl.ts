@@ -117,6 +117,9 @@ const LibCurlJA3FingerPrintImplMap: {
     // chrome146: () =>
     //     `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-65037-51764-21")}-41,4588-29-23-24,0`,
     auto(chromeVersion?: number) {
+        if (!chromeVersion) {
+            return this.chrome133();
+        }
         if (chromeVersion < 101) {
             return this.chrome99();
         } else if (chromeVersion < 110) {
@@ -147,6 +150,9 @@ const LibCurlAkamaiFingerPrintImplMap: {
     chrome107: () => `1:65536;2:0;3:1000;4:6291456;6:262144|15663105|0|m,a,s,p`,
     chrome119: () => `1:65536;2:0;4:6291456;6:262144|15663105|0|m,a,s,p`,
     auto(chromeVersion?: number) {
+        if (!chromeVersion) {
+            return this.chrome119();
+        }
         if (chromeVersion < 107) {
             return this.chrome99();
         } else if (chromeVersion < 119) {
@@ -433,25 +439,26 @@ export type LibCurlAutoSortRequestHeadersOption =
     | "chrome130"
     | "chrome131";
 
-export type LibCurlRequestHeadersOrder = Array<string> | null;
+export type LibCurlRequestHeadersOrder = Array<string>;
 export type LibCurlRequestType = "fetch" | "XMLHttpRequest";
 const textEncoder = new TextEncoder();
 
 export class LibCurl {
     private m_libCurl_impl_: any;
-    private m_method_: LibCurlMethodInfo;
-    private m_isSending_: boolean;
-    private m_requestHeaders_: LibCurlRequestHeadersAttr;
+    private m_method_: LibCurlMethodInfo = "GET";
+    private m_isSending_: boolean = false;
+    private m_requestHeaders_: LibCurlRequestHeadersAttr =
+        new CaseInsensitiveMap();
     private m_autoSortRequestHeaders: LibCurlAutoSortRequestHeadersOption =
         "auto";
-    private m_nextRequestHeadersOrderMap: CaseInsensitiveMap = null;
+    private m_nextRequestHeadersOrderMap: CaseInsensitiveMap =
+        new CaseInsensitiveMap();
     private m_requestType: LibCurlRequestType = "fetch";
     private m_nextRequestType: LibCurlRequestType | null = null;
     private m_chromeVersion: number = 133;
 
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
-        this.m_requestHeaders_ = new CaseInsensitiveMap();
     }
     private checkSending(): void {
         if (this.m_isSending_) {
@@ -652,10 +659,11 @@ export class LibCurl {
     public getCookies(cookieOpt?: LibCurlGetCookiesOption): string {
         this.checkSending();
         const cookies_ = this.m_libCurl_impl_.getCookies();
-        return httpCookiesToArray(cookies_)
-            .filter(cookieOptFilter(cookieOpt))
-            .map((e) => `${e[5]}=${encodeURIComponent(e[6])};`)
-            .join(" ");
+        let arr = httpCookiesToArray(cookies_);
+        if (cookieOpt) {
+            arr = arr.filter(cookieOptFilter(cookieOpt));
+        }
+        return arr.map((e) => `${e[5]}=${encodeURIComponent(e[6])};`).join(" ");
     }
 
     /**
@@ -667,9 +675,12 @@ export class LibCurl {
     ): LibCurlCookiesAttr {
         this.checkSending();
         const cookies_ = this.m_libCurl_impl_.getCookies();
-        return httpCookiesToArray(cookies_)
-            .filter(cookieOptFilter(cookieOpt))
-            .reduce((e: LibCurlCookiesAttr, t: LibCurlCookieAttrArray) => {
+        let arr = httpCookiesToArray(cookies_);
+        if (cookieOpt) {
+            arr = arr.filter(cookieOptFilter(cookieOpt));
+        }
+        return arr.reduce(
+            (e: LibCurlCookiesAttr, t: LibCurlCookieAttrArray) => {
                 e.set(t[5], {
                     domain: t[0],
                     subDomain: t[1],
@@ -679,7 +690,9 @@ export class LibCurl {
                     value: t[6],
                 } as LibCurlCookieAttrObject);
                 return e;
-            }, new Map<string, LibCurlCookieAttrObject>());
+            },
+            new Map<string, LibCurlCookieAttrObject>(),
+        );
     }
 
     /**
@@ -743,6 +756,15 @@ export class LibCurl {
     public getResponseContentLength(): number {
         this.checkSending();
         return this.m_libCurl_impl_.getResponseContentLength();
+    }
+
+    /**
+     *
+     * @returns 返回传输层编码正文大小(未解压前)
+     */
+    public getResponseEncodedBodySize(): number {
+        this.checkSending();
+        return this.m_libCurl_impl_.getResponseEncodedBodySize();
     }
 
     /**
@@ -815,7 +837,7 @@ export class LibCurl {
         if (!LibCurlJA3TlsVersion[ja3Arr.at(0)]) {
             throw new LibCurlError("ja3 fingerprint tlsVersion no support");
         }
-        let tls13_ciphers = [];
+        let tls13_ciphers: number[] = [];
         const cipherArr = ja3Arr
             .at(1)
             .split("-")
@@ -928,7 +950,7 @@ export class LibCurl {
 
     public setSSLCert(
         certBlob: LibCurlSSLBlob,
-        privateKeyBlob: LibCurlSSLBlob = null,
+        privateKeyBlob?: LibCurlSSLBlob,
         type: LibCurlSSLCertType = "PEM",
         password: string = "",
     ): void {
@@ -947,7 +969,7 @@ export class LibCurl {
         if (!this.m_requestHeaders_.has("Cookie")) {
             this.setRequestHeader("Cookie", "");
         }
-        if (this.m_nextRequestHeadersOrderMap) {
+        if (this.m_nextRequestHeadersOrderMap.size > 0) {
             const keys = this.m_requestHeaders_.keys();
             const sortedKeys = this.m_nextRequestHeadersOrderMap
                 .keys()
@@ -962,7 +984,7 @@ export class LibCurl {
                 );
             }
             this.m_requestHeaders_.clear();
-            this.m_nextRequestHeadersOrderMap = null;
+            this.m_nextRequestHeadersOrderMap = new CaseInsensitiveMap();
             return;
         }
         if (!this.m_autoSortRequestHeaders) {
@@ -987,11 +1009,11 @@ export class LibCurl {
             this.m_chromeVersion,
         );
 
-        const processedFixedPrefixArr = [];
-        const processedFixedSuffixArr = [];
+        const processedFixedPrefixArr: Array<[string, string]> = [];
+        const processedFixedSuffixArr: Array<[string, string]> = [];
 
-        const extraHeaders = [];
-        let customHeaders = [];
+        const extraHeaders: Array<[string, string]> = [];
+        let customHeaders: Array<[string, string]> = [];
         for (const [key, value] of this.m_requestHeaders_.entries()) {
             const _key = (
                 key.at(-1) == ":" ? key.slice(0, -1) : key
@@ -1042,9 +1064,13 @@ export class LibCurl {
                 requestType === "fetch",
             )
             .reduce((e: Array<[string, string]>, key: string) => {
-                const [_key, value] =
+                const found =
                     extraHeaders.find((j) => j[0].toLowerCase() == key) ||
                     customHeaders.find((j) => j[0].toLowerCase() == key);
+                if (!found) {
+                    return e;
+                }
+                const [_key, value] = found;
                 e.push([_key, value]);
                 return e;
             }, []);
@@ -1064,7 +1090,7 @@ export class LibCurl {
      * @param body POST PUT PATCH时 发送的body
      * 当body不为string或uint8array时 此函数将用JSON.stringify转换对象
      */
-    public async send(body?: LibCurlBodyInfo): Promise<undefined> | undefined {
+    public async send(body?: LibCurlBodyInfo): Promise<undefined> {
         this.checkSending();
         this.m_isSending_ = true;
         const isSubmitBody = !["GET", "HEAD", "OPTIONS"].includes(

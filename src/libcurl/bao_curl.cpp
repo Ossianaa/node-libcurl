@@ -344,6 +344,13 @@ curl_off_t BaoCurl::getResponseContentLength()
     return size;
 }
 
+curl_off_t BaoCurl::getResponseEncodedBodySize()
+{
+    curl_off_t size;
+    CHECK_CURLOK(curl_easy_getinfo(this->m_pCURL, CURLINFO_SIZE_DOWNLOAD_T, &size));
+    return size;
+}
+
 void BaoCurl::setInterface(std::string &network)
 {
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_INTERFACE, network.c_str()));

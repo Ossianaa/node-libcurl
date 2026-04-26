@@ -26,7 +26,7 @@ export const httpCookiesToArray: (
     /* Expiry in epoch time format. 0 == Session */
     /* Name */
     /* Value */
-    const cookies_ = [];
+    const cookies_: LibCurlCookieAttrArray[] = [];
     for (const it of cookies.split("\n")) {
         if (!it) {
             continue;
@@ -48,7 +48,7 @@ export const httpCookiesToArray: (
 
 const getSubdomains = (domain: string) => {
     const subdomains = domain.split(".");
-    const subdomainList = [];
+    const subdomainList: string[] = [];
 
     for (let i = 0; i < subdomains.length - 1; i++) {
         const domain_ = subdomains.slice(i).join(".");
