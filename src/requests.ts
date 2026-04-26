@@ -47,8 +47,8 @@ class requestsResponse implements requestsResponseImp {
     private responseHeadersMap: Headers;
     private responseStatus: number;
     private responseContentLength: number;
-    private responseText: string;
-    private responseJson: object;
+    private responseText?: string;
+    private responseJson?: object;
     constructor(curl: LibCurl) {
         this.responseBody = curl.getResponseBody();
         this.responseHeaders = curl.getResponseHeaders();
@@ -58,13 +58,13 @@ class requestsResponse implements requestsResponseImp {
     }
 
     public get text(): string {
-        return (this.responseText ||= new TextDecoder().decode(
+        return (this.responseText ??= new TextDecoder().decode(
             this.responseBody,
         ));
     }
 
     public get json(): object {
-        return (this.responseJson ||= JSON.parse(this.text));
+        return (this.responseJson ??= JSON.parse(this.text));
     }
 
     public get buffer(): Uint8Array {
@@ -179,7 +179,7 @@ const assignURLSearchParam = (
 };
 
 export class requests {
-    private option: requestsInitOption;
+    private option: requestsInitOption & { instance: LibCurl };
     private defaultRequestsHeaders: LibCurlHeadersInfo | null = null;
     protected retryOption: requestsRetryOption = {
         retryNum: 0,
@@ -189,7 +189,10 @@ export class requests {
     };
 
     constructor(option: requestsInitOption = {}) {
-        this.option = { ...option };
+        this.option = {
+            ...option,
+            instance: option.instance || new LibCurl(),
+        };
         const {
             cookies,
             timeout,
@@ -204,7 +207,7 @@ export class requests {
             sslVerify,
             requestType,
         } = option;
-        const curl = (this.option.instance ||= new LibCurl());
+        const curl = this.option.instance;
         if (cookies) {
             if (Array.isArray(cookies)) {
                 cookies.forEach((cookies) => {
@@ -407,7 +410,7 @@ export class requests {
                 !(data instanceof Uint8Array)
             ) {
                 sendData = Object.keys(data)
-                    .map((e) => {
+                    .map((e): [string, string] => {
                         const value = data[e];
                         const type = typeof value;
                         if (
@@ -454,8 +457,9 @@ export class requests {
         url: LibCurlURLInfo,
         requestOpt?: requestsOption,
     ): Promise<requestsResponse> {
-        let isSuccess = false,
-            resp: requestsResponse;
+        let isSuccess = false;
+        let resp: requestsResponse | null = null;
+        let lastError: Error | undefined;
         const { retryNum, conditionCallback } = this.retryOption;
         if (retryNum == 0) {
             return this.sendRequest(method, url, requestOpt);
@@ -467,14 +471,21 @@ export class requests {
                 if (isSuccess) {
                     break;
                 }
-            } catch (error) {
-                isSuccess = await conditionCallback(null, error);
+            } catch (error: unknown) {
+                lastError =
+                    error instanceof Error
+                        ? error
+                        : new Error(String(error));
+                isSuccess = await conditionCallback(null, lastError);
                 if (isSuccess) {
                     break;
                 }
             }
         }
-        if (!isSuccess) {
+        if (!isSuccess || !resp) {
+            if (lastError) {
+                throw lastError;
+            }
             throw new LibCurlError(`failed after ${retryNum} retries`);
         }
         return resp;

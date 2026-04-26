@@ -9,24 +9,21 @@
     "rootDir": "src",
     "outDir": "dist",
     "typeRoots": [
-      "./typings",
       "./node_modules/@types"
+    ],
+    "types": [
+      "node"
     ],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
-  "lib": [
-    "es2019",
-    "es2017",
-    "es7",
-    "es6",
-    "dom"
-  ],
   "include": [
-    "src/*"
+    "src/**/*"
   ],
   "exclude": [
-    
+    "node_modules",
+    "dist"
   ]
 }
