@@ -870,10 +870,6 @@ export class LibCurl {
             })
             .map((e) => parseInt(e));
         const extension_permutation = extensions.map((extension) => {
-            if (extension == 41) {
-                //pre-shared-key
-                return 127;
-            }
             const pos = LibCurlBoringSSLExtensionPermutation.indexOf(extension);
             if (pos == -1) {
                 throw new LibCurlError(
