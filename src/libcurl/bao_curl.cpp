@@ -21,6 +21,26 @@
 
 NAMESPACE_BAO_START
 
+static size_t read_func(char *dest, size_t size, size_t nmemb, void *userp)
+{
+  UploadBuffer_st *wt = (UploadBuffer_st *)userp;
+  if (!wt) return 0;
+  size_t buffer_max = size * nmemb;
+
+  if(wt->sizeleft) {
+    size_t copy_amt = wt->sizeleft;
+    if(copy_amt > buffer_max)
+      copy_amt = buffer_max;
+
+    memcpy(dest, wt->readptr, copy_amt);
+    wt->readptr += copy_amt;
+    wt->sizeleft -= copy_amt;
+    return copy_amt;
+  }
+
+  return 0;
+}
+
 size_t write_func(void *ptr, size_t size, size_t nmemb, std::string &stream)
 {
     const size_t resize = size * nmemb;
@@ -73,6 +93,7 @@ void BaoCurl::init()
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PRIVATE, this));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SHARE, this->m_pSHARE));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_UNRESTRICTED_AUTH, 1L));
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_READFUNCTION, read_func));
     setHttp2NextStreamId(1);
     this->setTimeout(15, 15);
 }
@@ -194,8 +215,11 @@ void BaoCurl::sendByte(const char *data, const int len)
         {
             memcpy((void *)m_postdata.get(), data, len);
         };
-        CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDS, m_postdata.get()));
-        CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDSIZE, len));
+        this->wt = std::make_unique<UploadBuffer_st>();
+        this->wt->readptr = (const char *)m_postdata.get();
+        this->wt->sizeleft = len;
+        CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_READDATA, this->wt.get()));
+        CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)this->wt->sizeleft));
     }
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_NOBODY, this->m_method == "HEAD" ? 1L : 0L));
 }

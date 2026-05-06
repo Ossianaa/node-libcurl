@@ -16,6 +16,11 @@ struct Stream_st
     std::string responseText;
 };
 
+struct UploadBuffer_st {
+  const char *readptr;
+  size_t sizeleft;
+};
+
 class BaoCurl
 {
 public:
@@ -88,6 +93,7 @@ private:
     BaoCurlOnPublishCallback m_publishCallback = nullptr;
     void init();
 
+    std::unique_ptr<UploadBuffer_st> wt;
     std::unique_ptr<const char[]> m_postdata;
 };
 
