@@ -74,6 +74,15 @@ async function createServer() {
         });
     });
 
+    app.put("/echo", (req, res) => {
+        res.json({
+            ok: true,
+            method: req.method,
+            contentType: req.headers["content-type"] || "",
+            body: req.body,
+        });
+    });
+
     const server = http.createServer(app);
     await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
     const address = server.address();
@@ -146,6 +155,25 @@ async function runFetchTests(baseUrl) {
     const formPayload = await formResp.json();
     assert.strictEqual(formPayload.body.a, "1");
     assert.strictEqual(formPayload.body.b, "two");
+
+    const putResp = await fetch(`${baseUrl}/echo`, {
+        instance: sharedInstance,
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            putKey: "putValue",
+            count: 1,
+        }),
+    });
+    assert.strictEqual(putResp.status(), 200);
+    const putPayload = await putResp.json();
+    assert.strictEqual(putPayload.ok, true);
+    assert.strictEqual(putPayload.method, "PUT");
+    assert.strictEqual(putPayload.body.putKey, "putValue");
+    assert.strictEqual(putPayload.body.count, 1);
+    assert.ok(/application\/json/i.test(putPayload.contentType));
 }
 
 async function runRequestsTests(baseUrl) {
@@ -182,6 +210,19 @@ async function runRequestsTests(baseUrl) {
     assert.strictEqual(postResp.json.method, "POST");
     assert.strictEqual(postResp.json.body.foo, "bar");
     assert.ok(/application\/json/i.test(postResp.json.contentType));
+
+    const putResp = await session.put(`${baseUrl}/echo`, {
+        json: {
+            foo: "baz",
+            n: 7,
+        },
+    });
+    assert.strictEqual(putResp.status, 200);
+    assert.strictEqual(putResp.json.ok, true);
+    assert.strictEqual(putResp.json.method, "PUT");
+    assert.strictEqual(putResp.json.body.foo, "baz");
+    assert.strictEqual(putResp.json.body.n, 7);
+    assert.ok(/application\/json/i.test(putResp.json.contentType));
 
     const formResp = await session.post(`${baseUrl}/echo-form`, {
         data: {

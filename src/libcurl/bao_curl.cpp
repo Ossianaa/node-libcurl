@@ -214,12 +214,20 @@ void BaoCurl::sendByte(const char *data, const int len)
         if (len != 0)
         {
             memcpy((void *)m_postdata.get(), data, len);
-        };
+        }
         this->wt = std::make_unique<UploadBuffer_st>();
         this->wt->readptr = (const char *)m_postdata.get();
         this->wt->sizeleft = len;
         CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_READDATA, this->wt.get()));
-        CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)this->wt->sizeleft));
+        if (this->m_method == "PUT" || this->m_method == "PATCH" || this->m_method == "DELETE")
+        {
+            CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_UPLOAD, 1L));
+            CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_INFILESIZE_LARGE, (curl_off_t)this->wt->sizeleft));
+        }
+        else
+        {
+            CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)this->wt->sizeleft));
+        }
     }
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_NOBODY, this->m_method == "HEAD" ? 1L : 0L));
 }
