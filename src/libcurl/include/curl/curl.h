@@ -2216,6 +2216,9 @@ typedef enum {
   CURLOPT(CURLOPT_HTTP2_WINDOW_UPDATE, CURLOPTTYPE_LONG, 327),
   CURLOPT(CURLOPT_HTTP2_STREAMS, CURLOPTTYPE_STRINGPOINT, 328),
   CURLOPT(CURLOPT_HTTP2_STREAM_ID, CURLOPTTYPE_LONG, 329),
+  /* Specify preferred signature algorithms for certificate verification
+     (BoringSSL-only). Comma-separated list as a single string. */
+  CURLOPT(CURLOPT_TLS_VERIFY_SIGALGS, CURLOPTTYPE_STRINGPOINT, 330),
   CURLOPT_LASTENTRY /* the last unused */
 } CURLoption;
 
@@ -2947,7 +2950,8 @@ typedef enum {
   CURLINFO_CAPATH           = CURLINFO_STRING + 62,
   CURLINFO_XFER_ID          = CURLINFO_OFF_T + 63,
   CURLINFO_CONN_ID          = CURLINFO_OFF_T + 64,
-  CURLINFO_LASTONE          = 64
+  CURLINFO_SSL_SEESION_TICKET = CURLINFO_STRING + 65,
+  CURLINFO_LASTONE          = 65
 } CURLINFO;
 
 /* CURLINFO_RESPONSE_CODE is the new name for the option previously known as
