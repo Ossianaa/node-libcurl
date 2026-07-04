@@ -317,6 +317,11 @@ void BaoCurl::setSSLVerify(std::string &caPath)
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_VERIFYHOST, 1L));
 }
 
+void BaoCurl::setTLSVerifySigalgs(std::string &sigalgs)
+{
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_VERIFY_SIGALGS, sigalgs.c_str()));
+}
+
 void BaoCurl::setRedirect(bool enable)
 {
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_FOLLOWLOCATION, enable));

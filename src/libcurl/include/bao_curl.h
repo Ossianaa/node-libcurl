@@ -55,6 +55,7 @@ public:
     std::string getLastEffectiveUrl();
 
     void setSSLVerify(std::string &caPath);
+    void setTLSVerifySigalgs(std::string &sigalgs);
     void setRedirect(bool enable);
     void setVerbose(bool enable);
     void setInterface(std::string& network);

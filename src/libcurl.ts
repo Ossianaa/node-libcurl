@@ -80,7 +80,7 @@ export type LibCurlJA3FingerPrintImpl =
     | "chrome124"
     | "chrome131"
     | "chrome133"
-    // | "chrome146"
+    | "chrome150"
     | "auto";
 export type LibCurlAkamaiFingerPrintImpl =
     | "chrome99"
@@ -94,31 +94,62 @@ const randomStringExtensions = (exts: string) =>
         .sort(() => (Math.random() > 0.5 ? 1 : -1))
         .join("-");
 
+type LibCurlJA3FingerPrintConfig = [
+    ja3String: string,
+    tlsVerifySigalgs: LibCurlTLSVerifySigalgsInfo,
+];
+
 const LibCurlJA3FingerPrintImplMap: {
     [K in LibCurlJA3FingerPrintImpl]: K extends Exclude<
         LibCurlJA3FingerPrintImpl,
         "auto"
     >
-        ? () => string
-        : (chromeVersion: number) => string;
+        ? () => LibCurlJA3FingerPrintConfig
+        : (chromeVersion: number) => LibCurlJA3FingerPrintConfig;
 } = {
-    chrome99: () =>
+    chrome99: () => [
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21-41,29-23-24,0`,
-    chrome101: () =>
+        [],
+    ],
+    chrome101: () => [
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-21-41,29-23-24,0`,
-    chrome110: () =>
+        [],
+    ],
+    chrome110: () => [
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-21")}-41,29-23-24,0`,
-    chrome124: () =>
+        [],
+    ],
+    chrome124: () => [
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-65037-21")}-41,25497-29-23-24,0`,
-    chrome131: () =>
+        [],
+    ],
+    chrome131: () => [
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513-65037-21")}-41,4588-29-23-24,0`,
-    chrome133: () =>
+        [],
+    ],
+    chrome133: () => [
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-65037-21")}-41,4588-29-23-24,0`,
-    // chrome146: () =>
-    //     `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-65037-51764-21")}-41,4588-29-23-24,0`,
+        [],
+    ],
+    chrome150: () => [
+        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-65037-21")}-41,4588-29-23-24,0`,
+        [
+            "ml_dsa_44",
+            "ml_dsa_65",
+            "ml_dsa_87",
+            "ecdsa_secp256r1_sha256",
+            "rsa_pss_rsae_sha256",
+            "rsa_pkcs1_sha256",
+            "ecdsa_secp384r1_sha384",
+            "rsa_pss_rsae_sha384",
+            "rsa_pkcs1_sha384",
+            "rsa_pss_rsae_sha512",
+            "rsa_pkcs1_sha512",
+        ],
+    ],
     auto(chromeVersion?: number) {
         if (!chromeVersion) {
-            return this.chrome133();
+            return this.chrome150();
         }
         if (chromeVersion < 101) {
             return this.chrome99();
@@ -130,10 +161,10 @@ const LibCurlJA3FingerPrintImplMap: {
             return this.chrome124();
         } else if (chromeVersion < 133) {
             return this.chrome131();
-        } /* else if (chromeVersion < 146) {
+        } else if (chromeVersion < 150) {
             return this.chrome133();
-        }  */ else {
-            return this.chrome133();
+        } else {
+            return this.chrome150();
         }
     },
 };
@@ -325,6 +356,34 @@ export enum LibCurlJA3Extension {
     TLSEXT_TYPE_trust_anchors = 0xca34,
 }
 
+export enum LibCurlTLSVerifySigalgs {
+    "rsa_pkcs1_sha1" = 0x0201, // SSL_SIGN_RSA_PKCS1_SHA1
+    "rsa_pkcs1_sha256" = 0x0401, // SSL_SIGN_RSA_PKCS1_SHA256
+    "rsa_pkcs1_sha384" = 0x0501, // SSL_SIGN_RSA_PKCS1_SHA384
+    "rsa_pkcs1_sha512" = 0x0601, // SSL_SIGN_RSA_PKCS1_SHA512
+    "ecdsa_sha1" = 0x0203, // SSL_SIGN_ECDSA_SHA1
+    "ecdsa_secp256r1_sha256" = 0x0403, // SSL_SIGN_ECDSA_SECP256R1_SHA256
+    "ecdsa_secp384r1_sha384" = 0x0503, // SSL_SIGN_ECDSA_SECP384R1_SHA384
+    "ecdsa_secp521r1_sha512" = 0x0603, // SSL_SIGN_ECDSA_SECP521R1_SHA512
+    "rsa_pss_rsae_sha256" = 0x0804, // SSL_SIGN_RSA_PSS_RSAE_SHA256
+    "rsa_pss_rsae_sha384" = 0x0805, // SSL_SIGN_RSA_PSS_RSAE_SHA384
+    "rsa_pss_rsae_sha512" = 0x0806, // SSL_SIGN_RSA_PSS_RSAE_SHA512
+    "ed25519" = 0x0807, // SSL_SIGN_ED25519
+    "ml_dsa_44" = 0x0904, // SSL_SIGN_ML_DSA_44
+    "ml_dsa_65" = 0x0905, // SSL_SIGN_ML_DSA_65
+    "ml_dsa_87" = 0x0906, // SSL_SIGN_ML_DSA_87
+    "rsa_pkcs1_sha256_legacy" = 0x0420, // SSL_SIGN_RSA_PKCS1_SHA256_LEGACY
+    "rsa_pkcs1_md5_sha1" = 0xff01, // SSL_SIGN_RSA_PKCS1_MD5_SHA1
+}
+
+export type LibCurlTLSVerifySigalgsInfo =
+    | string
+    | Array<
+          | LibCurlTLSVerifySigalgs
+          | number
+          | keyof typeof LibCurlTLSVerifySigalgs
+      >;
+
 export enum LibCurlJA3SupportGroup {
     "P-256" = 23,
     "P-384" = 24,
@@ -455,7 +514,37 @@ export class LibCurl {
         new CaseInsensitiveMap();
     private m_requestType: LibCurlRequestType = "fetch";
     private m_nextRequestType: LibCurlRequestType | null = null;
-    private m_chromeVersion: number = 133;
+    private m_chromeVersion: number = 150;
+    private m_hasCustomTLSVerifySigalgs: boolean = false;
+
+    private formatTLSVerifySigalgs(
+        sigalgs: LibCurlTLSVerifySigalgsInfo,
+    ): string {
+        if (typeof sigalgs === "string") {
+            return sigalgs;
+        }
+        return sigalgs
+            .map((sigalg) => {
+                if (typeof sigalg === "number") {
+                    return `0x${sigalg.toString(16).padStart(4, "0")}`;
+                }
+                if (typeof sigalg === "string") {
+                    if (sigalg.startsWith("0x") || sigalg.startsWith("0X")) {
+                        return sigalg;
+                    }
+                    const value =
+                        LibCurlTLSVerifySigalgs[
+                            sigalg as keyof typeof LibCurlTLSVerifySigalgs
+                        ];
+                    if (typeof value === "number") {
+                        return `0x${value.toString(16).padStart(4, "0")}`;
+                    }
+                    return sigalg;
+                }
+                return String(sigalg);
+            })
+            .join(",");
+    }
 
     constructor() {
         this.m_libCurl_impl_ = new BaoLibCurl();
@@ -776,6 +865,20 @@ export class LibCurl {
         this.m_libCurl_impl_.setSSLVerify(config.caPath);
     }
 
+    public setTLSVerifySigalgs(sigalgs: LibCurlTLSVerifySigalgsInfo): void {
+        this.checkSending();
+        this.m_hasCustomTLSVerifySigalgs = true;
+        this.applyTLSVerifySigalgs(sigalgs);
+    }
+
+    private applyTLSVerifySigalgs(sigalgs: LibCurlTLSVerifySigalgsInfo): void {
+        const formatted = this.formatTLSVerifySigalgs(sigalgs);
+        if (!formatted) {
+            return;
+        }
+        this.m_libCurl_impl_.setTLSVerifySigalgs(formatted);
+    }
+
     /**
      *
      * @param enable 是否允许重定向
@@ -827,9 +930,10 @@ export class LibCurl {
      */
     public setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo = "auto"): void {
         this.checkSending();
-        const ja3Arr = (
-            LibCurlJA3FingerPrintImplMap[ja3]?.(this.m_chromeVersion) || ja3
-        ).split(",");
+        const [ja3String, tlsVerifySigalgs] = LibCurlJA3FingerPrintImplMap[
+            ja3
+        ]?.(this.m_chromeVersion) || [ja3, []];
+        const ja3Arr = ja3String.split(",");
         if (ja3Arr.length != 5) {
             throw new LibCurlError("ja3 fingerprint error");
         }
@@ -901,6 +1005,9 @@ export class LibCurl {
             supportGroups.join(":"),
             0,
         );
+        if (!this.m_hasCustomTLSVerifySigalgs) {
+            this.applyTLSVerifySigalgs(tlsVerifySigalgs);
+        }
     }
 
     /**

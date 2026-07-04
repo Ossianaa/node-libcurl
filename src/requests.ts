@@ -19,6 +19,7 @@ import {
     LibCurlRequestHeadersOrder,
     LibCurlRequestType,
     LibCurlSSLVerifyConfig,
+    LibCurlTLSVerifySigalgsInfo,
 } from "./libcurl";
 import {
     CaseInsensitiveMap,
@@ -140,6 +141,8 @@ interface requestsInitOption {
     };
 
     sslVerify?: LibCurlSSLVerifyConfig;
+
+    tlsVerifySigalgs?: LibCurlTLSVerifySigalgsInfo;
 }
 
 type requestsParamsInfo = URLSearchParams | string | { [key: string]: string };
@@ -160,6 +163,7 @@ interface requestsOption {
     };
     headersOrder?: LibCurlRequestHeadersOrder;
     requestType?: LibCurlRequestType;
+    tlsVerifySigalgs?: LibCurlTLSVerifySigalgsInfo;
 }
 
 interface requestsStaticOption
@@ -212,6 +216,7 @@ export class requests {
             defaultRequestHeaders,
             sslCert,
             sslVerify,
+            tlsVerifySigalgs,
             requestType,
         } = option;
         const curl = this.option.instance;
@@ -271,6 +276,9 @@ export class requests {
         if (typeof sslVerify != "undefined") {
             curl.setSSLVerify(sslVerify);
         }
+        if (typeof tlsVerifySigalgs != "undefined") {
+            curl.setTLSVerifySigalgs(tlsVerifySigalgs);
+        }
     }
 
     public setDefaultRequestHeaders(headers: LibCurlHeadersInfo) {
@@ -305,6 +313,7 @@ export class requests {
             h2config,
             headersOrder,
             requestType,
+            tlsVerifySigalgs,
         } = requestOpt || {};
 
         if (data && json) {
@@ -347,6 +356,9 @@ export class requests {
         }
         curl.setJA3Fingerprint(ja3);
         curl.setAkamaiFingerprint(akamai);
+        if (typeof tlsVerifySigalgs != "undefined") {
+            curl.setTLSVerifySigalgs(tlsVerifySigalgs);
+        }
 
         if (h2config) {
             if (typeof h2config.streamId == "number") {

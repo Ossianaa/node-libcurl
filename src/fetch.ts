@@ -15,6 +15,7 @@ import {
     LibCurlSSLCertType,
     LibCurlSSLBlob,
     LibCurlSSLVerifyConfig,
+    LibCurlTLSVerifySigalgsInfo,
 } from "./libcurl";
 import { libcurlSetCookies } from "./utils";
 
@@ -50,6 +51,7 @@ interface LibCurlRequestInfo {
     };
 
     sslVerify?: LibCurlSSLVerifyConfig;
+    tlsVerifySigalgs?: LibCurlTLSVerifySigalgsInfo;
 }
 
 interface LibCurlResponseInfo {
@@ -87,6 +89,7 @@ export async function fetch(
         autoSortRequestHeaders,
         sslCert,
         sslVerify,
+        tlsVerifySigalgs,
     } = request;
     curl.open(method, url + "");
     if (headers) {
@@ -133,6 +136,9 @@ export async function fetch(
     }
     if (typeof sslVerify != "undefined") {
         curl.setSSLVerify(sslVerify);
+    }
+    if (typeof tlsVerifySigalgs != "undefined") {
+        curl.setTLSVerifySigalgs(tlsVerifySigalgs);
     }
     await curl.send(body);
     return {

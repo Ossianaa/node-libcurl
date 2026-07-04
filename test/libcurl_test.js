@@ -1,7 +1,12 @@
 const assert = require("assert");
 const http = require("http");
 const express = require("express");
-const { requests, fetch, LibCurl } = require("../dist/index");
+const {
+    requests,
+    fetch,
+    LibCurl,
+    LibCurlTLSVerifySigalgs,
+} = require("../dist/index");
 
 async function createServer() {
     const app = express();
@@ -97,12 +102,20 @@ async function createServer() {
 
 async function runFetchTests(baseUrl) {
     const sharedInstance = new LibCurl();
+    sharedInstance.setTLSVerifySigalgs([
+        LibCurlTLSVerifySigalgs.ml_dsa_44,
+        LibCurlTLSVerifySigalgs.ecdsa_secp256r1_sha256,
+    ]);
 
     const response = await fetch(`${baseUrl}/json?a=1`, {
         instance: sharedInstance,
         headers: {
             "x-client": "fetch-test",
         },
+        tlsVerifySigalgs: [
+            LibCurlTLSVerifySigalgs.ml_dsa_65,
+            "0x0403",
+        ],
     });
 
     assert.strictEqual(response.status(), 200);
@@ -181,12 +194,20 @@ async function runRequestsTests(baseUrl) {
         defaultRequestHeaders: {
             "x-default": "requests-test",
         },
+        tlsVerifySigalgs: [
+            LibCurlTLSVerifySigalgs.ml_dsa_87,
+            "0x0804",
+        ],
     });
 
     const headersResp = await session.get(`${baseUrl}/headers`, {
         headers: {
             "x-client": "requests-client",
         },
+        tlsVerifySigalgs: [
+            LibCurlTLSVerifySigalgs.rsa_pkcs1_sha256,
+            "0x0805",
+        ],
     });
     assert.strictEqual(headersResp.status, 200);
     assert.strictEqual(headersResp.json["x-default"], "requests-test");

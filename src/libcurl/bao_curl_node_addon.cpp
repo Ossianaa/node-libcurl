@@ -46,6 +46,7 @@ private:
     Napi::Value getLastEffectiveUrl(const Napi::CallbackInfo &info);
     Napi::Value getLastCode(const Napi::CallbackInfo &info);
     Napi::Value getLastCodeError(const Napi::CallbackInfo &info);
+    Napi::Value setTLSVerifySigalgs(const Napi::CallbackInfo &info);
 
     static Napi::Value globalInit(const Napi::CallbackInfo &info);
     static Napi::Value globalCleanup(const Napi::CallbackInfo &info);
@@ -286,6 +287,7 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod<&BaoLibCurlWarp::getLastEffectiveUrl>("getLastEffectiveUrl", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::getLastCode>("getLastCode", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::getLastCodeError>("getLastCodeError", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&BaoLibCurlWarp::setTLSVerifySigalgs>("setTLSVerifySigalgs", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setInterface>("setInterface", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setJA3Fingerprint>("setJA3Fingerprint", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setAkamaiFingerprint>("setAkamaiFingerprint", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -540,6 +542,20 @@ Napi::Value BaoLibCurlWarp::setSSLVerify(const Napi::CallbackInfo &info)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     std::string caPath = info[0].As<Napi::String>().Utf8Value();
     this->m_curl.setSSLVerify(caPath);
+    return env.Undefined();
+}
+
+/*
+    setTLSVerifySigalgs(string)
+*/
+Napi::Value BaoLibCurlWarp::setTLSVerifySigalgs(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+    size_t argsLen = info.Length();
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setTLSVerifySigalgs", 1, argsLen)
+    REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
+    std::string sigalgs = info[0].As<Napi::String>().Utf8Value();
+    this->m_curl.setTLSVerifySigalgs(sigalgs);
     return env.Undefined();
 }
 
