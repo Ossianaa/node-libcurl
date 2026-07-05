@@ -1,72 +1,124 @@
 name: Publish
 
 permissions:
-  contents: write
-  id-token: write
+    contents: write
+    id-token: write
 
 on:
-  push:
-    tags:
-      - v*
+    push:
+        tags:
+            - v*
 
 jobs:
-  Build:
-    name: Build Package
-    strategy:
-      fail-fast: false
-      matrix:
-        settings:
-          - host: ubuntu-22.04
-            target: x86_64-unknown-linux-gnu
-          - host: windows-2022
-            target: x86_64-pc-windows-msvc
-          - host: macos-latest
-            target: x86_64-apple-darwin
-          - host: macos-latest
-            target: aarch64-apple-darwin
-            setup: |
-              sudo rm -Rf /Library/Developer/CommandLineTools/SDKs/*;
-              export CC=$(xcrun -f clang);
-              export CXX=$(xcrun -f clang++);
-              SYSROOT=$(xcrun --sdk macosx --show-sdk-path);
-              export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT";
-            arch: arm64
-          - host: ubuntu-22.04
-            target: aarch64-unknown-linux-gnu
-            setup: |
-              sudo apt-get update
-              sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-              export CC=aarch64-linux-gnu-gcc
-              export CXX=aarch64-linux-gnu-g++
-              export AR=aarch64-linux-gnu-ar
-              export AS=aarch64-linux-gnu-as
-              export LD=aarch64-linux-gnu-ld
-              export STRIP=aarch64-linux-gnu-strip
-              sudo cp /usr/bin/aarch64-linux-gnu-gcc /usr/bin/gcc
-              sudo cp /usr/bin/aarch64-linux-gnu-g++ /usr/bin/g++
-              sudo cp /usr/bin/aarch64-linux-gnu-ar /usr/bin/ar
-              sudo cp /usr/bin/aarch64-linux-gnu-as /usr/bin/as
-              sudo cp /usr/bin/aarch64-linux-gnu-ld /usr/bin/ld
-              sudo cp /usr/bin/aarch64-linux-gnu-strip /usr/bin/strip
-            arch: arm64
+    Build:
+        name: Build Package
+        strategy:
+            fail-fast: false
+            matrix:
+                settings:
+                    - host: ubuntu-22.04
+                      target: x86_64-unknown-linux-gnu
+                    - host: windows-2022
+                      target: x86_64-pc-windows-msvc
+                    - host: macos-latest
+                      target: x86_64-apple-darwin
+                    - host: macos-latest
+                      target: aarch64-apple-darwin
+                      setup: |
+                          sudo rm -Rf /Library/Developer/CommandLineTools/SDKs/*;
+                          export CC=$(xcrun -f clang);
+                          export CXX=$(xcrun -f clang++);
+                          SYSROOT=$(xcrun --sdk macosx --show-sdk-path);
+                          export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT";
+                      arch: arm64
+                    - host: ubuntu-22.04
+                      target: aarch64-unknown-linux-gnu
+                      setup: |
+                          sudo apt-get update
+                          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+                          export CC=aarch64-linux-gnu-gcc
+                          export CXX=aarch64-linux-gnu-g++
+                          export AR=aarch64-linux-gnu-ar
+                          export AS=aarch64-linux-gnu-as
+                          export LD=aarch64-linux-gnu-ld
+                          export STRIP=aarch64-linux-gnu-strip
+                          sudo cp /usr/bin/aarch64-linux-gnu-gcc /usr/bin/gcc
+                          sudo cp /usr/bin/aarch64-linux-gnu-g++ /usr/bin/g++
+                          sudo cp /usr/bin/aarch64-linux-gnu-ar /usr/bin/ar
+                          sudo cp /usr/bin/aarch64-linux-gnu-as /usr/bin/as
+                          sudo cp /usr/bin/aarch64-linux-gnu-ld /usr/bin/ld
+                          sudo cp /usr/bin/aarch64-linux-gnu-strip /usr/bin/strip
+                      arch: arm64
 
-    runs-on: ${{ matrix.settings.host }}
+        runs-on: ${{ matrix.settings.host }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4.1.0
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 18
+            - name: Setup Python
+              uses: actions/setup-python@v4.7.1
+              with:
+                  python-version: "3.9"
+            - name: Setup env
+              if: ${{ matrix.settings.setup }}
+              shell: bash
+              run: ${{ matrix.settings.setup }}
+            - name: Install
+              run: npm install --arch=${{ matrix.settings.arch }}
+            - name: Gyp rebuild
+              run: node ./scripts/rebuild.js --arch=${{ matrix.settings.arch }} && npx node-gyp rebuild --arch=${{ matrix.settings.arch }}
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: bindings-${{ matrix.settings.target }}
+                  path: |
+                      ./build/Release/*.node
+                      ./build/Release/*.dll
+                  if-no-files-found: error
+
+Publish:
+    name: Publish artifact to npm
+    runs-on: ubuntu-latest
+    needs:
+        - Build
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - name: Setup Python
-        uses: actions/setup-python@v4.7.1
-        with:
-          python-version: "3.9"
-      - name: Setup env
-        if: ${{ matrix.settings.setup }}
-        shell: bash
-        run: ${{ matrix.settings.setup }}
-      - name: Install
-        run: npm install --arch=${{ matrix.settings.arch }}
-      - name: Gyp rebuild
-        run: node ./scripts/rebuild.js --arch=${{ matrix.settings.arch }} && npx node-gyp rebuild --arch=${{ matrix.settings.arch }}
+        - uses: actions/checkout@v4.1.0
+        - name: Setup node
+          uses: actions/setup-node@v4
+          with:
+              node-version: 18
+        - name: Set release name
+          run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        - name: Set npm token
+          run: |
+              npm config set provenance true
+              echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+          env:
+              NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        - name: Download all artifacts
+          uses: actions/download-artifact@v4
+          with:
+              path: artifacts
+        - name: List binaries
+          run: ls -R artifacts
+          shell: bash
+        - name: Move binaries
+          shell: bash
+          run: |
+              npm run artifacts
+        - name: Publish binaries
+          shell: bash
+          run: |
+              npm run publish-binding
+        - name: Convert to js
+          shell: bash
+          run: |
+              npm install --ignore-scripts
+              npx tsc
+        - name: Publish Core to npm
+          shell: bash
+          run: |
+              npm run publish-core
