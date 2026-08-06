@@ -272,7 +272,7 @@ export type LibCurlJA3FingerPrintInfo = string | LibCurlJA3FingerPrintImpl;
 export type LibCurlAkamaiFingerPrintInfo =
     | string
     | LibCurlAkamaiFingerPrintImpl;
-export type LibCurlHttp3FingerPrintImpl = "chrome150" | "auto";
+export type LibCurlHttp3FingerPrintImpl = "chrome126" | "chrome150" | "auto";
 type LibCurlHttp3FingerPrintConfig = {
     scid: string;
     settings: string;
@@ -293,6 +293,16 @@ const LibCurlHttp3FingerPrintImplMap: {
         ? () => LibCurlHttp3FingerPrintConfig
         : (chromeVersion: number) => LibCurlHttp3FingerPrintConfig;
 } = {
+    chrome126: () => ({
+        scid: "scid=0",
+        settings: "1:65536;6:262144;7:100;51:1;GREASE",
+        transport_params:
+            "9:103;15:AUTO;7:6291456;4:15728640;1:30000;6:6291456;18258:1;GREASE;8:100;16741339:1@1,GREASE;3:1472;32:65536;5:6291456",
+        tls: "ciphers=1,2,3;alps=h3;grease=off;rand=on",
+        permutation: "7,0,14,19,15,9,4,24,17,21,1",
+        verify_sigalgs:
+            "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201",
+    }),
     chrome150: () => ({
         scid: "scid=0",
         settings: "1:65536;6:262144;7:100;51:1;GREASE",
@@ -306,6 +316,9 @@ const LibCurlHttp3FingerPrintImplMap: {
     auto(chromeVersion?: number) {
         if (!chromeVersion) {
             return this.chrome150();
+        }
+        if (chromeVersion < 150) {
+            return this.chrome126();
         }
         return this.chrome150();
     },
