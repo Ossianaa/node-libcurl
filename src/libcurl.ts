@@ -272,6 +272,44 @@ export type LibCurlJA3FingerPrintInfo = string | LibCurlJA3FingerPrintImpl;
 export type LibCurlAkamaiFingerPrintInfo =
     | string
     | LibCurlAkamaiFingerPrintImpl;
+export type LibCurlHttp3FingerPrintImpl = "chrome150" | "auto";
+type LibCurlHttp3FingerPrintConfig = {
+    scid: string;
+    settings: string;
+    transport_params: string;
+    tls: string;
+    permutation: string;
+    verify_sigalgs: string;
+};
+export type LibCurlHttp3FingerPrintInfo =
+    | LibCurlHttp3FingerPrintConfig
+    | LibCurlHttp3FingerPrintImpl;
+
+const LibCurlHttp3FingerPrintImplMap: {
+    [K in LibCurlHttp3FingerPrintImpl]: K extends Exclude<
+        LibCurlHttp3FingerPrintImpl,
+        "auto"
+    >
+        ? () => LibCurlHttp3FingerPrintConfig
+        : (chromeVersion: number) => LibCurlHttp3FingerPrintConfig;
+} = {
+    chrome150: () => ({
+        scid: "scid=0",
+        settings: "1:65536;6:262144;7:100;51:1;GREASE",
+        transport_params:
+            "12584:0x4f524947;9:103;1:30000;7:6291456;15:AUTO;4:15728640;GREASE;32:65536;3:1472;17:1@1,GREASE;8:100;6:6291456;12583:174718;5:6291456",
+        tls: "ciphers=1,2,3;alps=h3;grease=off",
+        permutation: "0,15,19,23,9,1,14,21,17,4,7",
+        verify_sigalgs:
+            "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201",
+    }),
+    auto(chromeVersion?: number) {
+        if (!chromeVersion) {
+            return this.chrome150();
+        }
+        return this.chrome150();
+    },
+};
 
 export enum LibCurlJA3TlsVersion {
     TLSv1_2 = 771,
@@ -1028,6 +1066,33 @@ export class LibCurl {
             parseInt(window_update),
             streams,
             pseudo_headers_order.replaceAll(",", ""),
+        );
+    }
+
+    /**
+     * 设置HTTP3指纹
+     */
+    public setHttp3Fingerprint(
+        http3Fingerprint: LibCurlHttp3FingerPrintInfo = "auto",
+    ): void {
+        this.checkSending();
+        const presetConfig =
+            typeof http3Fingerprint == "string"
+                ? LibCurlHttp3FingerPrintImplMap[
+                      http3Fingerprint as LibCurlHttp3FingerPrintImpl
+                  ]?.(this.m_chromeVersion)
+                : undefined;
+        const config = presetConfig || http3Fingerprint;
+        if (typeof config == "string") {
+            throw new LibCurlError("http3 fingerprint no support");
+        }
+        this.m_libCurl_impl_.setHttp3Fingerprint(
+            config.scid,
+            config.settings,
+            config.transport_params,
+            config.tls,
+            config.permutation,
+            config.verify_sigalgs,
         );
     }
 

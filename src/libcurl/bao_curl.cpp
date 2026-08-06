@@ -94,12 +94,19 @@ void BaoCurl::init()
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SHARE, this->m_pSHARE));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_UNRESTRICTED_AUTH, 1L));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_READFUNCTION, read_func));
-    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_QUIC, "scid=0"));
-    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_SETTINGS, "1:65536;6:262144;7:100;51:1;GREASE"));
-    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_TRANSPORT_PARAMS, "12584:0x4f524947;9:103;1:30000;7:6291456;15:AUTO;4:15728640;GREASE;32:65536;3:1472;17:1@1,GREASE;8:100;6:6291456;12583:174718;5:6291456"));
-    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_TLS, "ciphers=1,2,3;alps=h3;grease=off"));
-    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION_HTTP3, "0,15,19,23,9,1,14,21,17,4,7"));
-    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_VERIFY_SIGALGS_HTTP3, "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201"));
+    std::string http3FpQuic = "scid=0";
+    std::string http3FpSettings = "1:65536;6:262144;7:100;51:1;GREASE";
+    std::string http3FpTransportParams = "12584:0x4f524947;9:103;1:30000;7:6291456;15:AUTO;4:15728640;GREASE;32:65536;3:1472;17:1@1,GREASE;8:100;6:6291456;12583:174718;5:6291456";
+    std::string http3FpTls = "ciphers=1,2,3;alps=h3;grease=off";
+    std::string tlsExtensionPermutationHttp3 = "0,15,19,23,9,1,14,21,17,4,7";
+    std::string tlsVerifySigalgsHttp3 = "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201";
+    setHttp3Fingerprint(
+        http3FpQuic,
+        http3FpSettings,
+        http3FpTransportParams,
+        http3FpTls,
+        tlsExtensionPermutationHttp3,
+        tlsVerifySigalgsHttp3);
     setHttp2NextStreamId(1);
     this->setTimeout(15, 15);
 }
@@ -423,6 +430,22 @@ void BaoCurl::setAkamaiFingerprint(
         CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_STREAMS, streams.c_str()));
     }
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_PSEUDO_HEADERS_ORDER, pseudo_headers_order.c_str()));
+}
+
+void BaoCurl::setHttp3Fingerprint(
+    std::string& quic,
+    std::string& settings,
+    std::string& transport_params,
+    std::string& tls,
+    std::string& tls_extension_permutation_http3,
+    std::string& tls_verify_sigalgs_http3)
+{
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_QUIC, quic.c_str()));
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_SETTINGS, settings.c_str()));
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_TRANSPORT_PARAMS, transport_params.c_str()));
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_TLS, tls.c_str()));
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION_HTTP3, tls_extension_permutation_http3.c_str()));
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_VERIFY_SIGALGS_HTTP3, tls_verify_sigalgs_http3.c_str()));
 }
 
 void BaoCurl::setOnPublishCallback(BaoCurlOnPublishCallback callback)

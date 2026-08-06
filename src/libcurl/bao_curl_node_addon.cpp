@@ -34,6 +34,7 @@ private:
     Napi::Value setInterface(const Napi::CallbackInfo &info);
     Napi::Value setJA3Fingerprint(const Napi::CallbackInfo &info);
     Napi::Value setAkamaiFingerprint(const Napi::CallbackInfo &info);
+    Napi::Value setHttp3Fingerprint(const Napi::CallbackInfo &info);
     Napi::Value setHttp2NextStreamId(const Napi::CallbackInfo &info);
     Napi::Value setHttp2StreamWeight(const Napi::CallbackInfo &info);
     Napi::Value setSSLCert(const Napi::CallbackInfo &info);
@@ -291,6 +292,7 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod<&BaoLibCurlWarp::setInterface>("setInterface", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setJA3Fingerprint>("setJA3Fingerprint", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setAkamaiFingerprint>("setAkamaiFingerprint", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&BaoLibCurlWarp::setHttp3Fingerprint>("setHttp3Fingerprint", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setHttp2NextStreamId>("setHttp2NextStreamId", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setHttp2StreamWeight>("setHttp2StreamWeight", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setSSLCert>("setSSLCert", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -686,6 +688,37 @@ Napi::Value BaoLibCurlWarp::setAkamaiFingerprint(const Napi::CallbackInfo &info)
                     window_update,
                     streams,
                     pseudo_headers_order);
+
+    return env.Undefined();
+}
+
+/*
+    setHttp3Fingerprint(string,string,string,string,string,string)
+*/
+Napi::Value BaoLibCurlWarp::setHttp3Fingerprint(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+    size_t argsLen = info.Length();
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setHttp3Fingerprint", 6, argsLen);
+    REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
+    std::string quic = info[0].As<Napi::String>().Utf8Value();
+    REQUEST_TLS_METHOD_CHECK(env, info[1].IsString(), "argument 1 is not a string")
+    std::string settings = info[1].As<Napi::String>().Utf8Value();
+    REQUEST_TLS_METHOD_CHECK(env, info[2].IsString(), "argument 2 is not a string")
+    std::string transport_params = info[2].As<Napi::String>().Utf8Value();
+    REQUEST_TLS_METHOD_CHECK(env, info[3].IsString(), "argument 3 is not a string")
+    std::string tls = info[3].As<Napi::String>().Utf8Value();
+    REQUEST_TLS_METHOD_CHECK(env, info[4].IsString(), "argument 4 is not a string")
+    std::string tls_extension_permutation_http3 = info[4].As<Napi::String>().Utf8Value();
+    REQUEST_TLS_METHOD_CHECK(env, info[5].IsString(), "argument 5 is not a string")
+    std::string tls_verify_sigalgs_http3 = info[5].As<Napi::String>().Utf8Value();
+    this->m_curl.setHttp3Fingerprint(
+                    quic,
+                    settings,
+                    transport_params,
+                    tls,
+                    tls_extension_permutation_http3,
+                    tls_verify_sigalgs_http3);
 
     return env.Undefined();
 }

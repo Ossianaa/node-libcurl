@@ -5,3 +5,4 @@
 /.vscode
 /lib
 *.pem
+./test/test.js

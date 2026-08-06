@@ -16,6 +16,7 @@ import {
     LibCurlSSLBlob,
     LibCurlSSLVerifyConfig,
     LibCurlTLSVerifySigalgsInfo,
+    LibCurlHttp3FingerPrintInfo,
 } from "./libcurl";
 import { libcurlSetCookies } from "./utils";
 
@@ -52,6 +53,7 @@ interface LibCurlRequestInfo {
 
     sslVerify?: LibCurlSSLVerifyConfig;
     tlsVerifySigalgs?: LibCurlTLSVerifySigalgsInfo;
+    http3Fingerprint?: LibCurlHttp3FingerPrintInfo;
 }
 
 interface LibCurlResponseInfo {
@@ -90,6 +92,7 @@ export async function fetch(
         sslCert,
         sslVerify,
         tlsVerifySigalgs,
+        http3Fingerprint,
     } = request;
     curl.open(method, url + "");
     if (headers) {
@@ -140,6 +143,7 @@ export async function fetch(
     if (typeof tlsVerifySigalgs != "undefined") {
         curl.setTLSVerifySigalgs(tlsVerifySigalgs);
     }
+    curl.setHttp3Fingerprint(http3Fingerprint || "auto");
     await curl.send(body);
     return {
         status: () => curl.getResponseStatus(),

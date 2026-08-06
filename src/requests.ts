@@ -20,6 +20,7 @@ import {
     LibCurlRequestType,
     LibCurlSSLVerifyConfig,
     LibCurlTLSVerifySigalgsInfo,
+    LibCurlHttp3FingerPrintInfo,
 } from "./libcurl";
 import {
     CaseInsensitiveMap,
@@ -143,6 +144,8 @@ interface requestsInitOption {
     sslVerify?: LibCurlSSLVerifyConfig;
 
     tlsVerifySigalgs?: LibCurlTLSVerifySigalgsInfo;
+
+    http3Fingerprint?: LibCurlHttp3FingerPrintInfo;
 }
 
 type requestsParamsInfo = URLSearchParams | string | { [key: string]: string };
@@ -164,6 +167,7 @@ interface requestsOption {
     headersOrder?: LibCurlRequestHeadersOrder;
     requestType?: LibCurlRequestType;
     tlsVerifySigalgs?: LibCurlTLSVerifySigalgsInfo;
+    http3Fingerprint?: LibCurlHttp3FingerPrintInfo;
 }
 
 interface requestsStaticOption
@@ -218,6 +222,7 @@ export class requests {
             sslVerify,
             tlsVerifySigalgs,
             requestType,
+            http3Fingerprint,
         } = option;
         const curl = this.option.instance;
         if (cookies) {
@@ -279,6 +284,9 @@ export class requests {
         if (typeof tlsVerifySigalgs != "undefined") {
             curl.setTLSVerifySigalgs(tlsVerifySigalgs);
         }
+        if (typeof http3Fingerprint != "undefined") {
+            curl.setHttp3Fingerprint(http3Fingerprint);
+        }
     }
 
     public setDefaultRequestHeaders(headers: LibCurlHeadersInfo) {
@@ -299,6 +307,7 @@ export class requests {
             timeout: timeoutOpt,
             ja3,
             akamai,
+            http3Fingerprint: optionHttp3Fingerprint,
         } = this.option;
         const {
             headers,
@@ -314,6 +323,7 @@ export class requests {
             headersOrder,
             requestType,
             tlsVerifySigalgs,
+            http3Fingerprint,
         } = requestOpt || {};
 
         if (data && json) {
@@ -359,6 +369,11 @@ export class requests {
         if (typeof tlsVerifySigalgs != "undefined") {
             curl.setTLSVerifySigalgs(tlsVerifySigalgs);
         }
+        const nextHttp3Fingerprint =
+            typeof http3Fingerprint != "undefined"
+                ? http3Fingerprint
+                : optionHttp3Fingerprint;
+        curl.setHttp3Fingerprint(nextHttp3Fingerprint || "auto");
 
         if (h2config) {
             if (typeof h2config.streamId == "number") {
@@ -709,6 +724,12 @@ export class requests {
         akamai: LibCurlAkamaiFingerPrintInfo = "auto",
     ): void {
         this.option.akamai = akamai;
+    }
+
+    public setHttp3Fingerprint(
+        http3Fingerprint: LibCurlHttp3FingerPrintInfo = "auto",
+    ): void {
+        this.option.http3Fingerprint = http3Fingerprint;
     }
 
     public getLastEffectiveUrl(): string {
