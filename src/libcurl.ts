@@ -298,7 +298,7 @@ const LibCurlHttp3FingerPrintImplMap: {
         settings: "1:65536;6:262144;7:100;51:1;GREASE",
         transport_params:
             "12584:0x4f524947;9:103;1:30000;7:6291456;15:AUTO;4:15728640;GREASE;32:65536;3:1472;17:1@1,GREASE;8:100;6:6291456;12583:174718;5:6291456",
-        tls: "ciphers=1,2,3;alps=h3;grease=off",
+        tls: "ciphers=1,2,3;alps=h3;grease=off;rand=on",
         permutation: "0,15,19,23,9,1,14,21,17,4,7",
         verify_sigalgs:
             "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201",
@@ -949,7 +949,7 @@ export class LibCurl {
             _version = 1;
         } else if (version == "http3") {
             _version = 2;
-        }  if (version == "http3_only") {
+        } else if (version == "http3_only") {
             _version = 3;
         }
         this.m_libCurl_impl_.setHttpVersion(_version);
@@ -1020,7 +1020,7 @@ export class LibCurl {
                     `ja3 fingerprint extension ${extension} no support`,
                 );
             }
-            return pos + 1;
+            return pos;
         });
         const supportGroups = ja3Arr
             .at(3)
@@ -1040,8 +1040,8 @@ export class LibCurl {
         this.m_libCurl_impl_.setJA3Fingerprint(
             parseInt(tlsVersion),
             cipherArr.join(":"),
-            String.fromCharCode(...tls13_ciphers, 0),
-            String.fromCharCode(...extension_permutation, 0),
+            tls13_ciphers.join(""),
+            extension_permutation.join(","),
             supportGroups.join(":"),
             0,
         );
