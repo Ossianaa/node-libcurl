@@ -2219,6 +2219,32 @@ typedef enum {
   /* Specify preferred signature algorithms for certificate verification
      (BoringSSL-only). Comma-separated list as a single string. */
   CURLOPT(CURLOPT_TLS_VERIFY_SIGALGS, CURLOPTTYPE_STRINGPOINT, 330),
+  /* HTTP/3 fingerprint profile: source connection ID length, e.g. "scid=0"
+     (a zero-length client connection ID, as sent by recent Chrome).
+     Default: 20. */
+  CURLOPT(CURLOPT_HTTP3_FP_QUIC, CURLOPTTYPE_STRINGPOINT, 331),
+  /* HTTP/3 SETTINGS frame entries, in wire order, e.g.
+     "1:65536;6:262144;7:100;51:1;GREASE". The keyword GREASE inserts a
+     randomly generated unknown setting. */
+  CURLOPT(CURLOPT_HTTP3_FP_SETTINGS, CURLOPTTYPE_STRINGPOINT, 332),
+  /* QUIC transport parameters, in wire order, e.g.
+     "12584:0x4f524947;9:103;1:30000;7:6291456;15:AUTO;4:15728640;GREASE;
+     32:65536;3:1472;17:1@1,GREASE;8:100;6:6291456;12583:174718;5:6291456".
+     Values: decimal or 0x-hex varint, AUTO (source connection ID), GREASE
+     (random), or chosen@v1,v2 for version_information. */
+  CURLOPT(CURLOPT_HTTP3_FP_TRANSPORT_PARAMS, CURLOPTTYPE_STRINGPOINT, 333),
+  /* BoringSSL fingerprint options for QUIC, e.g. "ciphers=1,2,3;alps=h3;
+     grease=off". ciphers lists TLS 1.3 cipher flags (1=AES128-GCM,
+     2=AES256-GCM, 3=CHACHA20); alps sets the ALPS protocol; grease=off
+     disables TLS-level GREASE. */
+  CURLOPT(CURLOPT_HTTP3_FP_TLS, CURLOPTTYPE_STRINGPOINT, 334),
+  /* HTTP/3-specific TLS extension permutation. Chrome uses a different
+     ClientHello extension order for HTTP/3 than for HTTP/2, so this
+     overrides CURLOPT_TLS_EXTENSION_PERMUTATION on QUIC connections. */
+  CURLOPT(CURLOPT_TLS_EXTENSION_PERMUTATION_HTTP3, CURLOPTTYPE_STRINGPOINT, 335),
+  /* HTTP/3-specific signature algorithms (see CURLOPT_TLS_VERIFY_SIGALGS).
+     Overrides it on QUIC connections. */
+  CURLOPT(CURLOPT_TLS_VERIFY_SIGALGS_HTTP3, CURLOPTTYPE_STRINGPOINT, 336),
   CURLOPT_LASTENTRY /* the last unused */
 } CURLoption;
 

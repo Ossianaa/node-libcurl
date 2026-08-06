@@ -23,7 +23,8 @@ export type LibCurlHttpVersionInfo =
     | LibCurlHttpVersionInfoEnum
     | "http1.1"
     | "http2"
-    | "http3";
+    | "http3"
+    | "http3_only";
 
 //Domain         Secure  Path    CORS    TimeStamp       Name    Value
 export type LibCurlSetCookieOption = {
@@ -908,9 +909,10 @@ export class LibCurl {
             _version = 0;
         } else if (version == "http2") {
             _version = 1;
-        }
-        if (version == "http3") {
+        } else if (version == "http3") {
             _version = 2;
+        }  if (version == "http3_only") {
+            _version = 3;
         }
         this.m_libCurl_impl_.setHttpVersion(_version);
     }
