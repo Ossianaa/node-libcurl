@@ -135,7 +135,7 @@ const retrySession = session.retry(3, (resp, error) => {
 | `data` | `string \| Uint8Array \| URLSearchParams \| object` | Sends a body. Objects are form-encoded (`a=1&b=2`), and `Content-Type` is set automatically. Cannot be combined with `json`. |
 | `timeout` | `number` | Timeout in seconds. |
 | `redirect` | `boolean` | Follow redirects (default `false`). |
-| `proxy` | `string \| { proxy, username, password }` | Proxy, e.g. `"http://127.0.0.1:8888"`, `"socks5://user:pass@host:1080"`, or an account object. |
+| `proxy` | `string \| { proxy, username, password }` | Proxy, e.g. `"http://127.0.0.1:8888"`, `"socks5://user:pass@host:1080"`, or an account object. For HTTP/3 use a SOCKS5 proxy with UDP relay — see [HTTP/3 through a SOCKS5 UDP proxy](#http3-through-a-socks5-udp-proxy). |
 | `httpVersion` | `"http1.1" \| "http2" \| "http3" \| "http3_only"` | HTTP protocol version. |
 | `interface` | `string` | Bind to a specific network interface. |
 | `ja3` | see [Fingerprints](#3-fingerprints) | TLS (JA3) fingerprint. |
@@ -148,6 +148,46 @@ const retrySession = session.retry(3, (resp, error) => {
 | `h2config` | `{ weight: number, streamId?: number }` | Customize the HTTP/2 stream weight / next stream id. |
 | `sslCert` | `{ certBlob, privateKeyBlob?, type?, password? }` | Client certificate (`type`: `"PEM" \| "DER" \| "P12"`). |
 | `sslVerify` | `{ caPath: string }` | Custom CA bundle path. |
+
+#### HTTP/3 through a SOCKS5 UDP proxy
+
+HTTP/3 runs over QUIC, which uses **UDP** instead of TCP — so a regular HTTP/HTTPS proxy (which relays TCP) cannot carry it. To proxy HTTP/3, use a **SOCKS5 proxy that supports UDP relay** (SOCKS5 UDP ASSOCIATE, RFC 1928 §7). When an HTTP/3 request is paired with a `socks5://` proxy, the client automatically negotiates a UDP relay with the proxy and tunnels QUIC through it — no special scheme or extra option is needed:
+
+```ts
+const session = requests.session({
+    httpVersion: "http3_only",           // or "http3"
+    proxy: "socks5://user:pass@host:port", // a socks5 proxy with UDP relay
+    http3Fingerprint: "auto",            // QUIC fingerprint still applies
+});
+
+const resp = await session.get("https://fp.impersonate.pro/api/http3");
+console.log(resp.json.protocol);         // "http3"
+```
+
+The proxy object form and `setProxy` work too:
+
+```ts
+session.setProxy({
+    proxy: "socks5://host:port",
+    username: "user",
+    password: "pass",
+});
+```
+
+Same for `fetch`:
+
+```ts
+await fetch("https://example.com", {
+    httpVersion: "http3_only",
+    proxy: "socks5://user:pass@host:port",
+});
+```
+
+Behavior notes:
+
+* `http3_only` fails hard (throws `Couldn't connect to server`) if the proxy has no working UDP relay.
+* `http3` falls back to TCP (HTTP/1.1/2 through the proxy) when the UDP relay fails — the response will not be HTTP/3.
+* Very few proxy vendors support SOCKS5 UDP relay (most are HTTP/HTTPS-only or SOCKS5-TCP-only; those that support UDP typically ship it as a beta feature) — confirm with your provider before relying on it.
 
 #### Response
 
@@ -235,6 +275,8 @@ http3Fingerprint: {                 // fully custom config
     verify_sigalgs: "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201",
 },
 ```
+
+> Proxied HTTP/3 needs a SOCKS5 proxy with UDP relay — see [HTTP/3 through a SOCKS5 UDP proxy](#http3-through-a-socks5-udp-proxy).
 
 #### TLS signature algorithms (HTTP/1.1 HTTP/2)
 
