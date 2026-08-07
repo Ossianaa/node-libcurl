@@ -1,6 +1,8 @@
 const assert = require("assert");
 const http = require("http");
 const express = require("express");
+const { execFileSync } = require("child_process");
+const path = require("path");
 const {
     requests,
     fetch,
@@ -301,6 +303,177 @@ async function runRequestsTests(baseUrl) {
     assert.strictEqual(deletedValue, "");
 }
 
+// ---------------------------------------------------------------------------
+// HTTP/3 tests
+// ---------------------------------------------------------------------------
+// HTTP/3 needs the native binding built with HTTP/3 (ngtcp2/nghttp3) support
+// and a reachable public HTTP/3 endpoint. If the connectivity probe fails the
+// whole section is skipped, so `npm test` still works offline or on builds
+// without HTTP/3.
+const HTTP3_URL = "https://cloudflare-quic.com";
+const HTTP3_JSON_URL = "https://fp.impersonate.pro/api/http3";
+const HTTP3_ALT_URL = "https://quic.nginx.org";
+const HTTP3_REQUEST_TIMEOUT = 15; // seconds
+
+const HTTP3_FINGERPRINT = {
+    scid: "scid=0",
+    settings: "1:65536;6:262144;7:100;51:1;GREASE",
+    transport_params:
+        "9:103;15:AUTO;7:6291456;4:15728640;1:30000;6:6291456;18258:1;GREASE;8:100;16741339:1@1,GREASE;3:1472;32:65536;5:6291456",
+    tls: "ciphers=1,2,3;alps=h3;grease=off;rand=off",
+    permutation: "7,0,14,19,15,9,4,24,17,21,1",
+    verify_sigalgs:
+        "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201",
+};
+
+// Each scenario runs in its own process so a native crash fails only that
+// scenario and reports its exit code, instead of taking down the whole suite.
+const HTTP3_CRASH_SCENARIOS = [
+    "sequential-heavy",
+    "concurrent-heavy",
+    "shared-session-concurrent",
+    "large-body",
+    "timeout-loop",
+    "mixed-versions",
+    "invalid-fingerprint",
+    "after-error",
+    "closed-stdio",
+];
+
+async function probeHttp3() {
+    const session = requests.session({
+        httpVersion: "http3_only",
+        timeout: HTTP3_REQUEST_TIMEOUT,
+    });
+    try {
+        const resp = await session.get(HTTP3_URL, {
+            timeout: HTTP3_REQUEST_TIMEOUT,
+        });
+        return resp.status === 200;
+    } catch {
+        return false;
+    }
+}
+
+async function runHttp3FunctionalTests() {
+    console.log("[http3] functional tests");
+
+    // 1. plain http3_only GET over the requests API
+    const session = requests.session({
+        httpVersion: "http3_only",
+        timeout: HTTP3_REQUEST_TIMEOUT,
+    });
+    const resp = await session.get(HTTP3_URL, {
+        timeout: HTTP3_REQUEST_TIMEOUT,
+    });
+    assert.strictEqual(resp.status, 200);
+    assert.ok(
+        typeof resp.text === "string" && resp.text.length > 0,
+        "body should be non-empty",
+    );
+    assert.strictEqual(typeof resp.contentLength, "number");
+    assert.strictEqual(typeof resp.encodedBodySize, "number");
+    assert.ok(resp.contentLength > 0);
+    assert.ok(resp.encodedBodySize >= 0);
+
+    // 2. the fingerprint service confirms the request really arrived over HTTP/3
+    const fpResp = await session.get(HTTP3_JSON_URL, {
+        timeout: HTTP3_REQUEST_TIMEOUT,
+    });
+    assert.strictEqual(fpResp.status, 200);
+    assert.strictEqual(
+        fpResp.json.protocol,
+        "http3",
+        "server should report the request came in over HTTP/3",
+    );
+
+    // 3. "http3" mode (fallback to a lower version allowed) still negotiates
+    const altSession = requests.session({
+        httpVersion: "http3",
+        timeout: HTTP3_REQUEST_TIMEOUT,
+    });
+    const altResp = await altSession.get(HTTP3_ALT_URL, {
+        timeout: HTTP3_REQUEST_TIMEOUT,
+    });
+    assert.strictEqual(altResp.status, 200);
+
+    // 4. custom http3Fingerprint at session level must not break the request
+    const fpSession = requests.session({
+        httpVersion: "http3_only",
+        timeout: HTTP3_REQUEST_TIMEOUT,
+        http3Fingerprint: HTTP3_FINGERPRINT,
+    });
+    const fpCustom = await fpSession.get(HTTP3_URL, {
+        timeout: HTTP3_REQUEST_TIMEOUT,
+    });
+    assert.strictEqual(fpCustom.status, 200);
+
+    // 5. fetch API over HTTP/3 (httpVersion: 3 == http3_only)
+    const fetchResp = await fetch(HTTP3_URL, {
+        httpVersion: 3,
+        timeout: HTTP3_REQUEST_TIMEOUT,
+    });
+    assert.strictEqual(fetchResp.status(), 200);
+    const text = await fetchResp.text();
+    assert.ok(text.length > 0);
+}
+
+async function runHttp3StabilityTests() {
+    console.log("[http3] stability tests");
+
+    // sequential reuse of a single session
+    const session = requests.session({
+        httpVersion: "http3_only",
+        timeout: HTTP3_REQUEST_TIMEOUT,
+    });
+    for (let i = 0; i < 10; i++) {
+        const resp = await session.get(HTTP3_URL, {
+            timeout: HTTP3_REQUEST_TIMEOUT,
+        });
+        assert.strictEqual(resp.status, 200, `sequential request #${i}`);
+    }
+
+    // concurrent requests across sessions
+    await Promise.all(
+        Array.from({ length: 10 }, async () => {
+            const s = requests.session({
+                httpVersion: "http3_only",
+                timeout: HTTP3_REQUEST_TIMEOUT,
+            });
+            const resp = await s.get(HTTP3_URL, {
+                timeout: HTTP3_REQUEST_TIMEOUT,
+            });
+            assert.strictEqual(resp.status, 200);
+        }),
+    );
+
+    // switching httpVersion between requests on the same session
+    const switchSession = requests.session({ timeout: HTTP3_REQUEST_TIMEOUT });
+    for (const version of ["http3_only", "http3", "http2", "http3_only"]) {
+        const resp = await switchSession.get(HTTP3_URL, {
+            httpVersion: version,
+            timeout: HTTP3_REQUEST_TIMEOUT,
+        });
+        assert.strictEqual(
+            resp.status,
+            200,
+            `httpVersion=${version} on shared session`,
+        );
+    }
+}
+
+async function runHttp3Tests() {
+    if (!(await probeHttp3())) {
+        console.warn(
+            "[http3] SKIPPED: no HTTP/3 endpoint reachable (offline or build without HTTP/3)",
+        );
+        return;
+    }
+    await runHttp3FunctionalTests();
+    await runHttp3StabilityTests();
+    console.log("[http3] http3 tests passed");
+}
+
 async function main() {
     const { server, baseUrl } = await createServer();
     try {
@@ -312,6 +485,7 @@ async function main() {
             server.close((err) => (err ? reject(err) : resolve()));
         });
     }
+    await runHttp3Tests();
 }
 
 main().catch((error) => {

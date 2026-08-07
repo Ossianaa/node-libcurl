@@ -8,9 +8,6 @@ BaoCurlWebSocket::BaoCurlWebSocket(CURL* curl) {
     m_onclose = m_onclose_default;
     m_onerror = m_onerror_default;
     m_onmessage = m_onmessage_default;
-
-    uv_poll_init(uv_default_loop(), &m_poll, 0);
-    m_poll.data = this;
 }
 
 BaoCurlWebSocket::~BaoCurlWebSocket() {
@@ -90,10 +87,20 @@ void BaoCurlWebSocket::open(std::string url) {
         return;
     }
 
-    uv_poll_init_socket(uv_default_loop(), &m_poll, sockfd);
+    if (uv_poll_init_socket(uv_default_loop(), &m_poll, sockfd)) {
+        m_onerror("uv_poll_init_socket failed");
+        close(false);
+        return;
+    }
     m_poll.data = this;
 
-    uv_poll_start(&m_poll, UV_READABLE, &BaoCurlWebSocket::pollCallback);
+    if (uv_poll_start(&m_poll, UV_READABLE, &BaoCurlWebSocket::pollCallback)) {
+        m_onerror("uv_poll_start failed");
+        uv_poll_stop(&m_poll);
+        uv_close(reinterpret_cast<uv_handle_t*>(&m_poll), nullptr);
+        close(false);
+        return;
+    }
     uv_timer_init(uv_default_loop(), &m_pingTimer);
     m_pingTimer.data = this;
     uv_timer_start(&m_pingTimer, [](uv_timer_t* handle) {

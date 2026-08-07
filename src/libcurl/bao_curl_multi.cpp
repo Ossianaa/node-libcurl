@@ -62,7 +62,12 @@ void BaoCurlMulti::socketCallback(uv_poll_t* handle, int status, int events) {
 }
 
 int BaoCurlMulti::socketFunction(CURL* easy, curl_socket_t s, int action, void* userp, void* socketp) {
-    if (s == CURL_SOCKET_BAD || s == 0) return 0;
+    // Reject the standard file descriptors (0/1/2). If the process closed
+    // stdin/stdout/stderr, the OS hands those low numbers to new sockets;
+    // wrapping them in a uv_poll_t makes libuv abort with
+    // "uv__close: Assertion `fd > STDERR_FILENO' failed" when the handle is
+    // closed. Skipping them makes curl fall back to timer-driven polling.
+    if (s == CURL_SOCKET_BAD || s <= 2) return 0;
     BaoCurlMulti* self = static_cast<BaoCurlMulti*>(userp);
     if (action == CURL_POLL_REMOVE) {
         if (auto it = self->m_socketMap.find(s); it != self->m_socketMap.end()) {
