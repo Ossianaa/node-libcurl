@@ -102,39 +102,12 @@ if (!fs.existsSync(path.join(__dirname, "..", "lib"))) {
 }
 const libPath = path.join(__dirname, "..", "lib", version, platform_);
 const copyPath = path.join(__dirname, "..", "lib", platform_);
-const stripLinuxX64Http3Objects = () => {
-    if (platform_ !== "x86_64-unknown-linux-gnu") {
-        return;
-    }
-    const archivePath = path.join(copyPath, "libcurl.a");
-    if (!fs.existsSync(archivePath)) {
-        return;
-    }
-    const removableObjects = [
-        "curl_msh3.c.o",
-        "curl_ngtcp2.c.o",
-        "curl_quiche.c.o",
-        "vquic.c.o",
-    ];
-    const archiveObjects = execSync(`ar t "${archivePath}"`, {
-        encoding: "utf8",
-    })
-        .split(/\r?\n/)
-        .filter(Boolean);
-    const objectsToRemove = removableObjects.filter((e) =>
-        archiveObjects.includes(e),
-    );
-    if (!objectsToRemove.length) {
-        return;
-    }
-    execSync(`ar d "${archivePath}" ${objectsToRemove.join(" ")}`);
-};
+
 const copyLibrary = () => {
     if (fs.existsSync(copyPath)) {
         fs.rm(copyPath, { recursive: true });
     }
     fs.cpSync(libPath, copyPath, { recursive: true });
-    stripLinuxX64Http3Objects();
 };
 if (!fs.existsSync(libPath) || !fs.existsSync(copyPath)) {
     fs.mkdirSync(libPath, { recursive: true });
@@ -164,7 +137,5 @@ if (!fs.existsSync(libPath) || !fs.existsSync(copyPath)) {
             console.error(e);
             throw new Error("install library failed.");
         });
-} else {
-    stripLinuxX64Http3Objects();
 }
 // `https://github.com/Ossianaa/node-libcurl-patches-docker/releases/download/${version}/curl_${platform}.tar.gz`;
