@@ -1,3 +1,4 @@
+import { randomInt } from "crypto";
 import {
     BaoLibCurl,
     processRequestHeaders,
@@ -306,8 +307,10 @@ const LibCurlHttp3FingerPrintImplMap: {
     chrome150: () => ({
         scid: "scid=0",
         settings: "1:65536;6:262144;7:100;51:1;GREASE",
-        transport_params:
-            "12584:0x4f524947;9:103;1:30000;7:6291456;15:AUTO;4:15728640;GREASE;32:65536;3:1472;17:1@1,GREASE;8:100;6:6291456;12583:174718;5:6291456",
+        transport_params: `12584:0x4f524947;9:103;1:30000;7:6291456;15:AUTO;4:15728640;GREASE;32:65536;3:1472;17:1@1,GREASE;8:100;6:6291456;12583:${randomInt(
+            120000,
+            200000,
+        )};5:6291456`,
         tls: "ciphers=1,2,3;alps=h3;grease=off;rand=on",
         permutation: "0,15,19,23,9,1,14,21,17,4,7",
         verify_sigalgs:
