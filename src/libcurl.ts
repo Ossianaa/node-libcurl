@@ -298,7 +298,10 @@ const LibCurlHttp3FingerPrintImplMap: {
         scid: "scid=0",
         settings: "1:65536;6:262144;7:100;51:1;GREASE",
         transport_params:
-            "9:103;15:AUTO;7:6291456;4:15728640;1:30000;6:6291456;18258:1;GREASE;8:100;16741339:1@1,GREASE;3:1472;32:65536;5:6291456",
+            `9:103;18258:1;3:1472;4:15728640;GREASE;1:30000;8:100;32:65536;15:AUTO;7:6291456;5:6291456;12583:${randomInt(
+                120000,
+                200000,
+            )};6:6291456;16741339:1@GREASE,1`,
         tls: "ciphers=1,2,3;alps=h3;grease=off;rand=on",
         permutation: "7,0,14,19,15,9,4,24,17,21,1",
         verify_sigalgs:
