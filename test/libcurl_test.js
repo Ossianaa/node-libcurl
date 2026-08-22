@@ -1,12 +1,15 @@
 const assert = require("assert");
 const http = require("http");
+const net = require("net");
+const crypto = require("crypto");
 const express = require("express");
-const { execFileSync } = require("child_process");
+const { execFileSync, spawn } = require("child_process");
 const path = require("path");
 const {
     requests,
     fetch,
     LibCurl,
+    LibCurlWebSocket,
     LibCurlTLSVerifySigalgs,
 } = require("../dist/index");
 
@@ -304,6 +307,260 @@ async function runRequestsTests(baseUrl) {
 }
 
 // ---------------------------------------------------------------------------
+// WebSocket tests
+// ---------------------------------------------------------------------------
+// The libcurl WebSocket client performs the HTTP upgrade synchronously on the
+// JS thread (curl_easy_perform in the constructor), so an in-process server
+// deadlocks: it can never process the connection while the client's event
+// loop is blocked. The echo server therefore runs in its own child process
+// (see test/websocket_echo_server.js), which also matches the suite's pattern
+// of isolating native code in child processes.
+async function spawnWebSocketEchoServer() {
+    const child = spawn(
+        process.execPath,
+        [path.join(__dirname, "websocket_echo_server.js")],
+        { stdio: ["ignore", "pipe", "inherit"] },
+    );
+    let stdout = "";
+    child.stdout.on("data", (chunk) => {
+        stdout += chunk;
+    });
+    const deadline = Date.now() + 15000;
+    while (!/WS_ECHO_PORT=\d+/.test(stdout)) {
+        if (child.exitCode !== null) {
+            throw new Error(
+                `websocket echo server exited early with code ${child.exitCode}`,
+            );
+        }
+        if (Date.now() > deadline) {
+            child.kill();
+            throw new Error("websocket echo server did not report a port in time");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    const port = Number(stdout.match(/WS_ECHO_PORT=(\d+)/)[1]);
+    return { child, wsUrl: `ws://127.0.0.1:${port}` };
+}
+
+function openWebSocket(url, options = {}) {
+    return new Promise((resolve, reject) => {
+        let ws;
+        try {
+            ws = new LibCurlWebSocket(url, { timeout: 10, ...options });
+        } catch (error) {
+            reject(error);
+            return;
+        }
+        const timer = setTimeout(() => {
+            reject(new Error(`websocket open timeout: ${url}`));
+        }, 10000);
+        ws.onerror = (message) => {
+            clearTimeout(timer);
+            reject(new Error(`websocket error: ${message}`));
+        };
+        ws.onopen = () => {
+            clearTimeout(timer);
+            resolve(ws);
+        };
+    });
+}
+
+function echoOnce(ws, payload, timeout = 10000) {
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(
+            () => reject(new Error("websocket message timeout")),
+            timeout,
+        );
+        ws.onmessage = (data) => {
+            clearTimeout(timer);
+            resolve(Buffer.from(data));
+        };
+        try {
+            ws.send(payload);
+        } catch (error) {
+            clearTimeout(timer);
+            reject(error);
+        }
+    });
+}
+
+function closeWebSocket(ws, timeout = 10000) {
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(
+            () => reject(new Error("websocket close timeout")),
+            timeout,
+        );
+        ws.onerror = () => {}; // a failing close handshake must not fail the close
+        ws.onclose = () => {
+            clearTimeout(timer);
+            resolve();
+        };
+        try {
+            ws.close();
+        } catch (error) {
+            clearTimeout(timer);
+            reject(error);
+        }
+    });
+}
+
+async function runWebSocketRefusedTest() {
+    // reserve a port, then close the listener so nothing accepts
+    const tmp = net.createServer();
+    await new Promise((resolve) => tmp.listen(0, "127.0.0.1", resolve));
+    const port = tmp.address().port;
+    await new Promise((resolve) => tmp.close(resolve));
+
+    const ws = new LibCurlWebSocket(`ws://127.0.0.1:${port}`, { timeout: 5 });
+    await new Promise((resolve, reject) => {
+        const timer = setTimeout(
+            () => reject(new Error("expected onerror for refused connection")),
+            10000,
+        );
+        ws.onerror = () => {
+            clearTimeout(timer);
+            resolve();
+        };
+        ws.onopen = () => {
+            clearTimeout(timer);
+            reject(new Error("unexpected onopen for refused connection"));
+        };
+    });
+}
+
+async function runWebSocketTests(wsUrl) {
+    console.log("[websocket] functional tests");
+
+    // text echo
+    const ws = await openWebSocket(wsUrl);
+    assert.strictEqual(
+        Buffer.from(await echoOnce(ws, "hello-libcurl")).toString(),
+        "hello-libcurl",
+    );
+
+    // binary echo
+    const bin = new Uint8Array([0, 1, 2, 250, 251, 252, 253, 254, 255]);
+    assert.ok(Buffer.from(await echoOnce(ws, bin)).equals(Buffer.from(bin)));
+
+    // large binary payload (1 MB) — exercises fragmented frames end to end
+    const big = crypto.randomBytes(1024 * 1024);
+    const bigBack = Buffer.from(await echoOnce(ws, big, 30000));
+    assert.strictEqual(bigBack.length, big.length);
+    assert.ok(bigBack.equals(big));
+
+    // sequential messages on one connection
+    for (let i = 0; i < 50; i++) {
+        const msg = `seq-${i}`;
+        assert.strictEqual(Buffer.from(await echoOnce(ws, msg)).toString(), msg);
+    }
+    await closeWebSocket(ws);
+
+    // concurrent connections, several echoes each
+    const CONCURRENT = 20;
+    const EACH = 5;
+    const results = await Promise.all(
+        Array.from({ length: CONCURRENT }, async (_unused, i) => {
+            const w = await openWebSocket(wsUrl);
+            try {
+                for (let j = 0; j < EACH; j++) {
+                    const msg = `c${i}-${j}`;
+                    assert.strictEqual(
+                        Buffer.from(await echoOnce(w, msg)).toString(),
+                        msg,
+                    );
+                }
+            } finally {
+                await closeWebSocket(w);
+            }
+            return i;
+        }),
+    );
+    assert.strictEqual(results.length, CONCURRENT);
+
+    // concurrent open/close churn
+    await Promise.all(
+        Array.from({ length: 20 }, async () => {
+            const w = await openWebSocket(wsUrl);
+            await closeWebSocket(w);
+        }),
+    );
+
+    // error path: connection refused surfaces onerror
+    await runWebSocketRefusedTest();
+
+    console.log("[websocket] websocket functional tests passed");
+}
+
+async function runWebSocketBenchmarks(wsUrl) {
+    console.log("[websocket] benchmarks");
+
+    // connections/sec: sequential connect + echo + close
+    const CONN_COUNT = 50;
+    let t0 = performance.now();
+    for (let i = 0; i < CONN_COUNT; i++) {
+        const w = await openWebSocket(wsUrl);
+        await echoOnce(w, "ping");
+        await closeWebSocket(w);
+    }
+    const connMs = performance.now() - t0;
+    const connectionsPerSec = (CONN_COUNT / connMs) * 1000;
+
+    // messages/sec: sequential echoes over one connection
+    const MSG_COUNT = 500;
+    const ws = await openWebSocket(wsUrl);
+    t0 = performance.now();
+    for (let i = 0; i < MSG_COUNT; i++) {
+        await echoOnce(ws, `msg-${i}`);
+    }
+    const msgMs = performance.now() - t0;
+    const messagesPerSec = (MSG_COUNT / msgMs) * 1000;
+
+    // throughput: 1 MB binary echoes
+    const MB = 1024 * 1024;
+    const big = crypto.randomBytes(MB);
+    const BIG_COUNT = 10;
+    t0 = performance.now();
+    for (let i = 0; i < BIG_COUNT; i++) {
+        const echoed = Buffer.from(await echoOnce(ws, big, 30000));
+        assert.strictEqual(echoed.length, MB);
+        assert.ok(echoed.equals(big));
+    }
+    const bigMs = performance.now() - t0;
+    const throughputMBps = (BIG_COUNT * MB) / 1024 / 1024 / (bigMs / 1000);
+    await closeWebSocket(ws);
+
+    // concurrent round-trips
+    const CONCURRENT = 20;
+    t0 = performance.now();
+    await Promise.all(
+        Array.from({ length: CONCURRENT }, async () => {
+            const w = await openWebSocket(wsUrl);
+            try {
+                for (let j = 0; j < 5; j++) {
+                    await echoOnce(w, "c");
+                }
+            } finally {
+                await closeWebSocket(w);
+            }
+        }),
+    );
+    const concurrentMs = performance.now() - t0;
+
+    console.log(
+        `  connections/sec : ${connectionsPerSec.toFixed(1)}  (${CONN_COUNT} connect+echo+close)`,
+    );
+    console.log(
+        `  messages/sec    : ${messagesPerSec.toFixed(1)}  (${MSG_COUNT} echoes over 1 connection)`,
+    );
+    console.log(
+        `  throughput      : ${throughputMBps.toFixed(1)} MB/s  (${BIG_COUNT} x 1MB echoes)`,
+    );
+    console.log(
+        `  concurrent      : ${concurrentMs.toFixed(1)} ms  (${CONCURRENT} connections x 5 echoes)`,
+    );
+}
+
+// ---------------------------------------------------------------------------
 // HTTP/3 tests
 // ---------------------------------------------------------------------------
 // HTTP/3 needs the native binding built with HTTP/3 (ngtcp2/nghttp3) support
@@ -483,6 +740,22 @@ async function main() {
     } finally {
         await new Promise((resolve, reject) => {
             server.close((err) => (err ? reject(err) : resolve()));
+        });
+    }
+    const wsEcho = await spawnWebSocketEchoServer();
+    try {
+        await runWebSocketTests(wsEcho.wsUrl);
+        await runWebSocketBenchmarks(wsEcho.wsUrl);
+    } finally {
+        // wait (bounded) for the child to be reaped so its handles don't keep
+        // the parent's event loop alive after the suite finishes
+        await new Promise((resolve) => {
+            const timer = setTimeout(resolve, 5000);
+            wsEcho.child.once("exit", () => {
+                clearTimeout(timer);
+                resolve();
+            });
+            wsEcho.child.kill();
         });
     }
     await runHttp3Tests();

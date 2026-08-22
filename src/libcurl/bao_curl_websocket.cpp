@@ -146,6 +146,13 @@ void BaoCurlWebSocket::close(bool forward) {
     uv_poll_stop(&m_poll);
     uv_close(reinterpret_cast<uv_handle_t*>(&m_poll), nullptr);
 
+    // The keep-alive ping timer was started in open() and stays registered in
+    // the loop until stopped and closed here. Leaking it would leave a
+    // repeating uv_timer_t registered after this object is destroyed, and the
+    // loop then reads freed memory on every iteration (use-after-free).
+    uv_timer_stop(&m_pingTimer);
+    uv_close(reinterpret_cast<uv_handle_t*>(&m_pingTimer), nullptr);
+
     if (forward) {
         size_t sent;
         curl_ws_send(m_curl, "", 0, &sent, 0, CURLWS_CLOSE);
