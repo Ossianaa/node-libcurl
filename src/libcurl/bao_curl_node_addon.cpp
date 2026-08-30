@@ -21,6 +21,7 @@ private:
     Napi::Value setRequestHeader(const Napi::CallbackInfo &info);
     Napi::Value setRequestHeaders(const Napi::CallbackInfo &info);
     Napi::Value setProxy(const Napi::CallbackInfo &info);
+    Napi::Value setConnectTo(const Napi::CallbackInfo &info);
     Napi::Value setTimeout(const Napi::CallbackInfo &info);
     Napi::Value setCookie(const Napi::CallbackInfo &info);
     Napi::Value deleteCookie(const Napi::CallbackInfo &info);
@@ -269,6 +270,7 @@ Napi::Object BaoLibCurlWarp::Init(Napi::Env env, Napi::Object exports)
         InstanceMethod<&BaoLibCurlWarp::setRequestHeader>("setRequestHeader", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setRequestHeaders>("setRequestHeaders", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setProxy>("setProxy", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
+        InstanceMethod<&BaoLibCurlWarp::setConnectTo>("setConnectTo", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setTimeout>("setTimeout", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::setCookie>("setCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
         InstanceMethod<&BaoLibCurlWarp::deleteCookie>("deleteCookie", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
@@ -398,6 +400,23 @@ Napi::Value BaoLibCurlWarp::setProxy(const Napi::CallbackInfo &info)
         return env.Undefined();
     }
     REQUEST_TLS_METHOD_ARGS_NO_CONFIG(env, "BaoCurl", "setProxy", "1 or 2", argsLen)
+}
+
+/*
+    setConnectTo(string)
+    格式: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
+    sample: foo.abc.com:443:static.abc.com:443
+*/
+Napi::Value BaoLibCurlWarp::setConnectTo(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+    size_t argsLen = info.Length();
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setConnectTo", 1, argsLen)
+    REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
+    string connectTo = info[0].As<Napi::String>().Utf8Value();
+    this->m_curl.setConnectTo(connectTo);
+
+    return env.Undefined();
 }
 
 /*

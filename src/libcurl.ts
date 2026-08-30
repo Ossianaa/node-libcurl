@@ -533,6 +533,14 @@ export type LibCurlProxyWithAccountInfo = {
 
 export type LibCurlProxyInfo = string | LibCurlProxyWithAccountInfo;
 
+/**
+ * CURLOPT_CONNECT_TO 连接替换
+ * 当请求host为 HOST:PORT 时 实际连接 CONNECT-TO-HOST:CONNECT-TO-PORT
+ * 格式: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
+ * sample: foo.abc.com:443:static.abc.com:443
+ */
+export type LibCurlConnectToInfo = string | Array<string>;
+
 export type LibCurlURLInfo = string | URL;
 
 export type LibCurlSSLBlob = Uint8Array | Buffer;
@@ -751,6 +759,20 @@ export class LibCurl {
                 proxyOpt.password,
             );
         }
+        this.checkError();
+    }
+
+    /**
+     * 连接替换 当请求host为 HOST:PORT 时 实际连接 CONNECT-TO-HOST:CONNECT-TO-PORT
+     * DNS解析结果直接指向 CONNECT-TO-HOST
+     * @param connectTo 格式: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
+     * sample: foo.abc.com:443:static.abc.com:443
+     */
+    public setConnectTo(connectTo: LibCurlConnectToInfo): void {
+        this.checkSending();
+        this.m_libCurl_impl_.setConnectTo(
+            Array.isArray(connectTo) ? connectTo.join("\n") : connectTo,
+        );
         this.checkError();
     }
 

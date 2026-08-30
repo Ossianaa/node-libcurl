@@ -7,6 +7,7 @@ import {
     LibCurlHeadersInfo,
     LibCurlMethodInfo,
     LibCurlProxyInfo,
+    LibCurlConnectToInfo,
     LibCurlHttpVersionInfo,
     LibCurlURLInfo,
     LibCurlError,
@@ -101,6 +102,12 @@ interface requestsInitOption {
     redirect?: boolean;
     cookies?: requestsCookiesInfo | requestsCookiesInfo[];
     proxy?: LibCurlProxyInfo;
+    /**
+     * 连接替换 当请求host为 HOST:PORT 时 实际连接 CONNECT-TO-HOST:CONNECT-TO-PORT
+     * 格式: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
+     * sample: "foo.abc.com:443:static.abc.com:443"
+     */
+    connectTo?: LibCurlConnectToInfo;
     body?: LibCurlBodyInfo;
 
     defaultRequestHeaders?: LibCurlHeadersInfo;
@@ -158,6 +165,7 @@ interface requestsOption {
     timeout?: number;
     redirect?: boolean;
     proxy?: LibCurlProxyInfo;
+    connectTo?: LibCurlConnectToInfo;
     interface?: string;
     httpVersion?: LibCurlHttpVersionInfo;
     h2config?: {
@@ -214,6 +222,7 @@ export class requests {
             verbose,
             redirect = false,
             proxy,
+            connectTo,
             httpVersion,
             interface: interface_,
             autoSortRequestHeaders,
@@ -260,6 +269,9 @@ export class requests {
 
         if (proxy) {
             curl.setProxy(proxy);
+        }
+        if (connectTo) {
+            curl.setConnectTo(connectTo);
         }
         if (typeof defaultRequestHeaders != "undefined") {
             this.setDefaultRequestHeaders(defaultRequestHeaders);
@@ -318,6 +330,7 @@ export class requests {
             interface: interface_,
             redirect,
             proxy,
+            connectTo,
             httpVersion,
             h2config,
             headersOrder,
@@ -360,6 +373,9 @@ export class requests {
         }
         if (proxy) {
             curl.setProxy(proxy);
+        }
+        if (connectTo) {
+            curl.setConnectTo(connectTo);
         }
         if (typeof httpVersion == "number") {
             curl.setHttpVersion(httpVersion);
@@ -697,6 +713,10 @@ export class requests {
 
     public setProxy(proxyOpt: LibCurlProxyInfo): void {
         this.option.instance.setProxy(proxyOpt);
+    }
+
+    public setConnectTo(connectTo: LibCurlConnectToInfo): void {
+        this.option.instance.setConnectTo(connectTo);
     }
 
     public setTimeout(connectTime: number, sendTime: number): void {

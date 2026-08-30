@@ -35,6 +35,8 @@ public:
     void setProxy(std::string&, std::string&,
                   std::string&);
 
+    void setConnectTo(std::string&);
+
     void setTimeout(
         int connectTime,
         int sendTime);
@@ -85,6 +87,7 @@ public:
     CURL* m_pSHARE = NULL;
 private:
     struct curl_slist* m_pHeaders = NULL;
+    struct curl_slist* m_pConnectTo = NULL;
     std::string m_method = "GET";
     struct Stream_st m_stream;
     // struct curl_slist* m_cookies = NULL;

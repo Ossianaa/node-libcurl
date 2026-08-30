@@ -6,6 +6,7 @@ import {
     LibCurlCookiesAttr,
     LibCurlHttpVersionInfo,
     LibCurlProxyInfo,
+    LibCurlConnectToInfo,
     LibCurlCookiesInfo,
     LibCurlInterfaceInfo,
     LibCurlJA3FingerPrintInfo,
@@ -29,6 +30,12 @@ interface LibCurlRequestInfo {
     httpVersion?: LibCurlHttpVersionInfo;
     verbose?: boolean;
     proxy?: LibCurlProxyInfo;
+    /**
+     * 连接替换 当请求host为 HOST:PORT 时 实际连接 CONNECT-TO-HOST:CONNECT-TO-PORT
+     * 格式: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
+     * sample: "foo.abc.com:443:static.abc.com:443"
+     */
+    connectTo?: LibCurlConnectToInfo;
     timeout?: number;
     interface?: LibCurlInterfaceInfo;
     /**
@@ -82,6 +89,7 @@ export async function fetch(
         httpVersion = 0,
         verbose = false,
         proxy,
+        connectTo,
         body,
         cookies,
         timeout,
@@ -118,6 +126,9 @@ export async function fetch(
     }
     if (proxy) {
         curl.setProxy(proxy);
+    }
+    if (connectTo) {
+        curl.setConnectTo(connectTo);
     }
     if (timeout) {
         curl.setTimeout(timeout, timeout);

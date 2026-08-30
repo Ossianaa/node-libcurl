@@ -62,6 +62,11 @@ BaoCurl::~BaoCurl()
         curl_slist_free_all(this->m_pHeaders);
         this->m_pHeaders = NULL;
     }
+    if (this->m_pConnectTo)
+    {
+        curl_slist_free_all(this->m_pConnectTo);
+        this->m_pConnectTo = NULL;
+    }
     if (this->m_pCURL) {
         curl_easy_cleanup(this->m_pCURL);
         this->m_pCURL = NULL;
@@ -195,6 +200,26 @@ void BaoCurl::setProxy(std::string &proxy, std::string &username,
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXY, proxy.c_str()));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXYUSERPWD, (username + ":" + password).c_str()));
     this->m_bProxy = true;
+}
+
+void BaoCurl::setConnectTo(std::string &connectTo)
+{
+    if (this->m_pConnectTo)
+    {
+        curl_slist_free_all(this->m_pConnectTo);
+        this->m_pConnectTo = NULL;
+    }
+    auto arr = StringSplit(connectTo, "\n");
+    for (auto arr_b = arr.begin(); arr_b != arr.end(); ++arr_b)
+    {
+        std::string arr_mem = *arr_b;
+        if (arr_mem.size() == 0)
+        {
+            continue;
+        }
+        this->m_pConnectTo = curl_slist_append(this->m_pConnectTo, arr_mem.c_str());
+    }
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_CONNECT_TO, this->m_pConnectTo));
 }
 
 void BaoCurl::setTimeout(
