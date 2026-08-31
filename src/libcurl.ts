@@ -153,7 +153,8 @@ const LibCurlJA3FingerPrintImplMap: {
     ],
     chrome152: () => [
         // Chrome 152 adds the trust_anchors (0xCA34 / 51764) extension.
-        // trustAnchors empty -> libcurl built-in Chrome 152 root-store list.
+        // trustAnchors: the Chrome 152 root-store list (tls.peet.ws anchor names,
+        // H2 sample order from chrome152-h2-fp.json).
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-65037-21-51764")}-41,4588-29-23-24,0`,
         [
             "ml_dsa_44",
@@ -168,7 +169,7 @@ const LibCurlJA3FingerPrintImplMap: {
             "rsa_pss_rsae_sha512",
             "rsa_pkcs1_sha512",
         ],
-        "",
+        "11129.9.6,11129.9.11,44947.2.18,11129.9.15,52580.200109.1.18,11129.9.12,44947.2.15,44947.2.20,44947.2.19,52580.200109.1.13,11129.9.10,11129.9.13,52580.200109.1.11,11129.9.4,11129.9.1,52580.200109.1.12,52580.200109.1.9,44947.2.6,11129.9.5,52580.200109.1.7,11129.9.8,11129.9.7,52580.200109.1.10,44947.2.14,44947.2.13,44947.2.1,52580.200109.1.19,52580.200109.1.8",
     ],
     auto(chromeVersion?: number) {
         if (!chromeVersion) {
@@ -344,8 +345,9 @@ const LibCurlHttp3FingerPrintImplMap: {
     }),
     chrome152: () => ({
         // Chrome 152 adds trust_anchors (kExtensions index 27) to the
-        // extension set. trust_anchors empty -> libcurl built-in
-        // Chrome 152 root-store list.
+        // extension set. trust_anchors: the Chrome 152 root-store list
+        // (fp.impersonate.pro anchor names, H3 sample order from
+        // chrome152-h3-fp.json).
         scid: "scid=0",
         settings: "1:65536;6:262144;7:100;51:1;GREASE",
         transport_params: `12584:0x4f524947;9:103;1:30000;7:6291456;15:AUTO;4:15728640;GREASE;32:65536;3:1472;17:1@1,GREASE;8:100;6:6291456;12583:${randomInt(
@@ -356,7 +358,7 @@ const LibCurlHttp3FingerPrintImplMap: {
         permutation: "0,15,19,23,9,1,14,21,17,4,7,27",
         verify_sigalgs:
             "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201",
-        trust_anchors: "",
+        trust_anchors: "44947.2.14,11129.9.8,52580.200109.1.8,11129.9.15,44947.2.13,11129.9.7,52580.200109.1.19,11129.9.10,52580.200109.1.12,11129.9.11,52580.200109.1.9,52580.200109.1.7,52580.200109.1.10,44947.2.19,11129.9.5,44947.2.6,11129.9.6,52580.200109.1.13,44947.2.18,11129.9.12,44947.2.15,11129.9.13,44947.2.20,52580.200109.1.11,11129.9.1,44947.2.1,52580.200109.1.18,11129.9.4",
     }),
     auto(chromeVersion?: number) {
         if (!chromeVersion) {
