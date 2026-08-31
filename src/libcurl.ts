@@ -27,6 +27,18 @@ export type LibCurlHttpVersionInfo =
     | "http3"
     | "http3_only";
 
+/** True for HTTP/3 requests. The HTTP/3 fingerprint sets
+ *  CURLOPT_TRUST_ANCHORS, which is shared with the JA3 (HTTP/2)
+ *  fingerprint; applying it on non-H3 requests would overwrite the JA3
+ *  trust_anchors value. */
+export const isLibCurlHttp3Version = (
+    v?: LibCurlHttpVersionInfo,
+): boolean =>
+    v === "http3" ||
+    v === "http3_only" ||
+    v === LibCurlHttpVersionInfoEnum.http3 ||
+    v === LibCurlHttpVersionInfoEnum.http3_only;
+
 //Domain         Secure  Path    CORS    TimeStamp       Name    Value
 export type LibCurlSetCookieOption = {
     domain: string;
@@ -637,6 +649,14 @@ export class LibCurl {
     private m_nextRequestType: LibCurlRequestType | null = null;
     private m_chromeVersion: number = 152;
     private m_hasCustomTLSVerifySigalgs: boolean = false;
+    /* Last fingerprint arguments actually applied to the native handle.
+     * Re-applying identical values on every request is skipped. Preset
+     * fingerprints ("chrome152" etc.) re-randomize per request (extension
+     * order, transport params), so their resolved arguments differ and are
+     * applied again — matching Chrome's per-connection randomization. */
+    private m_lastJA3FingerprintArgs: string | null = null;
+    private m_lastAkamaiFingerprintArgs: string | null = null;
+    private m_lastHttp3FingerprintArgs: string | null = null;
 
     private formatTLSVerifySigalgs(
         sigalgs: LibCurlTLSVerifySigalgsInfo,
@@ -1136,6 +1156,18 @@ export class LibCurl {
          if (!ecPointFormat) {
              throw new LibCurlError('ja3 fingerprint ecPointFormat no support')
          } */
+        const ja3Args = [
+            parseInt(tlsVersion),
+            cipherArr.join(":"),
+            tls13_ciphers.join(""),
+            extension_permutation.join(","),
+            supportGroups.join(":"),
+            0,
+            trustAnchors || "",
+        ].join("\u0001");
+        if (ja3Args === this.m_lastJA3FingerprintArgs) {
+            return;
+        }
         this.m_libCurl_impl_.setJA3Fingerprint(
             parseInt(tlsVersion),
             cipherArr.join(":"),
@@ -1145,6 +1177,9 @@ export class LibCurl {
             0,
             trustAnchors || "",
         );
+        this.m_lastJA3FingerprintArgs = ja3Args;
+        /* CURLOPT_TRUST_ANCHORS is shared with the HTTP/3 fingerprint */
+        this.m_lastHttp3FingerprintArgs = null;
         if (!this.m_hasCustomTLSVerifySigalgs) {
             this.applyTLSVerifySigalgs(tlsVerifySigalgs);
         }
@@ -1161,12 +1196,22 @@ export class LibCurl {
             LibCurlAkamaiFingerPrintImplMap[akamai]?.(this.m_chromeVersion) ||
             akamai
         ).split("|");
+        const akamaiArgs = [
+            settings.replaceAll(",", ";"),
+            parseInt(window_update),
+            streams,
+            pseudo_headers_order.replaceAll(",", ""),
+        ].join("\u0001");
+        if (akamaiArgs === this.m_lastAkamaiFingerprintArgs) {
+            return;
+        }
         this.m_libCurl_impl_.setAkamaiFingerprint(
             settings.replaceAll(",", ";"),
             parseInt(window_update),
             streams,
             pseudo_headers_order.replaceAll(",", ""),
         );
+        this.m_lastAkamaiFingerprintArgs = akamaiArgs;
     }
 
     /**
@@ -1186,6 +1231,18 @@ export class LibCurl {
         if (typeof config == "string") {
             throw new LibCurlError("http3 fingerprint no support");
         }
+        const http3Args = [
+            config.scid,
+            config.settings,
+            config.transport_params,
+            config.tls,
+            config.permutation,
+            config.verify_sigalgs,
+            config.trust_anchors || "",
+        ].join("\u0001");
+        if (http3Args === this.m_lastHttp3FingerprintArgs) {
+            return;
+        }
         this.m_libCurl_impl_.setHttp3Fingerprint(
             config.scid,
             config.settings,
@@ -1195,6 +1252,9 @@ export class LibCurl {
             config.verify_sigalgs,
             config.trust_anchors || "",
         );
+        this.m_lastHttp3FingerprintArgs = http3Args;
+        /* CURLOPT_TRUST_ANCHORS is shared with the JA3 (HTTP/2) fingerprint */
+        this.m_lastJA3FingerprintArgs = null;
     }
 
     /**
