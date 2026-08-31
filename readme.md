@@ -247,7 +247,7 @@ This is the core feature — make your requests indistinguishable from a real br
 
 ```ts
 ja3: "auto"                       // pick by User-Agent Chrome version (default)
-ja3: "chrome99" | "chrome101" | "chrome110" | "chrome124" | "chrome131" | "chrome133" | "chrome150"
+ja3: "chrome99" | "chrome101" | "chrome110" | "chrome124" | "chrome131" | "chrome133" | "chrome150" | "chrome152"
 ja3: "771,4865-4866-4867-...,0-23-65281-10-11-35-16-...,29-23-24,0"  // custom JA3 string
 ```
 
@@ -265,14 +265,15 @@ akamai: "1:65536;3:1000;4:6291456;6:262144|15663105|0|m,a,s,p"  // custom string
 
 ```ts
 http3Fingerprint: "auto"            // default
-http3Fingerprint: "chrome126" | "chrome150"
+http3Fingerprint: "chrome126" | "chrome150" | "chrome152"
 http3Fingerprint: {                 // fully custom config
     scid: "scid=0",
     settings: "1:65536;6:262144;7:100;51:1;GREASE",
     transport_params: "12584:0x4f524947;9:103;1:30000;7:6291456;15:AUTO;4:15728640;GREASE;32:65536;3:1472;17:1@1,GREASE;8:100;6:6291456;12583:174718;5:6291456",
     tls: "ciphers=1,2,3;alps=h3;grease=off;rand=on",
-    permutation: "0,15,19,23,9,1,14,21,17,4,7",
+    permutation: "0,15,19,23,9,1,14,21,17,4,7,27",
     verify_sigalgs: "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201",
+    trust_anchors: "44947.2.14,11129.9.8,...",  // optional: trust_anchors (0xCA34) IDs; empty = built-in Chrome 152 list
 },
 ```
 

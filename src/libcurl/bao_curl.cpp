@@ -103,15 +103,17 @@ void BaoCurl::init()
     std::string http3FpSettings = "1:65536;6:262144;7:100;51:1;GREASE";
     std::string http3FpTransportParams = "12584:0x4f524947;9:103;1:30000;7:6291456;15:AUTO;4:15728640;GREASE;32:65536;3:1472;17:1@1,GREASE;8:100;6:6291456;12583:174718;5:6291456";
     std::string http3FpTls = "ciphers=1,2,3;alps=h3;grease=off";
-    std::string tlsExtensionPermutationHttp3 = "0,15,19,23,9,1,14,21,17,4,7";
+    std::string tlsExtensionPermutationHttp3 = "0,15,19,23,9,1,14,21,17,4,7,27";
     std::string tlsVerifySigalgsHttp3 = "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201";
+    std::string http3TrustAnchors = "";
     setHttp3Fingerprint(
         http3FpQuic,
         http3FpSettings,
         http3FpTransportParams,
         http3FpTls,
         tlsExtensionPermutationHttp3,
-        tlsVerifySigalgsHttp3);
+        tlsVerifySigalgsHttp3,
+        http3TrustAnchors);
     setHttp2NextStreamId(1);
     this->setTimeout(15, 15);
 }
