@@ -96,6 +96,11 @@ const randomStringExtensions = (exts: string) =>
         .split("-")
         .sort(() => (Math.random() > 0.5 ? 1 : -1))
         .join("-");
+const randomStringTrustAnchors = (trust_anchors: string) =>
+    trust_anchors
+        .split(",")
+        .sort(() => (Math.random() > 0.5 ? 1 : -1))
+        .join(",");
 
 type LibCurlJA3FingerPrintConfig = [
     ja3String: string,
@@ -168,7 +173,9 @@ const LibCurlJA3FingerPrintImplMap: {
             "rsa_pss_rsae_sha512",
             "rsa_pkcs1_sha512",
         ],
-        "11129.9.6,11129.9.11,44947.2.18,11129.9.15,52580.200109.1.18,11129.9.12,44947.2.15,44947.2.20,44947.2.19,52580.200109.1.13,11129.9.10,11129.9.13,52580.200109.1.11,11129.9.4,11129.9.1,52580.200109.1.12,52580.200109.1.9,44947.2.6,11129.9.5,52580.200109.1.7,11129.9.8,11129.9.7,52580.200109.1.10,44947.2.14,44947.2.13,44947.2.1,52580.200109.1.19,52580.200109.1.8",
+        randomStringTrustAnchors(
+            "11129.9.6,11129.9.11,44947.2.18,11129.9.15,52580.200109.1.18,11129.9.12,44947.2.15,44947.2.20,44947.2.19,52580.200109.1.13,11129.9.10,11129.9.13,52580.200109.1.11,11129.9.4,11129.9.1,52580.200109.1.12,52580.200109.1.9,44947.2.6,11129.9.5,52580.200109.1.7,11129.9.8,11129.9.7,52580.200109.1.10,44947.2.14,44947.2.13,44947.2.1,52580.200109.1.19,52580.200109.1.8",
+        ),
     ],
     auto(chromeVersion?: number) {
         if (!chromeVersion) {
@@ -296,7 +303,11 @@ export type LibCurlJA3FingerPrintInfo = string | LibCurlJA3FingerPrintImpl;
 export type LibCurlAkamaiFingerPrintInfo =
     | string
     | LibCurlAkamaiFingerPrintImpl;
-export type LibCurlHttp3FingerPrintImpl = "chrome126" | "chrome150" | "chrome152" | "auto";
+export type LibCurlHttp3FingerPrintImpl =
+    | "chrome126"
+    | "chrome150"
+    | "chrome152"
+    | "auto";
 type LibCurlHttp3FingerPrintConfig = {
     scid: string;
     settings: string;
@@ -357,7 +368,9 @@ const LibCurlHttp3FingerPrintImplMap: {
         permutation: "0,15,19,23,9,1,14,21,17,4,7,27",
         verify_sigalgs:
             "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201",
-        trust_anchors: "44947.2.14,11129.9.8,52580.200109.1.8,11129.9.15,44947.2.13,11129.9.7,52580.200109.1.19,11129.9.10,52580.200109.1.12,11129.9.11,52580.200109.1.9,52580.200109.1.7,52580.200109.1.10,44947.2.19,11129.9.5,44947.2.6,11129.9.6,52580.200109.1.13,44947.2.18,11129.9.12,44947.2.15,11129.9.13,44947.2.20,52580.200109.1.11,11129.9.1,44947.2.1,52580.200109.1.18,11129.9.4",
+        trust_anchors: randomStringTrustAnchors(
+            "11129.9.6,11129.9.11,44947.2.18,11129.9.15,52580.200109.1.18,11129.9.12,44947.2.15,44947.2.20,44947.2.19,52580.200109.1.13,11129.9.10,11129.9.13,52580.200109.1.11,11129.9.4,11129.9.1,52580.200109.1.12,52580.200109.1.9,44947.2.6,11129.9.5,52580.200109.1.7,11129.9.8,11129.9.7,52580.200109.1.10,44947.2.14,44947.2.13,44947.2.1,52580.200109.1.19,52580.200109.1.8",
+        ),
     }),
     auto(chromeVersion?: number) {
         if (!chromeVersion) {
@@ -622,7 +635,7 @@ export class LibCurl {
         new CaseInsensitiveMap();
     private m_requestType: LibCurlRequestType = "fetch";
     private m_nextRequestType: LibCurlRequestType | null = null;
-    private m_chromeVersion: number = 150;
+    private m_chromeVersion: number = 152;
     private m_hasCustomTLSVerifySigalgs: boolean = false;
 
     private formatTLSVerifySigalgs(
@@ -1054,9 +1067,11 @@ export class LibCurl {
     public setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo = "auto"): void {
         this.checkSending();
         const [ja3String, tlsVerifySigalgs, trustAnchors] =
-            LibCurlJA3FingerPrintImplMap[
-                ja3
-            ]?.(this.m_chromeVersion) || [ja3, [], undefined];
+            LibCurlJA3FingerPrintImplMap[ja3]?.(this.m_chromeVersion) || [
+                ja3,
+                [],
+                undefined,
+            ];
         const ja3Arr = ja3String.split(",");
         if (ja3Arr.length != 5) {
             throw new LibCurlError("ja3 fingerprint error");
