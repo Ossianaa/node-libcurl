@@ -120,9 +120,7 @@ export async function fetch(
     }
     if (cookies) {
         const { hostname } = new URL(url);
-        if (cookies) {
-            libcurlSetCookies(curl, cookies, hostname);
-        }
+        libcurlSetCookies(curl, cookies, hostname);
     }
     if (proxy) {
         curl.setProxy(proxy);

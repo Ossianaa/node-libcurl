@@ -5,6 +5,7 @@ import {
     LibCurlHeadersInfo,
     LibCurlJA3FingerPrintInfo,
     LibCurlURLInfo,
+    LibCurlWebSocketImpl,
 } from "./libcurl";
 
 const { WebSocket } = BaoLibCurl;
@@ -34,7 +35,7 @@ interface LibCurlWebSocketOnMessageEvent extends LibCurlWebSocketEvent {
 type LibCurlWebSocketSendType = Uint8Array | string;
 
 export class LibCurlWebSocket {
-    private m_libcurlWebSocket_impl_: any;
+    private m_libcurlWebSocket_impl_: LibCurlWebSocketImpl;
     private m_isOpen: boolean = false;
 
     private m_onOpen: LibCurlWebSocketOnOpenEvent = () => {};
@@ -45,8 +46,7 @@ export class LibCurlWebSocket {
     constructor(url: LibCurlURLInfo, option: LibCurlWebSocketOption = {}) {
         const curl = option.instance || new LibCurl();
 
-        // @ts-ignore
-        const impl = curl.m_libCurl_impl_;
+        const impl = curl.impl;
         impl.setRequestHeader("Accept", "");
         impl.setRequestHeader("Accept-Encoding", "");
         if (option.cookie) {
@@ -68,10 +68,7 @@ export class LibCurlWebSocket {
         if (option.ja3) {
             curl.setJA3Fingerprint(option.ja3);
         }
-        const ws = (this.m_libcurlWebSocket_impl_ = new WebSocket(
-            //@ts-ignore
-            curl.m_libCurl_impl_,
-        ));
+        const ws = (this.m_libcurlWebSocket_impl_ = new WebSocket(curl.impl));
         ws.setOnOpen(() => {
             this.m_isOpen = true;
             try {

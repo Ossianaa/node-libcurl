@@ -747,8 +747,8 @@ async function main() {
         await runWebSocketTests(wsEcho.wsUrl);
         await runWebSocketBenchmarks(wsEcho.wsUrl);
     } finally {
-        // wait (bounded) for the child to be reaped so its handles don't keep
-        // the parent's event loop alive after the suite finishes
+        // The child's stdio pipes keep the parent's event loop alive until
+        // the child is reaped; wait (bounded) for it so the pipes close.
         await new Promise((resolve) => {
             const timer = setTimeout(resolve, 5000);
             wsEcho.child.once("exit", () => {
@@ -759,6 +759,9 @@ async function main() {
         });
     }
     await runHttp3Tests();
+    // The websocket echo child and its pipes may still be around; exit
+    // explicitly so the suite does not hang after all tests pass.
+    process.exit(0);
 }
 
 main().catch((error) => {

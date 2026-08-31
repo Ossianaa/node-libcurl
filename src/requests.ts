@@ -3,7 +3,6 @@ import {
     LibCurlBodyInfo,
     LibCurlCookiesAttr,
     LibCurlCookiesInfo,
-    LibCurlRequestHeadersAttr,
     LibCurlHeadersInfo,
     LibCurlMethodInfo,
     LibCurlProxyInfo,
@@ -378,7 +377,7 @@ export class requests {
         if (connectTo) {
             curl.setConnectTo(connectTo);
         }
-        if (typeof httpVersion == "number") {
+        if (typeof httpVersion != "undefined") {
             curl.setHttpVersion(httpVersion);
         }
         curl.setJA3Fingerprint(ja3);
@@ -391,7 +390,7 @@ export class requests {
                 ? http3Fingerprint
                 : optionHttp3Fingerprint;
         const nextHttpVersion =
-            typeof httpVersion == "number"
+            typeof httpVersion != "undefined"
                 ? httpVersion
                 : this.option.httpVersion;
         applyHttp3Fingerprint(curl, nextHttpVersion, nextHttp3Fingerprint);

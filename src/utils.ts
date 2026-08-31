@@ -4,7 +4,6 @@ import {
     LibCurlCookiesInfo,
     LibCurlGetCookiesOption,
 } from "./libcurl";
-import crypto from "node:crypto";
 
 export const httpCookiesToArray: (
     cookies: string,
@@ -106,14 +105,7 @@ export const libcurlSetCookies = (
     }
 };
 
-export const md5 = (e: string) => {
-    const hasher = crypto.createHash("md5");
-    hasher.update(e);
-    return hasher.digest("hex");
-};
-
-export const getUriTopLevelHost = (uri: string | URL) => {
-    const getHost = (e: string) => e.split(".").slice(-2).join(".");
+export const getUriTopLevelHost = (uri: string | URL) => {    const getHost = (e: string) => e.split(".").slice(-2).join(".");
     let uri_ = uri + "";
     if (uri_.startsWith("http")) {
         return getHost(new URL(uri).hostname);

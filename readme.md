@@ -136,6 +136,7 @@ const retrySession = session.retry(3, (resp, error) => {
 | `timeout` | `number` | Timeout in seconds. |
 | `redirect` | `boolean` | Follow redirects (default `false`). |
 | `proxy` | `string \| { proxy, username, password }` | Proxy, e.g. `"http://127.0.0.1:8888"`, `"socks5://user:pass@host:1080"`, or an account object. For HTTP/3 use a SOCKS5 proxy with UDP relay — see [HTTP/3 through a SOCKS5 UDP proxy](#http3-through-a-socks5-udp-proxy). |
+| `connectTo` | `string \| string[]` | Connection replacement (`CURLOPT_CONNECT_TO`): when the request host is `HOST:PORT`, actually connect to `CONNECT-TO-HOST:CONNECT-TO-PORT` instead (DNS resolves the connect-to host, while `Host`/SNI keep the request host). Format: `"HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT"`, e.g. `"foo.abc.com:443:static.abc.com:443"`. |
 | `httpVersion` | `"http1.1" \| "http2" \| "http3" \| "http3_only"` | HTTP protocol version. |
 | `interface` | `string` | Bind to a specific network interface. |
 | `ja3` | see [Fingerprints](#3-fingerprints) | TLS (JA3) fingerprint. |
@@ -229,7 +230,7 @@ resp.contentLength();
 resp.encodedBodySize();
 ```
 
-Options (all optional): `method` (default `"GET"`), `headers`, `body`, `redirect`, `cookies`, `httpVersion`, `verbose`, `proxy`, `timeout`, `interface`, `instance`, `ja3`, `akamai`, `autoSortRequestHeaders`, `sslCert`, `sslVerify`, `tlsVerifySigalgs`, `http3Fingerprint` (default `"auto"`).
+Options (all optional): `method` (default `"GET"`), `headers`, `body`, `redirect`, `cookies`, `httpVersion`, `verbose`, `proxy`, `connectTo`, `timeout`, `interface`, `instance`, `ja3`, `akamai`, `autoSortRequestHeaders`, `sslCert`, `sslVerify`, `tlsVerifySigalgs`, `http3Fingerprint` (default `"auto"`).
 
 Pass a shared `LibCurl` instance via `instance` to keep a persistent connection across calls:
 
@@ -303,6 +304,7 @@ curl.setJA3Fingerprint("chrome150");
 curl.setAkamaiFingerprint("auto");
 curl.setHttp3Fingerprint("auto");
 curl.setProxy("127.0.0.1:8888");          // or { proxy, username, password }
+curl.setConnectTo("foo.abc.com:443:static.abc.com:443"); // connect to static.abc.com instead
 curl.setTimeout(10, 20);                  // connect / total, seconds
 curl.setRedirect(true);
 curl.setHttpVersion("http2");

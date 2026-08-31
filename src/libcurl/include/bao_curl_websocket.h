@@ -6,7 +6,7 @@
 #include <functional>
 #include <mutex>
 #include "utils.h"
-#include "safe_uv_idle.h"
+#include "uv.h"
 
 NAMESPACE_BAO_START
 

@@ -108,7 +108,6 @@ public:
     BaoCurlMulti();
     ~BaoCurlMulti();
     void pushQueue(BaoCurl& curl);
-    void start();
 
 private:
     CURLM* m_pCURLM = nullptr;

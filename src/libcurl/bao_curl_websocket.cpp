@@ -49,6 +49,11 @@ void BaoCurlWebSocket::pollCallback(uv_poll_t* handle, int status, int events) {
         curl_ws_send(instance->m_curl, buffer, rlen, nullptr, 0, CURLWS_PONG);
         return;
     }
+    else if (meta->flags & CURLWS_PONG) {
+        // PONG frames (e.g. replies to the keep-alive ping) carry no
+        // application data and must not reach onmessage.
+        return;
+    }
     const uint8_t* dataPtr = reinterpret_cast<const uint8_t*>(buffer);
     instance->m_payload.insert(
                            instance->m_payload.end(),

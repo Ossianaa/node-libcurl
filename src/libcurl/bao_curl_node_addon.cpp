@@ -64,7 +64,6 @@ public:
 private:
     BaoCurlWebSocket *m_ws = nullptr;
     Napi::Reference<Napi::Object>* m_ref = nullptr;
-    // WebSocketWorker *m_worker = nullptr;
     Napi::Value open(const Napi::CallbackInfo &info);
     Napi::Value close(const Napi::CallbackInfo &info);
     Napi::Value send(const Napi::CallbackInfo &info);
@@ -115,7 +114,7 @@ BaoLibCurlWebSocketWarp::BaoLibCurlWebSocketWarp(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK_NO_RETURN(env, "BaoCurl.WebSocket", "constructor", 1, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK_NO_RETURN(env, "LibCurlWebSocket", "constructor", 1, argsLen)
     REQUEST_TLS_METHOD_CHECK_NO_RETURN(env, info[0].IsObject(), "argument 0 is not a object")
     auto arg0 = info[0].As<Napi::Object>();
     BaoLibCurlWarp *BaoLibCurl = BaoLibCurlWarp::Unwrap(arg0);
@@ -134,7 +133,7 @@ Napi::Value BaoLibCurlWebSocketWarp::open(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl.WebSocket", "open", 1, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurlWebSocket", "open", 1, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     std::string url = info[0].As<Napi::String>().Utf8Value();
     this->m_ws->open(url);
@@ -153,7 +152,7 @@ Napi::Value BaoLibCurlWebSocketWarp::send(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl.WebSocket", "send", 1, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurlWebSocket", "send", 1, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsTypedArray() || info[0].IsString(), "argument 0 is not a typedArray or String")
     if (info[0].Type() == napi_string)
     {
@@ -170,12 +169,12 @@ Napi::Value BaoLibCurlWebSocketWarp::setOnOpen(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl.WebSocket", "setOnOpen", 1, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurlWebSocket", "setOnOpen", 1, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsFunction(), "argument 0 is not a function")
     _onopen = Napi::ThreadSafeFunction::New(
                   env,
                   info[0].As<Napi::Function>(),
-    "Test", 0, 1, [](Napi::Env env) {});
+                  "LibCurlWebSocket.onOpen", 0, 1, [](Napi::Env env) {});
     this->m_ws->setOnOpen([this]()
     {   _onopen.NonBlockingCall(
                    [](Napi::Env env, Napi::Function jsCallback)
@@ -189,12 +188,12 @@ Napi::Value BaoLibCurlWebSocketWarp::setOnClose(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl.WebSocket", "setOnClose", 1, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurlWebSocket", "setOnClose", 1, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsFunction(), "argument 0 is not a function")
     _onclose = Napi::ThreadSafeFunction::New(
                    env,
                    info[0].As<Napi::Function>(),
-    "Test", 0, 1, [](Napi::Env env) {});
+                   "LibCurlWebSocket.onClose", 0, 1, [](Napi::Env env) {});
     this->m_ws->setOnClose([this]()
     {
         _onclose.BlockingCall(
@@ -219,12 +218,12 @@ Napi::Value BaoLibCurlWebSocketWarp::setOnError(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl.WebSocket", "setOnError", 1, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurlWebSocket", "setOnError", 1, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsFunction(), "argument 0 is not a function")
     _onerror = Napi::ThreadSafeFunction::New(
                    env,
                    info[0].As<Napi::Function>(),
-    "Test", 0, 1, [](Napi::Env env) {});
+                   "LibCurlWebSocket.onError", 0, 1, [](Napi::Env env) {});
     this->m_ws->setOnError([this](const std::string &err)
     {   _onerror.NonBlockingCall([err](Napi::Env env, Napi::Function jsCallback)
         {
@@ -237,13 +236,13 @@ Napi::Value BaoLibCurlWebSocketWarp::setOnMessage(const Napi::CallbackInfo &info
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl.WebSocket", "setOnMessage", 1, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurlWebSocket", "setOnMessage", 1, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsFunction(), "argument 0 is not a function")
 
     _onmessage = Napi::ThreadSafeFunction::New(
                      env,
                      info[0].As<Napi::Function>(),
-                     "Test", 0, 1);
+                     "LibCurlWebSocket.onMessage", 0, 1);
     this->m_ws->setOnMessage([this](uint8_t *data, size_t size)
     {
         std::vector<uint8_t>* _data = new std::vector<uint8_t>(data, data + size);
@@ -325,7 +324,7 @@ Napi::Value BaoLibCurlWarp::open(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "open", 2, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "open", 2, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     REQUEST_TLS_METHOD_CHECK(env, info[1].IsString(), "argument 1 is not a string")
     string method = info[0].As<Napi::String>().Utf8Value();
@@ -341,7 +340,7 @@ Napi::Value BaoLibCurlWarp::setRequestHeader(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setRequestHeader", 2, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setRequestHeader", 2, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     REQUEST_TLS_METHOD_CHECK(env, info[1].IsString(), "argument 1 is not a string")
 
@@ -366,7 +365,7 @@ Napi::Value BaoLibCurlWarp::setRequestHeaders(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setRequestHeaders", 1, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setRequestHeaders", 1, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     string headers = info[0].As<Napi::String>().Utf8Value();
     this->m_curl.setRequestHeaders(headers);
@@ -381,7 +380,7 @@ Napi::Value BaoLibCurlWarp::setProxy(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_TOO_MUCH_CHECK(env, "BaoCurl", "setProxy", 3, argsLen)
+    REQUEST_TLS_METHOD_ARGS_TOO_MUCH_CHECK(env, "LibCurl", "setProxy", 3, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     string proxy = info[0].As<Napi::String>().Utf8Value();
     if (argsLen == 1)
@@ -399,7 +398,7 @@ Napi::Value BaoLibCurlWarp::setProxy(const Napi::CallbackInfo &info)
         this->m_curl.setProxy(proxy, username, password);
         return env.Undefined();
     }
-    REQUEST_TLS_METHOD_ARGS_NO_CONFIG(env, "BaoCurl", "setProxy", "1 or 2", argsLen)
+    REQUEST_TLS_METHOD_ARGS_NO_CONFIG(env, "LibCurl", "setProxy", "1 or 2", argsLen)
 }
 
 /*
@@ -411,7 +410,7 @@ Napi::Value BaoLibCurlWarp::setConnectTo(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setConnectTo", 1, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setConnectTo", 1, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     string connectTo = info[0].As<Napi::String>().Utf8Value();
     this->m_curl.setConnectTo(connectTo);
@@ -426,7 +425,7 @@ Napi::Value BaoLibCurlWarp::setTimeout(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setTimeout", 2, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setTimeout", 2, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsNumber(), "argument 0 is not a number")
     REQUEST_TLS_METHOD_CHECK(env, info[1].IsNumber(), "argument 1 is not a number")
     int32_t connectTime = info[0].As<Napi::Number>().Int32Value();
@@ -442,7 +441,7 @@ Napi::Value BaoLibCurlWarp::setCookie(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setCookie", 4, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setCookie", 4, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     REQUEST_TLS_METHOD_CHECK(env, info[1].IsString(), "argument 1 is not a string")
     REQUEST_TLS_METHOD_CHECK(env, info[2].IsString(), "argument 2 is not a string")
@@ -462,7 +461,7 @@ Napi::Value BaoLibCurlWarp::deleteCookie(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "deleteCookie", 3, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "deleteCookie", 3, argsLen)
     string key = info[0].As<Napi::String>().Utf8Value();
     string domain = info[1].As<Napi::String>().Utf8Value();
     string path = info[2].As<Napi::String>().Utf8Value();
@@ -488,7 +487,7 @@ Napi::Value BaoLibCurlWarp::getCookie(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "getCookie", 3, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "getCookie", 3, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     REQUEST_TLS_METHOD_CHECK(env, info[1].IsString(), "argument 1 is not a string")
     REQUEST_TLS_METHOD_CHECK(env, info[2].IsString(), "argument 2 is not a string")
@@ -559,7 +558,7 @@ Napi::Value BaoLibCurlWarp::setSSLVerify(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setSSLVerify", 1, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setSSLVerify", 1, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     std::string caPath = info[0].As<Napi::String>().Utf8Value();
     this->m_curl.setSSLVerify(caPath);
@@ -573,7 +572,7 @@ Napi::Value BaoLibCurlWarp::setTLSVerifySigalgs(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setTLSVerifySigalgs", 1, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setTLSVerifySigalgs", 1, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     std::string sigalgs = info[0].As<Napi::String>().Utf8Value();
     this->m_curl.setTLSVerifySigalgs(sigalgs);
@@ -587,7 +586,7 @@ Napi::Value BaoLibCurlWarp::setRedirect(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setRedirect", 1, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setRedirect", 1, argsLen)
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsBoolean(), "argument 0 is not a boolean")
     this->m_curl.setRedirect(
                     info[0].As<Napi::Boolean>().Value());
@@ -601,7 +600,7 @@ Napi::Value BaoLibCurlWarp::setVerbose(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setVerbose", 1, argsLen)
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setVerbose", 1, argsLen)
     this->m_curl.setVerbose(info[0].As<Napi::Boolean>().Value());
     return env.Undefined();
 }
@@ -613,7 +612,7 @@ Napi::Value BaoLibCurlWarp::setHttpVersion(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setHttpVersion", 1, argsLen);
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setHttpVersion", 1, argsLen);
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsNumber(), "argument 0 is not a number")
     int32_t ver = info[0].As<Napi::Number>().Int32Value();
     if (ver == 0)
@@ -634,7 +633,7 @@ Napi::Value BaoLibCurlWarp::setHttpVersion(const Napi::CallbackInfo &info)
     }
     else
     {
-        REQUEST_TLS_METHOD_THROW(env, "BaoCurl", "setHttpVersion", "Version Not Support.")
+        REQUEST_TLS_METHOD_THROW(env, "LibCurl", "setHttpVersion", "Version Not Support.")
     }
 
     return env.Undefined();
@@ -647,7 +646,7 @@ Napi::Value BaoLibCurlWarp::setInterface(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setInterface", 1, argsLen);
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setInterface", 1, argsLen);
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     std::string network = info[0].As<Napi::String>().Utf8Value();
     this->m_curl.setInterface(network);
@@ -662,7 +661,7 @@ Napi::Value BaoLibCurlWarp::setJA3Fingerprint(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setJA3Fingerprint", 7, argsLen);
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setJA3Fingerprint", 7, argsLen);
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsNumber(), "argument 0 is not a number")
     int tlsVersion = info[0].As<Napi::Number>().Int32Value();
     REQUEST_TLS_METHOD_CHECK(env, info[1].IsString(), "argument 1 is not a string")
@@ -696,7 +695,7 @@ Napi::Value BaoLibCurlWarp::setAkamaiFingerprint(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setAkamaiFingerprint", 4, argsLen);
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setAkamaiFingerprint", 4, argsLen);
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     std::string settings = info[0].As<Napi::String>().Utf8Value();
     REQUEST_TLS_METHOD_CHECK(env, info[1].IsNumber(), "argument 1 is not a number")
@@ -721,7 +720,7 @@ Napi::Value BaoLibCurlWarp::setHttp3Fingerprint(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setHttp3Fingerprint", 7, argsLen);
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setHttp3Fingerprint", 7, argsLen);
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     std::string quic = info[0].As<Napi::String>().Utf8Value();
     REQUEST_TLS_METHOD_CHECK(env, info[1].IsString(), "argument 1 is not a string")
@@ -855,7 +854,7 @@ Napi::Value BaoLibCurlWarp::setHttp2NextStreamId(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setHttp2NextStreamId", 1, argsLen);
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setHttp2NextStreamId", 1, argsLen);
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsNumber(), "argument 0 is not a number")
     int stream_id = info[0].As<Napi::Number>().Int32Value();
     this->m_curl.setHttp2NextStreamId(stream_id);
@@ -869,7 +868,7 @@ Napi::Value BaoLibCurlWarp::setHttp2StreamWeight(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setHttp2StreamWeight", 1, argsLen);
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setHttp2StreamWeight", 1, argsLen);
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsNumber(), "argument 0 is not a number")
     int weight = info[0].As<Napi::Number>().Int32Value();
     this->m_curl.setHttp2StreamWeight(weight);
@@ -883,7 +882,7 @@ Napi::Value BaoLibCurlWarp::setSSLCert(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setSSLCert", 3, argsLen);
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "LibCurl", "setSSLCert", 3, argsLen);
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsTypedArray(), "argument 0 is not a typedArray")
     REQUEST_TLS_METHOD_CHECK(env, info[1].IsTypedArray() || info[1].IsNull(), "argument 1 is not a typedArray or null")
     REQUEST_TLS_METHOD_CHECK(env, info[2].IsString(), "argument 2 is not a string")
@@ -912,7 +911,7 @@ Napi::Value BaoLibCurlWarp::globalCleanup(const Napi::CallbackInfo &info)
     return info.Env().Undefined();
 }
 
-Napi::Value processRequestHeaders(const Napi::CallbackInfo &info)
+static Napi::Value processRequestHeadersImpl(const Napi::CallbackInfo &info, bool v2)
 {
     Napi::Array extraHeaders = info[0].As<Napi::Array>();
     Napi::Array customHeaders = info[1].As<Napi::Array>();
@@ -927,7 +926,9 @@ Napi::Value processRequestHeaders(const Napi::CallbackInfo &info)
     {
         _customHeaders.push_back(customHeaders.Get(i).As<Napi::String>().Utf8Value());
     }
-    std::vector<std::string> result = process_requestHeaders(_extraHeaders, _customHeaders, isFetch);
+    std::vector<std::string> result = v2
+        ? process_requestHeadersV2(_extraHeaders, _customHeaders, isFetch)
+        : process_requestHeaders(_extraHeaders, _customHeaders, isFetch);
     Napi::Array newArray = Napi::Array::New(info.Env(), extraHeaders.Length() + customHeaders.Length());
     for (size_t i = 0; i < result.size(); i++)
     {
@@ -936,28 +937,14 @@ Napi::Value processRequestHeaders(const Napi::CallbackInfo &info)
     return newArray;
 }
 
+Napi::Value processRequestHeaders(const Napi::CallbackInfo &info)
+{
+    return processRequestHeadersImpl(info, false);
+}
+
 Napi::Value processRequestHeadersV2(const Napi::CallbackInfo &info)
 {
-    Napi::Array extraHeaders = info[0].As<Napi::Array>();
-    Napi::Array customHeaders = info[1].As<Napi::Array>();
-    bool isFetch = info[2].As<Napi::Boolean>().Value();
-    std::vector<std::string> _extraHeaders;
-    std::vector<std::string> _customHeaders;
-    for (size_t i = 0; i < extraHeaders.Length(); i++)
-    {
-        _extraHeaders.push_back(extraHeaders.Get(i).As<Napi::String>().Utf8Value());
-    }
-    for (size_t i = 0; i < customHeaders.Length(); i++)
-    {
-        _customHeaders.push_back(customHeaders.Get(i).As<Napi::String>().Utf8Value());
-    }
-    std::vector<std::string> result = process_requestHeadersV2(_extraHeaders, _customHeaders, isFetch);
-    Napi::Array newArray = Napi::Array::New(info.Env(), extraHeaders.Length() + customHeaders.Length());
-    for (size_t i = 0; i < result.size(); i++)
-    {
-        newArray.Set(i, Napi::String::From(info.Env(), result[i]));
-    }
-    return newArray;
+    return processRequestHeadersImpl(info, true);
 }
 
 // Initialize native add-on
