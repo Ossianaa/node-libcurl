@@ -61,9 +61,9 @@ public:
     void setRedirect(bool enable);
     void setVerbose(bool enable);
     void setInterface(std::string& network);
-    void setJA3Fingerprint(int tls_version, std::string& cipher, std::string& tls13_cipher, std::string& extensions, std::string& support_groups, int ec_point_formats);
+    void setJA3Fingerprint(int tls_version, std::string& cipher, std::string& tls13_cipher, std::string& extensions, std::string& support_groups, int ec_point_formats, std::string& trust_anchors);
     void setAkamaiFingerprint(std::string& settings, int window_update, std::string &streams, std::string &pseudo_headers_order);
-    void setHttp3Fingerprint(std::string& quic, std::string& settings, std::string& transport_params, std::string& tls, std::string& tls_extension_permutation_http3, std::string& tls_verify_sigalgs_http3);
+    void setHttp3Fingerprint(std::string& quic, std::string& settings, std::string& transport_params, std::string& tls, std::string& tls_extension_permutation_http3, std::string& tls_verify_sigalgs_http3, std::string& trust_anchors);
     void setOnPublishCallback(BaoCurlOnPublishCallback callback);
     void setHttp2NextStreamId(int stream_id);
     void setHttp2StreamWeight(int weight);

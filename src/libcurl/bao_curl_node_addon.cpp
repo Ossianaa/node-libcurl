@@ -656,13 +656,13 @@ Napi::Value BaoLibCurlWarp::setInterface(const Napi::CallbackInfo &info)
 }
 
 /*
-    setJA3Fingerprint(number,string,string,string,number)
+    setJA3Fingerprint(number,string,string,string,string,number,string)
 */
 Napi::Value BaoLibCurlWarp::setJA3Fingerprint(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setJA3Fingerprint", 6, argsLen);
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setJA3Fingerprint", 7, argsLen);
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsNumber(), "argument 0 is not a number")
     int tlsVersion = info[0].As<Napi::Number>().Int32Value();
     REQUEST_TLS_METHOD_CHECK(env, info[1].IsString(), "argument 1 is not a string")
@@ -675,13 +675,16 @@ Napi::Value BaoLibCurlWarp::setJA3Fingerprint(const Napi::CallbackInfo &info)
     std::string supportGroups = info[4].As<Napi::String>().Utf8Value();
     REQUEST_TLS_METHOD_CHECK(env, info[5].IsNumber(), "argument 5 is not a number")
     int ecPointFormat = info[5].As<Napi::Number>().Int32Value();
+    REQUEST_TLS_METHOD_CHECK(env, info[6].IsString(), "argument 6 is not a string")
+    std::string trustAnchors = info[6].As<Napi::String>().Utf8Value();
     this->m_curl.setJA3Fingerprint(
                     tlsVersion,
                     ciphers,
                     tls13_ciphers,
                     extensions,
                     supportGroups,
-                    ecPointFormat);
+                    ecPointFormat,
+                    trustAnchors);
 
     return env.Undefined();
 }
@@ -712,13 +715,13 @@ Napi::Value BaoLibCurlWarp::setAkamaiFingerprint(const Napi::CallbackInfo &info)
 }
 
 /*
-    setHttp3Fingerprint(string,string,string,string,string,string)
+    setHttp3Fingerprint(string,string,string,string,string,string,string)
 */
 Napi::Value BaoLibCurlWarp::setHttp3Fingerprint(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     size_t argsLen = info.Length();
-    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setHttp3Fingerprint", 6, argsLen);
+    REQUEST_TLS_METHOD_ARGS_CHECK(env, "BaoCurl", "setHttp3Fingerprint", 7, argsLen);
     REQUEST_TLS_METHOD_CHECK(env, info[0].IsString(), "argument 0 is not a string")
     std::string quic = info[0].As<Napi::String>().Utf8Value();
     REQUEST_TLS_METHOD_CHECK(env, info[1].IsString(), "argument 1 is not a string")
@@ -731,13 +734,16 @@ Napi::Value BaoLibCurlWarp::setHttp3Fingerprint(const Napi::CallbackInfo &info)
     std::string tls_extension_permutation_http3 = info[4].As<Napi::String>().Utf8Value();
     REQUEST_TLS_METHOD_CHECK(env, info[5].IsString(), "argument 5 is not a string")
     std::string tls_verify_sigalgs_http3 = info[5].As<Napi::String>().Utf8Value();
+    REQUEST_TLS_METHOD_CHECK(env, info[6].IsString(), "argument 6 is not a string")
+    std::string trustAnchors = info[6].As<Napi::String>().Utf8Value();
     this->m_curl.setHttp3Fingerprint(
                     quic,
                     settings,
                     transport_params,
                     tls,
                     tls_extension_permutation_http3,
-                    tls_verify_sigalgs_http3);
+                    tls_verify_sigalgs_http3,
+                    trustAnchors);
 
     return env.Undefined();
 }

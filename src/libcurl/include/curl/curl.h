@@ -2245,6 +2245,16 @@ typedef enum {
   /* HTTP/3-specific signature algorithms (see CURLOPT_TLS_VERIFY_SIGALGS).
      Overrides it on QUIC connections. */
   CURLOPT(CURLOPT_TLS_VERIFY_SIGALGS_HTTP3, CURLOPTTYPE_STRINGPOINT, 336),
+  /* Trust anchor IDs for the trust_anchors (0xCA34) ClientHello extension
+     (BoringSSL-only). The value is the wire-format list (a series of
+     non-empty, 8-bit length-prefixed IDs, hex-encoded), or a
+     comma-separated list of Chrome root-store anchor names in the form
+     shown by tls.peet.ws / fp.impersonate.pro, e.g.
+     "44947.2.14,11129.9.8,52580.200109.1.8". Chrome 152 sends a list of
+     its trusted roots; when this option is not set, a built-in Chrome 152
+     sample list is used. An empty string sends the extension with an
+     empty list. */
+  CURLOPT(CURLOPT_TRUST_ANCHORS, CURLOPTTYPE_STRINGPOINT, 337),
   CURLOPT_LASTENTRY /* the last unused */
 } CURLoption;
 

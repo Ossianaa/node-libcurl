@@ -432,7 +432,7 @@ void BaoCurl::setInterface(std::string &network)
 }
 
 void BaoCurl::setJA3Fingerprint(
-    int tls_version, std::string &cipher, std::string &tls13_cipher, std::string &extensions, std::string &support_groups, int ec_point_formats)
+    int tls_version, std::string &cipher, std::string &tls13_cipher, std::string &extensions, std::string &support_groups, int ec_point_formats, std::string &trust_anchors)
 {
 
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2 | CURL_SSLVERSION_MAX_TLSv1_3));
@@ -443,6 +443,12 @@ void BaoCurl::setJA3Fingerprint(
     // extensions unsupport
     // ec_point_formats unsupport
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION, extensions.c_str()));
+    // trust_anchors (0xCA34): empty string keeps the libcurl built-in
+    // Chrome 152 default; pass a name/hex list to override.
+    if (!trust_anchors.empty())
+    {
+        CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TRUST_ANCHORS, trust_anchors.c_str()));
+    }
 }
 
 void BaoCurl::setAkamaiFingerprint(
@@ -463,7 +469,8 @@ void BaoCurl::setHttp3Fingerprint(
     std::string& transport_params,
     std::string& tls,
     std::string& tls_extension_permutation_http3,
-    std::string& tls_verify_sigalgs_http3)
+    std::string& tls_verify_sigalgs_http3,
+    std::string& trust_anchors)
 {
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_QUIC, quic.c_str()));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_SETTINGS, settings.c_str()));
@@ -471,6 +478,12 @@ void BaoCurl::setHttp3Fingerprint(
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_TLS, tls.c_str()));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION_HTTP3, tls_extension_permutation_http3.c_str()));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_VERIFY_SIGALGS_HTTP3, tls_verify_sigalgs_http3.c_str()));
+    // trust_anchors (0xCA34): empty string keeps the libcurl built-in
+    // Chrome 152 default; pass a name/hex list to override.
+    if (!trust_anchors.empty())
+    {
+        CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TRUST_ANCHORS, trust_anchors.c_str()));
+    }
 }
 
 void BaoCurl::setOnPublishCallback(BaoCurlOnPublishCallback callback)

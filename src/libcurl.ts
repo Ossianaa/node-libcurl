@@ -83,6 +83,7 @@ export type LibCurlJA3FingerPrintImpl =
     | "chrome131"
     | "chrome133"
     | "chrome150"
+    | "chrome152"
     | "auto";
 export type LibCurlAkamaiFingerPrintImpl =
     | "chrome99"
@@ -99,6 +100,7 @@ const randomStringExtensions = (exts: string) =>
 type LibCurlJA3FingerPrintConfig = [
     ja3String: string,
     tlsVerifySigalgs: LibCurlTLSVerifySigalgsInfo,
+    trustAnchors?: string,
 ];
 
 const LibCurlJA3FingerPrintImplMap: {
@@ -149,9 +151,28 @@ const LibCurlJA3FingerPrintImplMap: {
             "rsa_pkcs1_sha512",
         ],
     ],
+    chrome152: () => [
+        // Chrome 152 adds the trust_anchors (0xCA34 / 51764) extension.
+        // trustAnchors empty -> libcurl built-in Chrome 152 root-store list.
+        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-65037-21-51764")}-41,4588-29-23-24,0`,
+        [
+            "ml_dsa_44",
+            "ml_dsa_65",
+            "ml_dsa_87",
+            "ecdsa_secp256r1_sha256",
+            "rsa_pss_rsae_sha256",
+            "rsa_pkcs1_sha256",
+            "ecdsa_secp384r1_sha384",
+            "rsa_pss_rsae_sha384",
+            "rsa_pkcs1_sha384",
+            "rsa_pss_rsae_sha512",
+            "rsa_pkcs1_sha512",
+        ],
+        "",
+    ],
     auto(chromeVersion?: number) {
         if (!chromeVersion) {
-            return this.chrome150();
+            return this.chrome152();
         }
         if (chromeVersion < 101) {
             return this.chrome99();
@@ -165,8 +186,10 @@ const LibCurlJA3FingerPrintImplMap: {
             return this.chrome131();
         } else if (chromeVersion < 150) {
             return this.chrome133();
-        } else {
+        } else if (chromeVersion < 152) {
             return this.chrome150();
+        } else {
+            return this.chrome152();
         }
     },
 };
@@ -273,7 +296,7 @@ export type LibCurlJA3FingerPrintInfo = string | LibCurlJA3FingerPrintImpl;
 export type LibCurlAkamaiFingerPrintInfo =
     | string
     | LibCurlAkamaiFingerPrintImpl;
-export type LibCurlHttp3FingerPrintImpl = "chrome126" | "chrome150" | "auto";
+export type LibCurlHttp3FingerPrintImpl = "chrome126" | "chrome150" | "chrome152" | "auto";
 type LibCurlHttp3FingerPrintConfig = {
     scid: string;
     settings: string;
@@ -281,6 +304,7 @@ type LibCurlHttp3FingerPrintConfig = {
     tls: string;
     permutation: string;
     verify_sigalgs: string;
+    trust_anchors?: string;
 };
 export type LibCurlHttp3FingerPrintInfo =
     | LibCurlHttp3FingerPrintConfig
@@ -318,14 +342,32 @@ const LibCurlHttp3FingerPrintImplMap: {
         verify_sigalgs:
             "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201",
     }),
+    chrome152: () => ({
+        // Chrome 152 adds trust_anchors (kExtensions index 27) to the
+        // extension set. trust_anchors empty -> libcurl built-in
+        // Chrome 152 root-store list.
+        scid: "scid=0",
+        settings: "1:65536;6:262144;7:100;51:1;GREASE",
+        transport_params: `12584:0x4f524947;9:103;1:30000;7:6291456;15:AUTO;4:15728640;GREASE;32:65536;3:1472;17:1@1,GREASE;8:100;6:6291456;12583:${randomInt(
+            120000,
+            200000,
+        )};5:6291456`,
+        tls: "ciphers=1,2,3;alps=h3;grease=off;rand=on",
+        permutation: "0,15,19,23,9,1,14,21,17,4,7,27",
+        verify_sigalgs:
+            "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201",
+        trust_anchors: "",
+    }),
     auto(chromeVersion?: number) {
         if (!chromeVersion) {
-            return this.chrome150();
+            return this.chrome152();
         }
         if (chromeVersion < 150) {
             return this.chrome126();
+        } else if (chromeVersion < 152) {
+            return this.chrome150();
         }
-        return this.chrome150();
+        return this.chrome152();
     },
 };
 
@@ -1010,9 +1052,10 @@ export class LibCurl {
      */
     public setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo = "auto"): void {
         this.checkSending();
-        const [ja3String, tlsVerifySigalgs] = LibCurlJA3FingerPrintImplMap[
-            ja3
-        ]?.(this.m_chromeVersion) || [ja3, []];
+        const [ja3String, tlsVerifySigalgs, trustAnchors] =
+            LibCurlJA3FingerPrintImplMap[
+                ja3
+            ]?.(this.m_chromeVersion) || [ja3, [], undefined];
         const ja3Arr = ja3String.split(",");
         if (ja3Arr.length != 5) {
             throw new LibCurlError("ja3 fingerprint error");
@@ -1084,6 +1127,7 @@ export class LibCurl {
             extension_permutation.join(","),
             supportGroups.join(":"),
             0,
+            trustAnchors || "",
         );
         if (!this.m_hasCustomTLSVerifySigalgs) {
             this.applyTLSVerifySigalgs(tlsVerifySigalgs);
@@ -1133,6 +1177,7 @@ export class LibCurl {
             config.tls,
             config.permutation,
             config.verify_sigalgs,
+            config.trust_anchors || "",
         );
     }
 
