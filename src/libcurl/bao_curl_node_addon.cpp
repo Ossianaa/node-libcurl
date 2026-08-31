@@ -404,7 +404,7 @@ Napi::Value BaoLibCurlWarp::setProxy(const Napi::CallbackInfo &info)
 
 /*
     setConnectTo(string)
-    格式: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
+    Format: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
     sample: foo.abc.com:443:static.abc.com:443
 */
 Napi::Value BaoLibCurlWarp::setConnectTo(const Napi::CallbackInfo &info)

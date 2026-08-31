@@ -602,9 +602,9 @@ export type LibCurlProxyWithAccountInfo = {
 export type LibCurlProxyInfo = string | LibCurlProxyWithAccountInfo;
 
 /**
- * CURLOPT_CONNECT_TO 连接替换
- * 当请求host为 HOST:PORT 时 实际连接 CONNECT-TO-HOST:CONNECT-TO-PORT
- * 格式: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
+ * CURLOPT_CONNECT_TO connection replacement
+ * When the request host is HOST:PORT, actually connect to CONNECT-TO-HOST:CONNECT-TO-PORT
+ * Format: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
  * sample: foo.abc.com:443:static.abc.com:443
  */
 export type LibCurlConnectToInfo = string | Array<string>;
@@ -839,9 +839,9 @@ export class LibCurl {
     }
 
     /**
-     * 连接替换 当请求host为 HOST:PORT 时 实际连接 CONNECT-TO-HOST:CONNECT-TO-PORT
-     * DNS解析结果直接指向 CONNECT-TO-HOST
-     * @param connectTo 格式: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
+     * Connection replacement: when the request host is HOST:PORT, actually connect to CONNECT-TO-HOST:CONNECT-TO-PORT
+     * DNS resolution points directly to CONNECT-TO-HOST
+     * @param connectTo format: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
      * sample: foo.abc.com:443:static.abc.com:443
      */
     public setConnectTo(connectTo: LibCurlConnectToInfo): void {
@@ -854,14 +854,14 @@ export class LibCurl {
 
     /**
      *
-     * @param connectTime 连接上远程服务器的最长等待时间
-     * @param sendTime 发送最长等待时间
-     * sendTime时长包含connectTime 所以sendTime要大于connectTime
+     * @param connectTime max time to connect to the remote server
+     * @param sendTime max time to send
+     * sendTime includes connectTime, so sendTime must be greater than connectTime
      */
     public setTimeout(connectTime: number, sendTime: number): void {
         this.checkSending();
         if (connectTime > sendTime) {
-            throw new LibCurlError("连接时间大于发送等待时间.");
+            throw new LibCurlError("connectTime cannot be greater than sendTime.");
         }
         this.m_libCurl_impl_.setTimeout(connectTime, sendTime);
     }
@@ -870,7 +870,7 @@ export class LibCurl {
      *
      * @param key
      * @param value
-     * @param domain cookie作用域 sample: .baidu.com  baike.baidu.com
+     * @param domain cookie scope sample: .baidu.com  baike.baidu.com
      */
     public setCookie(cookieOpt: LibCurlSetCookieOption): void {
         this.checkSending();
@@ -885,7 +885,7 @@ export class LibCurl {
     /**
      *
      * @param cookieOpt
-     * @param domain cookie作用域 sample: .baidu.com  baike.baidu.com
+     * @param domain cookie scope sample: .baidu.com  baike.baidu.com
      */
     public deleteCookie(cookieOpt: LibCurlGetCookieOption): void {
         this.checkSending();
@@ -898,7 +898,7 @@ export class LibCurl {
 
     /**
      * @param {LibCurlGetCookiesOption}cookieOpt
-     * @returns 返回所有Cookies sample:'a=b;c=d;'
+     * @returns all cookies sample:'a=b;c=d;'
      */
     public getCookies(cookieOpt?: LibCurlGetCookiesOption): string {
         this.checkSending();
@@ -912,7 +912,7 @@ export class LibCurl {
 
     /**
      * @param {LibCurlGetCookiesOption}cookieOpt
-     * @returns 返回所有Cookie的Map 如果有相同的键 则后键覆盖前键
+     * @returns a Map of all cookies; on duplicate keys the later key overrides the former
      */
     public getCookiesMap(
         cookieOpt?: LibCurlGetCookiesOption,
@@ -942,7 +942,7 @@ export class LibCurl {
     /**
      *
      * @param cookieOpt
-     * @returns 返回该cookieOpt对应的cookieValue
+     * @returns the cookieValue for the given cookieOpt
      * sample:
      */
     public getCookie(cookieOpt: LibCurlGetCookieOption): string {
@@ -956,7 +956,7 @@ export class LibCurl {
 
     /**
      *
-     * @returns 返回响应头
+     * @returns the response headers
      */
     public getResponseHeaders(): string {
         this.checkSending();
@@ -964,7 +964,7 @@ export class LibCurl {
     }
 
     /**
-     * @returns 返回响应头 Map
+     * @returns a Map of the response headers
      */
     public getResponseHeadersMap(): Headers {
         this.checkSending();
@@ -985,7 +985,7 @@ export class LibCurl {
 
     /**
      *
-     * @returns 返回状态码
+     * @returns the response status code
      * sample: 200 403 404
      */
     public getResponseStatus(): number {
@@ -995,7 +995,7 @@ export class LibCurl {
 
     /**
      *
-     * @returns 返回正文长度
+     * @returns the response body length
      */
     public getResponseContentLength(): number {
         this.checkSending();
@@ -1004,7 +1004,7 @@ export class LibCurl {
 
     /**
      *
-     * @returns 返回传输层编码正文大小(未解压前)
+     * @returns the transfer-encoded body size (before decompression)
      */
     public getResponseEncodedBodySize(): number {
         this.checkSending();
@@ -1013,7 +1013,7 @@ export class LibCurl {
 
     /**
      *
-     * @param config 是否验证证书和名称
+     * @param config whether to verify the certificate and hostname
      */
     public setSSLVerify(config: LibCurlSSLVerifyConfig): void {
         this.checkSending();
@@ -1036,7 +1036,7 @@ export class LibCurl {
 
     /**
      *
-     * @param enable 是否允许重定向
+     * @param enable whether to allow redirects
      */
     public setRedirect(enable: boolean): void {
         this.checkSending();
@@ -1044,7 +1044,7 @@ export class LibCurl {
     }
 
     /**
-     * 打印libcurl内部的 解析信息、连接信息、tls信息等等
+     * Print libcurl internal info: DNS resolution, connection, TLS, etc.
      */
     public setVerbose(enable: boolean): void {
         this.checkSending();
@@ -1054,7 +1054,7 @@ export class LibCurl {
     /**
      *
      * @param version
-     * 设置http版本号
+     * Set the HTTP version
      */
     public setHttpVersion(version: LibCurlHttpVersionInfo): void {
         this.checkSending();
@@ -1072,7 +1072,7 @@ export class LibCurl {
     }
 
     /**
-     * 指定网卡访问
+     * Bind requests to a specific network interface
      * @param network
      */
     public setInterface(network: LibCurlInterfaceInfo): void {
@@ -1081,7 +1081,7 @@ export class LibCurl {
     }
 
     /**
-     * 设置JA3指纹
+     * Set the JA3 fingerprint
      * @param ja3
      */
     public setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo = "auto"): void {
@@ -1186,7 +1186,7 @@ export class LibCurl {
     }
 
     /**
-     * 设置akamai h2指纹
+     * Set the Akamai h2 fingerprint
      * @param akamai
      */
     public setAkamaiFingerprint(
@@ -1215,7 +1215,7 @@ export class LibCurl {
     }
 
     /**
-     * 设置HTTP3指纹
+     * Set the HTTP/3 fingerprint
      */
     public setHttp3Fingerprint(
         http3Fingerprint: LibCurlHttp3FingerPrintInfo = "auto",
@@ -1258,7 +1258,7 @@ export class LibCurl {
     }
 
     /**
-     * 设置h2 stream_id
+     * Set the h2 stream_id
      * @param stream_id
      */
     public setHttp2NextStreamId(stream_id: number): void {
@@ -1269,7 +1269,7 @@ export class LibCurl {
     }
 
     /**
-     * 设置h2 weight
+     * Set the h2 weight
      * @param weight
      */
     public setHttp2StreamWeight(weight: number): void {
@@ -1418,8 +1418,8 @@ export class LibCurl {
 
     /**
      *
-     * @param body POST PUT PATCH时 发送的body
-     * 当body不为string或uint8array时 此函数将用JSON.stringify转换对象
+     * @param body the body sent for POST PUT PATCH requests
+     * When body is not a string or Uint8Array, this function converts objects with JSON.stringify
      */
     public async send(body?: LibCurlBodyInfo): Promise<undefined> {
         this.checkSending();

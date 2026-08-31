@@ -31,15 +31,15 @@ interface LibCurlRequestInfo {
     verbose?: boolean;
     proxy?: LibCurlProxyInfo;
     /**
-     * 连接替换 当请求host为 HOST:PORT 时 实际连接 CONNECT-TO-HOST:CONNECT-TO-PORT
-     * 格式: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
+     * Connection replacement: when the request host is HOST:PORT, actually connect to CONNECT-TO-HOST:CONNECT-TO-PORT
+     * Format: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
      * sample: "foo.abc.com:443:static.abc.com:443"
      */
     connectTo?: LibCurlConnectToInfo;
     timeout?: number;
     interface?: LibCurlInterfaceInfo;
     /**
-     * 传入LibCurl实例可以做持久化连接
+     * Pass a LibCurl instance to enable persistent connections
      */
     instance?: LibCurl;
     ja3?: LibCurlJA3FingerPrintInfo;
@@ -47,7 +47,7 @@ interface LibCurlRequestInfo {
 
     /**
      * @experimental
-     * 自动重排请求头 对标chrome fetch方法
+     * Automatically reorder request headers, matching the Chrome fetch behavior
      */
     autoSortRequestHeaders?: LibCurlAutoSortRequestHeadersOption;
 

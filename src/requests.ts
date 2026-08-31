@@ -103,8 +103,8 @@ interface requestsInitOption {
     cookies?: requestsCookiesInfo | requestsCookiesInfo[];
     proxy?: LibCurlProxyInfo;
     /**
-     * 连接替换 当请求host为 HOST:PORT 时 实际连接 CONNECT-TO-HOST:CONNECT-TO-PORT
-     * 格式: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
+     * Connection replacement: when the request host is HOST:PORT, actually connect to CONNECT-TO-HOST:CONNECT-TO-PORT
+     * Format: HOST:PORT:CONNECT-TO-HOST:CONNECT-TO-PORT
      * sample: "foo.abc.com:443:static.abc.com:443"
      */
     connectTo?: LibCurlConnectToInfo;
@@ -114,19 +114,19 @@ interface requestsInitOption {
 
     httpVersion?: LibCurlHttpVersionInfo;
     /**
-     * 打印curl内部访问日志
+     * Print curl internal access logs
      */
     verbose?: boolean;
     /**
-     * 单位(秒)
+     * Unit: seconds
      */
     timeout?: number;
     /**
-     * 指定网卡访问
+     * Bind requests to a specific network interface
      */
     interface?: string;
     /**
-     * 传入LibCurl实例可以做持久化连接
+     * Pass a LibCurl instance to enable persistent connections
      */
     instance?: LibCurl;
 
@@ -135,7 +135,7 @@ interface requestsInitOption {
     akamai?: LibCurlAkamaiFingerPrintInfo;
 
     /**
-     * 自动重排请求头 对标chrome fetch方法
+     * Automatically reorder request headers, matching the Chrome fetch behavior
      */
     autoSortRequestHeaders?: LibCurlAutoSortRequestHeadersOption;
 
@@ -408,7 +408,7 @@ export class requests {
 
         let hasContentType = false;
         if (headers && (data || json)) {
-            //如果有传入data或json 才用的上
+            // only relevant when data or json is provided
             const contentTypeFilter = (e: string[]) =>
                 e.some((e) => e.toLocaleLowerCase() == "content-type");
             if (typeof headers == "string") {
@@ -428,7 +428,7 @@ export class requests {
             if (!hasContentType) {
                 curl.setRequestHeader("Content-Type", "application/json");
             }
-            await curl.send(json); //不用序列化 cpp代码已经处理
+            await curl.send(json); // no need to serialize, handled in the cpp code
         } else if (data) {
             let sendData = data;
             if (!hasContentType) {
@@ -469,7 +469,7 @@ export class requests {
                                 "boolean",
                             ].includes(type)
                         ) {
-                            //照样处理null
+                            // null is handled as well
                             return [e, JSON.stringify(value)];
                         } else if (type == "undefined") {
                             return [e, ""];
