@@ -39,6 +39,20 @@ export const isLibCurlHttp3Version = (
     v === LibCurlHttpVersionInfoEnum.http3 ||
     v === LibCurlHttpVersionInfoEnum.http3_only;
 
+/** Applies the HTTP/3 fingerprint only when the request uses HTTP/3.
+ *  The HTTP/3 fingerprint sets CURLOPT_TRUST_ANCHORS, which is shared with
+ *  the JA3 (HTTP/2) fingerprint; applying it on non-H3 requests would
+ *  overwrite the JA3 trust_anchors value. */
+export const applyHttp3Fingerprint = (
+    curl: LibCurl,
+    httpVersion: LibCurlHttpVersionInfo | undefined,
+    http3Fingerprint: LibCurlHttp3FingerPrintInfo | undefined,
+): void => {
+    if (isLibCurlHttp3Version(httpVersion)) {
+        curl.setHttp3Fingerprint(http3Fingerprint || "auto");
+    }
+};
+
 //Domain         Secure  Path    CORS    TimeStamp       Name    Value
 export type LibCurlSetCookieOption = {
     domain: string;
@@ -649,13 +663,14 @@ export class LibCurl {
     private m_nextRequestType: LibCurlRequestType | null = null;
     private m_chromeVersion: number = 152;
     private m_hasCustomTLSVerifySigalgs: boolean = false;
-    /* Last fingerprint arguments actually applied to the native handle.
-     * Re-applying identical values on every request is skipped. Preset
-     * fingerprints ("chrome152" etc.) re-randomize per request (extension
-     * order, transport params), so their resolved arguments differ and are
-     * applied again — matching Chrome's per-connection randomization. */
+    /* Last JA3/HTTP/3 fingerprint arguments actually applied to the native
+     * handle. Re-applying identical values on every request is skipped;
+     * preset fingerprints ("chrome152" etc.) re-randomize per request
+     * (extension order, transport params), so their resolved arguments
+     * differ and are applied again. JA3 and HTTP/3 fingerprints share
+     * CURLOPT_TRUST_ANCHORS, so applying one invalidates the other's
+     * cached arguments. */
     private m_lastJA3FingerprintArgs: string | null = null;
-    private m_lastAkamaiFingerprintArgs: string | null = null;
     private m_lastHttp3FingerprintArgs: string | null = null;
 
     private formatTLSVerifySigalgs(
@@ -1196,22 +1211,12 @@ export class LibCurl {
             LibCurlAkamaiFingerPrintImplMap[akamai]?.(this.m_chromeVersion) ||
             akamai
         ).split("|");
-        const akamaiArgs = [
-            settings.replaceAll(",", ";"),
-            parseInt(window_update),
-            streams,
-            pseudo_headers_order.replaceAll(",", ""),
-        ].join("\u0001");
-        if (akamaiArgs === this.m_lastAkamaiFingerprintArgs) {
-            return;
-        }
         this.m_libCurl_impl_.setAkamaiFingerprint(
             settings.replaceAll(",", ";"),
             parseInt(window_update),
             streams,
             pseudo_headers_order.replaceAll(",", ""),
         );
-        this.m_lastAkamaiFingerprintArgs = akamaiArgs;
     }
 
     /**

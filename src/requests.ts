@@ -22,6 +22,7 @@ import {
     LibCurlSSLVerifyConfig,
     LibCurlTLSVerifySigalgsInfo,
     LibCurlHttp3FingerPrintInfo,
+    applyHttp3Fingerprint,
 } from "./libcurl";
 import {
     CaseInsensitiveMap,
@@ -297,7 +298,7 @@ export class requests {
             curl.setTLSVerifySigalgs(tlsVerifySigalgs);
         }
         if (typeof http3Fingerprint != "undefined") {
-            curl.setHttp3Fingerprint(http3Fingerprint);
+            applyHttp3Fingerprint(curl, httpVersion, http3Fingerprint);
         }
     }
 
@@ -389,7 +390,11 @@ export class requests {
             typeof http3Fingerprint != "undefined"
                 ? http3Fingerprint
                 : optionHttp3Fingerprint;
-        curl.setHttp3Fingerprint(nextHttp3Fingerprint || "auto");
+        const nextHttpVersion =
+            typeof httpVersion == "number"
+                ? httpVersion
+                : this.option.httpVersion;
+        applyHttp3Fingerprint(curl, nextHttpVersion, nextHttp3Fingerprint);
 
         if (h2config) {
             if (typeof h2config.streamId == "number") {

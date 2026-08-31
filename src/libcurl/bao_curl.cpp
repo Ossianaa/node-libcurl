@@ -433,6 +433,15 @@ void BaoCurl::setInterface(std::string &network)
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_INTERFACE, network.c_str()));
 }
 
+void BaoCurl::applyTrustAnchors(std::string &trust_anchors)
+{
+    // trust_anchors (0xCA34): an empty string clears the option (NULL),
+    // restoring the libcurl built-in Chrome 152 default list; a non-empty
+    // string overrides it with a name/hex list.
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TRUST_ANCHORS,
+                                  trust_anchors.empty() ? NULL : trust_anchors.c_str()));
+}
+
 void BaoCurl::setJA3Fingerprint(
     int tls_version, std::string &cipher, std::string &tls13_cipher, std::string &extensions, std::string &support_groups, int ec_point_formats, std::string &trust_anchors)
 {
@@ -445,12 +454,7 @@ void BaoCurl::setJA3Fingerprint(
     // extensions unsupport
     // ec_point_formats unsupport
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION, extensions.c_str()));
-    // trust_anchors (0xCA34): empty string keeps the libcurl built-in
-    // Chrome 152 default; pass a name/hex list to override.
-    if (!trust_anchors.empty())
-    {
-        CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TRUST_ANCHORS, trust_anchors.c_str()));
-    }
+    applyTrustAnchors(trust_anchors);
 }
 
 void BaoCurl::setAkamaiFingerprint(
@@ -480,12 +484,7 @@ void BaoCurl::setHttp3Fingerprint(
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_TLS, tls.c_str()));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION_HTTP3, tls_extension_permutation_http3.c_str()));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_VERIFY_SIGALGS_HTTP3, tls_verify_sigalgs_http3.c_str()));
-    // trust_anchors (0xCA34): empty string keeps the libcurl built-in
-    // Chrome 152 default; pass a name/hex list to override.
-    if (!trust_anchors.empty())
-    {
-        CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TRUST_ANCHORS, trust_anchors.c_str()));
-    }
+    applyTrustAnchors(trust_anchors);
 }
 
 void BaoCurl::setOnPublishCallback(BaoCurlOnPublishCallback callback)

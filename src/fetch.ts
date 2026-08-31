@@ -17,7 +17,7 @@ import {
     LibCurlSSLVerifyConfig,
     LibCurlTLSVerifySigalgsInfo,
     LibCurlHttp3FingerPrintInfo,
-    isLibCurlHttp3Version,
+    applyHttp3Fingerprint,
 } from "./libcurl";
 import { libcurlSetCookies } from "./utils";
 
@@ -154,12 +154,7 @@ export async function fetch(
     if (typeof tlsVerifySigalgs != "undefined") {
         curl.setTLSVerifySigalgs(tlsVerifySigalgs);
     }
-    // HTTP/3 fingerprint only for HTTP/3 requests — it sets
-    // CURLOPT_TRUST_ANCHORS, which is shared with the JA3 (HTTP/2)
-    // fingerprint.
-    if (isLibCurlHttp3Version(httpVersion)) {
-        curl.setHttp3Fingerprint(http3Fingerprint || "auto");
-    }
+    applyHttp3Fingerprint(curl, httpVersion, http3Fingerprint);
     await curl.send(body);
     return {
         status: () => curl.getResponseStatus(),
