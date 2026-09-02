@@ -139,7 +139,12 @@ void BaoCurlMulti::processFinishedHandles() {
             curl_easy_getinfo(easy_handle, CURLINFO_PRIVATE, &curl);
 
             if (curl) {
+                // The upload buffer and its read/seek wrapper describe the
+                // same allocation; both must be dropped together or the
+                // wrapper's pointers dangle after the transfer ends.
                 curl->m_postdata.reset();
+                curl->wt.reset();
+                curl->onTransferFinished();
                 curl->m_lastCode = result;
 
                 if (curl->m_publishCallback) {

@@ -1143,44 +1143,49 @@ export class LibCurl {
     public async send(body?: LibCurlBodyInfo): Promise<undefined> {
         this.checkSending();
         this.m_isSending_ = true;
-        const isSubmitBody = !["GET", "HEAD", "OPTIONS"].includes(
-            this.m_method_,
-        );
-        let promise;
-        if (body) {
-            if (!isSubmitBody) {
-                throw new LibCurlError(
-                    "Request with GET/HEAD method cannot have body",
+        try {
+            const isSubmitBody = !["GET", "HEAD", "OPTIONS"].includes(
+                this.m_method_,
+            );
+            if (body) {
+                if (!isSubmitBody) {
+                    throw new LibCurlError(
+                        "Request with GET/HEAD method cannot have body",
+                    );
+                }
+                let sendData: string | Uint8Array;
+                if (body instanceof URLSearchParams) {
+                    sendData = body + "";
+                } else if (body instanceof Uint8Array) {
+                    sendData = body;
+                } else if (typeof body == "object") {
+                    sendData = JSON.stringify(body);
+                } else {
+                    sendData = body;
+                }
+                this.beforeProcessRequestHeaders(
+                    sendData instanceof Uint8Array
+                        ? sendData.byteLength
+                        : Buffer.byteLength(sendData),
                 );
-            }
-            let sendData: string | Uint8Array;
-            if (body instanceof URLSearchParams) {
-                sendData = body + "";
-            } else if (body instanceof Uint8Array) {
-                sendData = body;
-            } else if (typeof body == "object") {
-                sendData = JSON.stringify(body);
+                await this.m_libCurl_impl_.sendAsync(sendData);
             } else {
-                sendData = body;
+                if (isSubmitBody) {
+                    this.beforeProcessRequestHeaders(0);
+                } else {
+                    this.beforeProcessRequestHeaders();
+                }
+                await this.m_libCurl_impl_.sendAsync();
             }
-            // @ts-ignore
-            this.beforeProcessRequestHeaders(Buffer.from(sendData).length);
-            promise = this.m_libCurl_impl_.sendAsync(sendData);
-        } else {
-            if (isSubmitBody) {
-                this.beforeProcessRequestHeaders(0);
-            } else {
-                this.beforeProcessRequestHeaders();
+        } catch (error) {
+            if (error instanceof Error) {
+                throw error;
             }
-            promise = this.m_libCurl_impl_.sendAsync();
+            throw new LibCurlError(error as string);
+        } finally {
+            this.m_isSending_ = false;
         }
-        return promise
-            .catch((error: string) => {
-                throw new LibCurlError(error);
-            })
-            .finally(() => {
-                this.m_isSending_ = false;
-            });
+        return undefined;
     }
 
     public getResponseBody(): Uint8Array {

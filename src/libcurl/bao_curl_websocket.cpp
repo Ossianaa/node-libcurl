@@ -11,7 +11,17 @@ BaoCurlWebSocket::BaoCurlWebSocket(CURL* curl) {
 }
 
 BaoCurlWebSocket::~BaoCurlWebSocket() {
-    close(true);
+    // Destructor (GC) path: never write to the socket or invoke callbacks
+    // from here — a close frame and the onclose notification only make sense
+    // while the owning JS object is alive. Just stop the loop handles that
+    // open() registered.
+    if (!m_isOpen) return;
+    m_isOpen = false;
+
+    uv_poll_stop(&m_poll);
+    uv_close(reinterpret_cast<uv_handle_t*>(&m_poll), nullptr);
+    uv_timer_stop(&m_pingTimer);
+    uv_close(reinterpret_cast<uv_handle_t*>(&m_pingTimer), nullptr);
 }
 
 void BaoCurlWebSocket::pollCallback(uv_poll_t* handle, int status, int events) {
@@ -25,49 +35,66 @@ void BaoCurlWebSocket::pollCallback(uv_poll_t* handle, int status, int events) {
         return;
     }
 
-    char buffer[0xffff];
-    size_t rlen;
-    const struct curl_ws_frame* meta;
-    CURLcode res = curl_ws_recv(instance->m_curl, buffer, sizeof(buffer), &rlen, &meta);
+    // Drain: curl reads every readable frame off the socket into its internal
+    // ws buffer, but each curl_ws_recv() call only surfaces one frame. If we
+    // stop after the first frame, the socket is no longer readable and the
+    // remaining frames stay stuck in curl's buffer forever (uv_poll never
+    // fires again). Loop until CURLE_AGAIN, processing one frame per call.
+    for (;;) {
+        char buffer[0xffff];
+        size_t rlen;
+        const struct curl_ws_frame* meta;
+        CURLcode res = curl_ws_recv(instance->m_curl, buffer, sizeof(buffer), &rlen, &meta);
 
-    if (res == CURLE_AGAIN) {
-        return;
-    }
-    else if (res != CURLE_OK) {
-        instance->m_onerror(curl_easy_strerror(res));
-        instance->close(false);
-        return;
-    }
-
-
-    if (meta->flags & CURLWS_CLOSE) {
-        instance->close(false);
-        return;
-    }
-    else if (meta->flags & CURLWS_PING) {
-
-        curl_ws_send(instance->m_curl, buffer, rlen, nullptr, 0, CURLWS_PONG);
-        return;
-    }
-    else if (meta->flags & CURLWS_PONG) {
-        // PONG frames (e.g. replies to the keep-alive ping) carry no
-        // application data and must not reach onmessage.
-        return;
-    }
-    const uint8_t* dataPtr = reinterpret_cast<const uint8_t*>(buffer);
-    instance->m_payload.insert(
-                           instance->m_payload.end(),
-                           dataPtr,
-                           dataPtr + rlen
-                       );
-    if (meta->bytesleft == 0) {
-        if (instance->m_onmessage) {
-            instance->m_onmessage(
-                instance->m_payload.data(),
-                instance->m_payload.size()
-            );
+        if (res == CURLE_AGAIN) {
+            break;
         }
-        instance->m_payload.clear();
+        else if (res != CURLE_OK) {
+            instance->m_onerror(curl_easy_strerror(res));
+            instance->close(false);
+            return;
+        }
+
+        if (meta->flags & CURLWS_CLOSE) {
+            instance->close(false);
+            return;
+        }
+        else if (meta->flags & CURLWS_PING) {
+            // Echo the ping payload back as a PONG (RFC 6455 5.5.2).
+            curl_ws_send(instance->m_curl, buffer, rlen, nullptr, 0, CURLWS_PONG);
+            continue;
+        }
+        else if (meta->flags & CURLWS_PONG) {
+            // PONG frames (e.g. replies to the keep-alive ping) carry no
+            // application data and must not reach onmessage.
+            continue;
+        }
+
+        // curl reports one frame per curl_ws_recv() call and its API exposes
+        // no frame FIN bit, so a message the peer fragmented into several
+        // frames is surfaced as one frame per call (the frame-based model of
+        // the curl ws API). Guard the accumulation buffer so a misbehaving
+        // peer cannot grow it without bound.
+        if (instance->m_payload.size() > MAX_WS_MESSAGE_SIZE - rlen) {
+            instance->m_onerror("WebSocket message too large");
+            instance->close(false);
+            return;
+        }
+        const uint8_t* dataPtr = reinterpret_cast<const uint8_t*>(buffer);
+        instance->m_payload.insert(
+                               instance->m_payload.end(),
+                               dataPtr,
+                               dataPtr + rlen
+                           );
+        if (meta->bytesleft == 0) {
+            if (instance->m_onmessage) {
+                instance->m_onmessage(
+                    instance->m_payload.data(),
+                    instance->m_payload.size()
+                );
+            }
+            instance->m_payload.clear();
+        }
     }
 }
 

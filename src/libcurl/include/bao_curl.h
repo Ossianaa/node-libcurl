@@ -17,8 +17,10 @@ struct Stream_st
 };
 
 struct UploadBuffer_st {
-  const char *readptr;
-  size_t sizeleft;
+  const char *readptr = nullptr;
+  const char *originptr = nullptr;
+  size_t sizeleft = 0;
+  size_t totalsize = 0;
 };
 
 class BaoCurl
@@ -69,6 +71,7 @@ public:
     void setHttp2StreamWeight(int weight);
     void setSSLCert(void* sslCertBuffer, size_t sslCertBufferSize, void* sslPrivateKeyBuffer, size_t sslPrivateKeyBufferSize, std::string& type, std::string& password);
     void applyTrustAnchors(std::string &trust_anchors);
+    void onTransferFinished();
 
     enum HttpVersion
     {
@@ -93,6 +96,14 @@ private:
     struct Stream_st m_stream;
     // struct curl_slist* m_cookies = NULL;
     bool m_bProxy = false;
+    bool m_bSocks = false;
+    // Signature of the options that decide how a connection is negotiated
+    // (TLS/HTTP2 fingerprints, proxy, connect-to, ALPN version, ...). When it
+    // differs from m_sentConnState (the state of the last executed transfer),
+    // the next transfer must not reuse the cached connection.
+    std::string m_connState;
+    std::string m_sentConnState;
+    void setConnState(const std::string &key, const std::string &value);
     bool m_bIsHttps = false;
     bool m_verbose = false;
     CURLcode m_lastCode;

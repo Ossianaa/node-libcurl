@@ -76,6 +76,7 @@ private:
     Napi::ThreadSafeFunction _onclose;
     Napi::ThreadSafeFunction _onerror;
     Napi::ThreadSafeFunction _onmessage;
+    bool m_tsfnReleased = false;
 };
 
 BaoCurlMulti *g_curlMulti = nullptr;
@@ -127,6 +128,18 @@ BaoLibCurlWebSocketWarp::BaoLibCurlWebSocketWarp(const Napi::CallbackInfo &info)
 BaoLibCurlWebSocketWarp::~BaoLibCurlWebSocketWarp()
 {
     delete this->m_ws;
+    if (!this->m_tsfnReleased) {
+        // The socket was GC'd while still open, so close() never ran and the
+        // TSFN references plus the LibCurl keep-alive reference were never
+        // released; dropping them here prevents the loop from staying alive.
+        this->_onopen.Release();
+        this->_onclose.Release();
+        this->_onerror.Release();
+        this->_onmessage.Release();
+        if (this->m_ref) {
+            this->m_ref->Unref();
+        }
+    }
 }
 
 Napi::Value BaoLibCurlWebSocketWarp::open(const Napi::CallbackInfo &info)
@@ -196,14 +209,21 @@ Napi::Value BaoLibCurlWebSocketWarp::setOnClose(const Napi::CallbackInfo &info)
                    "LibCurlWebSocket.onClose", 0, 1, [](Napi::Env env) {});
     this->m_ws->setOnClose([this]()
     {
-        _onclose.BlockingCall(
-                    [this](Napi::Env env, Napi::Function jsCallback)
+        this->m_tsfnReleased = true;
+        // Copy the TSFNs by value: the queued callback below outlives this
+        // object, so it must not touch `this`.
+        Napi::ThreadSafeFunction onopen = this->_onopen;
+        Napi::ThreadSafeFunction onclose = this->_onclose;
+        Napi::ThreadSafeFunction onerror = this->_onerror;
+        Napi::ThreadSafeFunction onmessage = this->_onmessage;
+        onclose.BlockingCall(
+                    [onopen, onclose, onerror, onmessage](Napi::Env env, Napi::Function jsCallback)
         {
             jsCallback.Call({});
-            this->_onopen.Unref(env);
-            this->_onclose.Unref(env);
-            this->_onerror.Unref(env);
-            this->_onmessage.Unref(env);
+            onopen.Unref(env);
+            onclose.Unref(env);
+            onerror.Unref(env);
+            onmessage.Unref(env);
         });
         this->_onopen.Release();
         this->_onclose.Release();

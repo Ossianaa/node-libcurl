@@ -38,6 +38,7 @@ private:
     uv_poll_t m_poll;
 
     bool m_isOpen = false;
+    static constexpr size_t MAX_WS_MESSAGE_SIZE = 100 * 1024 * 1024;
     std::function<void()> m_onopen;
     std::function<void()> m_onclose;
     std::function<void(std::string)> m_onerror;

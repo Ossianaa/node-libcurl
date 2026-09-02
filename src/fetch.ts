@@ -106,9 +106,10 @@ export async function fetch(
     if (headers) {
         curl.setRequestHeaders(headers);
     }
-    if (redirect) {
-        curl.setRedirect(true);
-    }
+    // Each fetch() call is self-contained: when reusing a LibCurl instance,
+    // routing options absent from this call must not linger from an earlier
+    // one, so they are explicitly reset (an empty string clears the option).
+    curl.setRedirect(redirect);
     if (httpVersion) {
         curl.setHttpVersion(httpVersion);
     }
@@ -124,11 +125,15 @@ export async function fetch(
     }
     if (proxy) {
         curl.setProxy(proxy);
+    } else {
+        curl.setProxy("");
     }
     if (connectTo) {
         curl.setConnectTo(connectTo);
+    } else {
+        curl.setConnectTo("");
     }
-    if (timeout) {
+    if (typeof timeout != "undefined") {
         curl.setTimeout(timeout, timeout);
     }
     curl.setJA3Fingerprint(ja3);

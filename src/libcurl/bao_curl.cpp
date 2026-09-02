@@ -41,12 +41,58 @@ static size_t read_func(char *dest, size_t size, size_t nmemb, void *userp)
   return 0;
 }
 
+// When an HTTP/2 stream is reset by the peer or the connection is
+// interrupted and the request is retried, libcurl must rewind the request
+// body to the start. Without seek support, a one-shot read callback cannot
+// rewind, and curl fails with CURLE_SEND_FAIL_REWIND(65)
+// "rewinding of the data stream failed".
+static int seek_func(void *userp, curl_off_t offset, int whence)
+{
+  UploadBuffer_st *wt = (UploadBuffer_st *)userp;
+  if (!wt || !wt->originptr)
+    return CURL_SEEKFUNC_FAIL;
+
+  curl_off_t origin_offset = 0;
+  if (whence == SEEK_SET)
+    origin_offset = offset;
+  else if (whence == SEEK_CUR)
+    origin_offset = (wt->readptr - wt->originptr) + offset;
+  else if (whence == SEEK_END)
+    origin_offset = (curl_off_t)wt->totalsize + offset;
+  else
+    return CURL_SEEKFUNC_CANTSEEK;
+
+  if (origin_offset < 0 || (size_t)origin_offset > wt->totalsize)
+    return CURL_SEEKFUNC_FAIL;
+
+  wt->readptr = wt->originptr + origin_offset;
+  wt->sizeleft = wt->totalsize - (size_t)origin_offset;
+  return CURL_SEEKFUNC_OK;
+}
+
 size_t write_func(void *ptr, size_t size, size_t nmemb, std::string &stream)
 {
-    const size_t resize = size * nmemb;
-    std::string html_data(reinterpret_cast<const char *>(ptr), size * nmemb);
-    stream += html_data;
-    return resize;
+    // This is where CURLE_WRITE_ERROR(23) "Failed writing received data"
+    // originates. The whole response body accumulates in an in-memory string;
+    // under memory pressure append() throws bad_alloc. An exception escaping
+    // through libcurl's C stack is undefined behavior (crash or corruption),
+    // so it must be caught here and return 0, letting curl cleanly report
+    // CURLE_WRITE_ERROR. Appending directly avoids a temporary copy per chunk
+    // and lowers allocation pressure.
+    const size_t len = size * nmemb;
+    try
+    {
+        stream.append(reinterpret_cast<const char *>(ptr), len);
+        return len;
+    }
+    catch (const std::exception &)
+    {
+        return 0;
+    }
+    catch (...)
+    {
+        return 0;
+    }
 }
 
 BaoCurl::BaoCurl()
@@ -99,6 +145,7 @@ void BaoCurl::init()
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SHARE, this->m_pSHARE));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_UNRESTRICTED_AUTH, 1L));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_READFUNCTION, read_func));
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SEEKFUNCTION, seek_func));
     std::string http3FpQuic = "scid=0";
     std::string http3FpSettings = "1:65536;6:262144;7:100;51:1;GREASE";
     std::string http3FpTransportParams = "12584:0x4f524947;9:103;1:30000;7:6291456;15:AUTO;4:15728640;GREASE;32:65536;3:1472;17:1@1,GREASE;8:100;6:6291456;12583:174718;5:6291456";
@@ -156,7 +203,18 @@ void BaoCurl::setRequestHeader(std::string &key, std::string &value)
     {
         CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_USERAGENT, value.c_str()));
     }
-    this->m_pHeaders = curl_slist_append(this->m_pHeaders, (key + ": " + value).c_str());
+    // An empty value uses libcurl's "Header:" suppression syntax: the header
+    // is not sent, and curl's internal defaults (such as the POST default
+    // Content-Type: application/x-www-form-urlencoded) are suppressed as
+    // well, matching browser behavior.
+    if (value.empty())
+    {
+        this->m_pHeaders = curl_slist_append(this->m_pHeaders, (key + ":").c_str());
+    }
+    else
+    {
+        this->m_pHeaders = curl_slist_append(this->m_pHeaders, (key + ": " + value).c_str());
+    }
 }
 
 void BaoCurl::setRequestHeader(std::string &keyValue)
@@ -166,25 +224,25 @@ void BaoCurl::setRequestHeader(std::string &keyValue)
 
 void BaoCurl::setRequestHeaders(std::string &header)
 {
-    auto arr = StringSplit(header, "\n");
-    for (auto arr_b = arr.begin(); arr_b != arr.end(); ++arr_b)
+    auto lines = StringSplit(header, "\n");
+    for (auto line : lines)
     {
-        std::string arr_mem = *arr_b;
-        if (arr_mem.size() == 0)
+        if (line.size() == 0)
         {
             continue;
         }
-        if (arr_mem.find(": ") != -1)
+        // Split at the first ": " only; a value may itself contain ": "
+        // (e.g. "Authorization: Bearer a:b") and must not be truncated.
+        auto sep = line.find(": ");
+        if (sep != std::string::npos)
         {
-            auto arr = StringSplit(arr_mem, ": ");
-            auto key = arr.at(0);
-            auto value = arr.at(1);
+            std::string key = line.substr(0, sep);
+            std::string value = line.substr(sep + 2);
             setRequestHeader(key, value);
         }
         else
         {
-
-            setRequestHeader(arr_mem);
+            setRequestHeader(line);
         }
     }
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTPHEADER, this->m_pHeaders));
@@ -194,6 +252,8 @@ void BaoCurl::setProxy(std::string &proxy)
 {
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXY, proxy.c_str()));
     this->m_bProxy = true;
+    this->m_bSocks = proxy.rfind("socks", 0) == 0;
+    this->setConnState("proxy", proxy);
 }
 
 void BaoCurl::setProxy(std::string &proxy, std::string &username,
@@ -202,6 +262,30 @@ void BaoCurl::setProxy(std::string &proxy, std::string &username,
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXY, proxy.c_str()));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_PROXYUSERPWD, (username + ":" + password).c_str()));
     this->m_bProxy = true;
+    this->m_bSocks = proxy.rfind("socks", 0) == 0;
+    this->setConnState("proxy", proxy + "|" + username + ":" + password);
+}
+
+void BaoCurl::setConnState(const std::string &key, const std::string &value)
+{
+    // m_connState is an opaque "\x1fkey\x1evalue" record list, only ever
+    // compared for equality between transfers or rewritten per key.
+    std::string record = "\x1f" + key + "\x1e" + value;
+    size_t pos = this->m_connState.find("\x1f" + key + "\x1e");
+    if (pos == std::string::npos)
+    {
+        this->m_connState += record;
+        return;
+    }
+    size_t end = this->m_connState.find('\x1f', pos + 1);
+    if (end == std::string::npos)
+    {
+        this->m_connState.erase(pos);
+    }
+    else
+    {
+        this->m_connState.replace(pos, end - pos, record);
+    }
 }
 
 void BaoCurl::setConnectTo(std::string &connectTo)
@@ -222,6 +306,7 @@ void BaoCurl::setConnectTo(std::string &connectTo)
         this->m_pConnectTo = curl_slist_append(this->m_pConnectTo, arr_mem.c_str());
     }
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_CONNECT_TO, this->m_pConnectTo));
+    this->setConnState("connectto", connectTo);
 }
 
 void BaoCurl::setTimeout(
@@ -235,7 +320,7 @@ void BaoCurl::setTimeout(
 void BaoCurl::sendByte(const char *data, const int len)
 {
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTPHEADER, this->m_pHeaders));
-    if (this->m_bProxy)
+    if (this->m_bProxy && !this->m_bSocks)
     {
         if (this->m_bIsHttps)
         {
@@ -257,8 +342,15 @@ void BaoCurl::sendByte(const char *data, const int len)
         }
         this->wt = std::make_unique<UploadBuffer_st>();
         this->wt->readptr = (const char *)m_postdata.get();
+        this->wt->originptr = (const char *)m_postdata.get();
         this->wt->sizeleft = len;
+        this->wt->totalsize = len;
         CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_READDATA, this->wt.get()));
+        CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SEEKDATA, this->wt.get()));
+        // Resetting UPLOAD does not need to be done manually: in open() the
+        // CURLOPT_POST 0/1 switch resets the internal httpreq to GET/POST.
+        // Note that setting CURLOPT_UPLOAD=0 here explicitly would also flip
+        // httpreq back to GET and override the POST state.
         if (this->m_method == "PUT" || this->m_method == "PATCH" || this->m_method == "DELETE")
         {
             CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_UPLOAD, 1L));
@@ -270,6 +362,23 @@ void BaoCurl::sendByte(const char *data, const int len)
         }
     }
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_NOBODY, this->m_method == "HEAD" ? 1L : 0L));
+
+    // A cached connection was negotiated under the options recorded in
+    // m_sentConnState. If the current options differ (another JA3/HTTP2
+    // fingerprint, proxy, connect-to, ...), reusing that connection would
+    // make the peer see a TLS/HTTP2 profile that does not match this
+    // request's options. CURLOPT_FRESH_CONNECT is consumed by the next
+    // transfer and cleared again in onTransferFinished().
+    if (this->m_connState != this->m_sentConnState)
+    {
+        CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_FRESH_CONNECT, 1L));
+        this->m_sentConnState = this->m_connState;
+    }
+}
+
+void BaoCurl::onTransferFinished()
+{
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_FRESH_CONNECT, 0L));
 }
 
 void BaoCurl::setCookie(std::string &key, std::string &value, std::string &domain, std::string &path)
@@ -316,6 +425,14 @@ std::string BaoCurl::getCookie(std::string &key, std::string &domain, std::strin
     do
     {
         std::vector<std::string> vt = StringSplit(std::string(cookies->data), "\t");
+        // A cookie line always carries 7 tab-separated fields
+        // (domain, tailmatch, path, secure, expires, name, value); a
+        // malformed line must be skipped, not crash via at().
+        if (vt.size() < 7)
+        {
+            cookies = cookies->next;
+            continue;
+        }
         if (domain.size() != 0)
         {
             if (domain != vt.at(0) && (std::string("#HttpOnly_") + domain) != vt.at(0))
@@ -352,14 +469,21 @@ long BaoCurl::getResponseStatus()
 
 void BaoCurl::setSSLVerify(std::string &caPath)
 {
-    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_CAINFO, caPath.c_str()));
+    // An empty path leaves CURLOPT_CAINFO untouched, keeping libcurl's
+    // compile-time default CA bundle; a non-empty path lets callers supply
+    // their own CA (e.g. certifi).
+    if (!caPath.empty())
+    {
+        CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_CAINFO, caPath.c_str()));
+    }
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_VERIFYPEER, 1L));
-    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_VERIFYHOST, 1L));
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_SSL_VERIFYHOST, 2L));
 }
 
 void BaoCurl::setTLSVerifySigalgs(std::string &sigalgs)
 {
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_VERIFY_SIGALGS, sigalgs.c_str()));
+    this->setConnState("sigalgs", sigalgs);
 }
 
 void BaoCurl::setRedirect(bool enable)
@@ -395,6 +519,7 @@ void BaoCurl::setHttpVersion(BaoCurl::HttpVersion version)
         return;
     }
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP_VERSION, temp));
+    this->setConnState("httpversion", std::to_string(temp));
 }
 
 unsigned int BaoCurl::getLastCurlCode()
@@ -431,6 +556,7 @@ curl_off_t BaoCurl::getResponseEncodedBodySize()
 void BaoCurl::setInterface(std::string &network)
 {
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_INTERFACE, network.c_str()));
+    this->setConnState("interface", network);
 }
 
 void BaoCurl::applyTrustAnchors(std::string &trust_anchors)
@@ -455,6 +581,7 @@ void BaoCurl::setJA3Fingerprint(
     // ec_point_formats unsupport
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION, extensions.c_str()));
     applyTrustAnchors(trust_anchors);
+    this->setConnState("ja3", std::to_string(tls_version) + "|" + cipher + "|" + tls13_cipher + "|" + extensions + "|" + support_groups + "|" + std::to_string(ec_point_formats) + "|" + trust_anchors);
 }
 
 void BaoCurl::setAkamaiFingerprint(
@@ -467,6 +594,7 @@ void BaoCurl::setAkamaiFingerprint(
         CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_STREAMS, streams.c_str()));
     }
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_PSEUDO_HEADERS_ORDER, pseudo_headers_order.c_str()));
+    this->setConnState("akamai", settings + "|" + std::to_string(window_update) + "|" + streams + "|" + pseudo_headers_order);
 }
 
 void BaoCurl::setHttp3Fingerprint(
@@ -485,6 +613,7 @@ void BaoCurl::setHttp3Fingerprint(
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION_HTTP3, tls_extension_permutation_http3.c_str()));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_VERIFY_SIGALGS_HTTP3, tls_verify_sigalgs_http3.c_str()));
     applyTrustAnchors(trust_anchors);
+    this->setConnState("http3", quic + "|" + settings + "|" + transport_params + "|" + tls + "|" + tls_extension_permutation_http3 + "|" + tls_verify_sigalgs_http3 + "|" + trust_anchors);
 }
 
 void BaoCurl::setOnPublishCallback(BaoCurlOnPublishCallback callback)
@@ -495,11 +624,13 @@ void BaoCurl::setOnPublishCallback(BaoCurlOnPublishCallback callback)
 void BaoCurl::setHttp2NextStreamId(int stream_id)
 {
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP2_STREAM_ID, stream_id));
+    this->setConnState("h2sid", std::to_string(stream_id));
 }
 
 void BaoCurl::setHttp2StreamWeight(int weight)
 {
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_STREAM_WEIGHT, weight));
+    this->setConnState("h2w", std::to_string(weight));
 }
 
 void BaoCurl::setSSLCert(void* sslCertBuffer, size_t sslCertBufferSize, void* sslPrivateKeyBuffer, size_t sslPrivateKeyBufferSize, std::string& type, std::string& password) {
