@@ -1,4 +1,3 @@
-import { randomInt } from "crypto";
 import {
     BaoLibCurl,
     processRequestHeaders,
@@ -31,9 +30,7 @@ export type LibCurlHttpVersionInfo =
  *  CURLOPT_TRUST_ANCHORS, which is shared with the JA3 (HTTP/2)
  *  fingerprint; applying it on non-H3 requests would overwrite the JA3
  *  trust_anchors value. */
-export const isLibCurlHttp3Version = (
-    v?: LibCurlHttpVersionInfo,
-): boolean =>
+export const isLibCurlHttp3Version = (v?: LibCurlHttpVersionInfo): boolean =>
     v === "http3" ||
     v === "http3_only" ||
     v === LibCurlHttpVersionInfoEnum.http3 ||
@@ -101,7 +98,6 @@ export type LibCurlRequestHeadersAttr = CaseInsensitiveMap;
 
 export type LibCurlInterfaceInfo = string;
 
-
 import {
     LibCurlJA3FingerPrintImplMap,
     LibCurlAkamaiFingerPrintImplMap,
@@ -132,7 +128,6 @@ export {
     LibCurlJA3SupportGroup,
     LibCurlJA3EcPointFormat,
 } from "./fingerprints";
-
 
 const defaultSortRequestHeadersConfig = {
     prefix: ["host", "connection", "content-length", "pragma", "cache-control"],
@@ -206,8 +201,6 @@ const LibCurlAutoSortRequestHeadersImplMap = (
         return autoSortRequestHeadersConfigV2;
     }
 };
-
-
 
 interface LibCurlCommonHeaders {
     "User-Agent":
@@ -293,12 +286,7 @@ export interface BaoLibCurlImpl {
     setProxy(proxy: string, username: string, password: string): void;
     setConnectTo(connectTo: string): void;
     setTimeout(connectTime: number, sendTime: number): void;
-    setCookie(
-        name: string,
-        value: string,
-        domain: string,
-        path: string,
-    ): void;
+    setCookie(name: string, value: string, domain: string, path: string): void;
     deleteCookie(name: string, domain: string, path: string): void;
     getCookies(): string;
     getCookie(name: string, domain: string, path: string): string;
@@ -595,7 +583,9 @@ export class LibCurl {
     public setTimeout(connectTime: number, sendTime: number): void {
         this.checkSending();
         if (connectTime > sendTime) {
-            throw new LibCurlError("connectTime cannot be greater than sendTime.");
+            throw new LibCurlError(
+                "connectTime cannot be greater than sendTime.",
+            );
         }
         this.m_libCurl_impl_.setTimeout(connectTime, sendTime);
     }
@@ -793,9 +783,14 @@ export class LibCurl {
         this.checkSending();
         const _version =
             typeof version == "string"
-                ? ({ "http1.1": 0, http2: 1, http3: 2, http3_only: 3 } as const)[
-                      version
-                  ]
+                ? (
+                      {
+                          "http1.1": 0,
+                          http2: 1,
+                          http3: 2,
+                          http3_only: 3,
+                      } as const
+                  )[version]
                 : version;
         this.m_libCurl_impl_.setHttpVersion(_version);
     }
@@ -829,7 +824,7 @@ export class LibCurl {
         if (!LibCurlJA3TlsVersion[ja3Arr.at(0)]) {
             throw new LibCurlError("ja3 fingerprint tlsVersion no support");
         }
-        let tls13_ciphers: number[] = [];
+        let tls13_ciphers: string[] = [];
         const cipherArr = ja3Arr
             .at(1)
             .split("-")
@@ -841,13 +836,17 @@ export class LibCurl {
                     );
                 }
                 if (cipher.startsWith("TLS_")) {
-                    const pos = ["4865", "4866", "4867"].indexOf(key);
-                    if (pos == -1) {
+                    const tls13_ciphers_obj = {
+                        4865: "TLS_AES_128_GCM_SHA256",
+                        4866: "TLS_AES_256_GCM_SHA384",
+                        4867: "TLS_CHACHA20_POLY1305_SHA256",
+                    };
+                    if (!tls13_ciphers_obj[key]) {
                         throw new LibCurlError(
                             `ja3 fingerprint TLSv1.3 cipher ${key} no support`,
                         );
                     }
-                    tls13_ciphers.push(pos + 1);
+                    tls13_ciphers.push(tls13_ciphers_obj[key]);
                     return;
                 }
                 return cipher;
@@ -888,7 +887,7 @@ export class LibCurl {
         const ja3Args = [
             parseInt(tlsVersion),
             cipherArr.join(":"),
-            tls13_ciphers.join(""),
+            tls13_ciphers.join(":"),
             extension_permutation.join(","),
             supportGroups.join(":"),
             0,
@@ -900,7 +899,7 @@ export class LibCurl {
         this.m_libCurl_impl_.setJA3Fingerprint(
             parseInt(tlsVersion),
             cipherArr.join(":"),
-            tls13_ciphers.join(""),
+            tls13_ciphers.join(":"),
             extension_permutation.join(","),
             supportGroups.join(":"),
             0,
