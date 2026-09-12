@@ -112,11 +112,13 @@ import {
     LibCurlAkamaiFingerPrintInfo,
     LibCurlHttp3FingerPrintInfo,
     LibCurlHttp3FingerPrintImpl,
+    LibCurlBrowserBrand,
 } from "./fingerprints";
 export {
     LibCurlJA3FingerPrintImpl,
     LibCurlAkamaiFingerPrintImpl,
     LibCurlHttp3FingerPrintImpl,
+    LibCurlBrowserBrand,
     LibCurlJA3FingerPrintInfo,
     LibCurlAkamaiFingerPrintInfo,
     LibCurlHttp3FingerPrintInfo,
@@ -363,7 +365,8 @@ export class LibCurl {
         new CaseInsensitiveMap();
     private m_requestType: LibCurlRequestType = "fetch";
     private m_nextRequestType: LibCurlRequestType | null = null;
-    private m_chromeVersion: number = 152;
+    private m_chromeVersion: number = 153;
+    private m_browserBrand: LibCurlBrowserBrand = "chrome";
     private m_hasCustomTLSVerifySigalgs: boolean = false;
     /* Last JA3/HTTP/3 fingerprint arguments actually applied to the native
      * handle. Re-applying identical values on every request is skipped;
@@ -467,6 +470,7 @@ export class LibCurl {
             if (chromeVersion) {
                 this.m_chromeVersion = parseInt(chromeVersion);
             }
+            this.m_browserBrand = value.includes("Edg/") ? "edge" : "chrome";
         }
         this.m_requestHeaders_.set(_key, value);
     }
@@ -811,11 +815,10 @@ export class LibCurl {
     public setJA3Fingerprint(ja3: LibCurlJA3FingerPrintInfo = "auto"): void {
         this.checkSending();
         const [ja3String, tlsVerifySigalgs, trustAnchors] =
-            LibCurlJA3FingerPrintImplMap[ja3]?.(this.m_chromeVersion) || [
-                ja3,
-                [],
-                undefined,
-            ];
+            LibCurlJA3FingerPrintImplMap[ja3]?.(
+                this.m_browserBrand,
+                this.m_chromeVersion,
+            ) || [ja3, [], undefined];
         const ja3Arr = ja3String.split(",");
         if (ja3Arr.length != 5) {
             throw new LibCurlError("ja3 fingerprint error");
@@ -921,8 +924,10 @@ export class LibCurl {
         akamai: LibCurlAkamaiFingerPrintInfo = "auto",
     ): void {
         const [settings, window_update, streams, pseudo_headers_order] = (
-            LibCurlAkamaiFingerPrintImplMap[akamai]?.(this.m_chromeVersion) ||
-            akamai
+            LibCurlAkamaiFingerPrintImplMap[akamai]?.(
+                this.m_browserBrand,
+                this.m_chromeVersion,
+            ) || akamai
         ).split("|");
         this.m_libCurl_impl_.setAkamaiFingerprint(
             settings.replaceAll(",", ";"),
@@ -943,7 +948,7 @@ export class LibCurl {
             typeof http3Fingerprint == "string"
                 ? LibCurlHttp3FingerPrintImplMap[
                       http3Fingerprint as LibCurlHttp3FingerPrintImpl
-                  ]?.(this.m_chromeVersion)
+                  ]?.(this.m_browserBrand, this.m_chromeVersion)
                 : undefined;
         const config = presetConfig || http3Fingerprint;
         if (typeof config == "string") {

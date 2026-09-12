@@ -16,6 +16,8 @@ export type LibCurlAkamaiFingerPrintImpl =
     | "chrome119"
     | "auto";
 
+export type LibCurlBrowserBrand = "chrome" | "edge";
+
 const randomStringExtensions = (exts: string) =>
     exts
         .split("-")
@@ -39,7 +41,10 @@ export const LibCurlJA3FingerPrintImplMap: {
         "auto"
     >
         ? () => LibCurlJA3FingerPrintConfig
-        : (chromeVersion: number) => LibCurlJA3FingerPrintConfig;
+        : (
+              browserBrand: LibCurlBrowserBrand,
+              chromeVersion: number,
+          ) => LibCurlJA3FingerPrintConfig;
 } = {
     chrome99: () => [
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21-41,29-23-24,0`,
@@ -102,7 +107,7 @@ export const LibCurlJA3FingerPrintImplMap: {
             "11129.9.6,11129.9.11,44947.2.18,11129.9.15,52580.200109.1.18,11129.9.12,44947.2.15,44947.2.20,44947.2.19,52580.200109.1.13,11129.9.10,11129.9.13,52580.200109.1.11,11129.9.4,11129.9.1,52580.200109.1.12,52580.200109.1.9,44947.2.6,11129.9.5,52580.200109.1.7,11129.9.8,11129.9.7,52580.200109.1.10,44947.2.14,44947.2.13,44947.2.1,52580.200109.1.19,52580.200109.1.8",
         ),
     ],
-    auto(chromeVersion?: number) {
+    auto(browserBrand: LibCurlBrowserBrand, chromeVersion?: number) {
         if (!chromeVersion) {
             return this.chrome152();
         }
@@ -121,7 +126,9 @@ export const LibCurlJA3FingerPrintImplMap: {
         } else if (chromeVersion < 152) {
             return this.chrome150();
         } else {
-            return this.chrome152();
+            return browserBrand === "edge"
+                ? this.chrome150()
+                : this.chrome152();
         }
     },
 };
@@ -132,12 +139,12 @@ export const LibCurlAkamaiFingerPrintImplMap: {
         "auto"
     >
         ? () => string
-        : (chromeVersion: number) => string;
+        : (browserBrand: LibCurlBrowserBrand, chromeVersion: number) => string;
 } = {
     chrome99: () => `1:65536;3:1000;4:6291456;6:262144|15663105|0|m,a,s,p`,
     chrome107: () => `1:65536;2:0;3:1000;4:6291456;6:262144|15663105|0|m,a,s,p`,
     chrome119: () => `1:65536;2:0;4:6291456;6:262144|15663105|0|m,a,s,p`,
-    auto(chromeVersion?: number) {
+    auto(browserBrand: LibCurlBrowserBrand, chromeVersion?: number) {
         if (!chromeVersion) {
             return this.chrome119();
         }
@@ -179,7 +186,10 @@ export const LibCurlHttp3FingerPrintImplMap: {
         "auto"
     >
         ? () => LibCurlHttp3FingerPrintConfig
-        : (chromeVersion: number) => LibCurlHttp3FingerPrintConfig;
+        : (
+              browserBrand: LibCurlBrowserBrand,
+              chromeVersion: number,
+          ) => LibCurlHttp3FingerPrintConfig;
 } = {
     chrome126: () => ({
         scid: "scid=0",
@@ -224,7 +234,7 @@ export const LibCurlHttp3FingerPrintImplMap: {
             "11129.9.6,11129.9.11,44947.2.18,11129.9.15,52580.200109.1.18,11129.9.12,44947.2.15,44947.2.20,44947.2.19,52580.200109.1.13,11129.9.10,11129.9.13,52580.200109.1.11,11129.9.4,11129.9.1,52580.200109.1.12,52580.200109.1.9,44947.2.6,11129.9.5,52580.200109.1.7,11129.9.8,11129.9.7,52580.200109.1.10,44947.2.14,44947.2.13,44947.2.1,52580.200109.1.19,52580.200109.1.8",
         ),
     }),
-    auto(chromeVersion?: number) {
+    auto(browserBrand: LibCurlBrowserBrand, chromeVersion?: number) {
         if (!chromeVersion) {
             return this.chrome152();
         }
@@ -233,7 +243,7 @@ export const LibCurlHttp3FingerPrintImplMap: {
         } else if (chromeVersion < 152) {
             return this.chrome150();
         }
-        return this.chrome152();
+        return browserBrand === "edge" ? this.chrome150() : this.chrome152();
     },
 };
 
