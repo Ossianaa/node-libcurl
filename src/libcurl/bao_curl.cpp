@@ -95,6 +95,10 @@ size_t write_func(void *ptr, size_t size, size_t nmemb, std::string &stream)
     }
 }
 
+/* Chrome numbers its first QUIC Initial packet 1; ngtcp2 defaults to 0 and
+   H3 fingerprint checkers report the value. */
+static const long HTTP3_FP_INITIAL_PKT_NUM_CHROME = 1;
+
 BaoCurl::BaoCurl()
 {
     this->init();
@@ -160,7 +164,8 @@ void BaoCurl::init()
         http3FpTls,
         tlsExtensionPermutationHttp3,
         tlsVerifySigalgsHttp3,
-        http3TrustAnchors);
+        http3TrustAnchors,
+        HTTP3_FP_INITIAL_PKT_NUM_CHROME);
     setHttp2NextStreamId(1);
     this->setTimeout(15, 15);
 }
@@ -604,7 +609,8 @@ void BaoCurl::setHttp3Fingerprint(
     std::string& tls,
     std::string& tls_extension_permutation_http3,
     std::string& tls_verify_sigalgs_http3,
-    std::string& trust_anchors)
+    std::string& trust_anchors,
+    long initial_pkt_num)
 {
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_QUIC, quic.c_str()));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_SETTINGS, settings.c_str()));
@@ -612,8 +618,9 @@ void BaoCurl::setHttp3Fingerprint(
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_TLS, tls.c_str()));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_EXTENSION_PERMUTATION_HTTP3, tls_extension_permutation_http3.c_str()));
     CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_TLS_VERIFY_SIGALGS_HTTP3, tls_verify_sigalgs_http3.c_str()));
+    CHECK_CURLOK(curl_easy_setopt(this->m_pCURL, CURLOPT_HTTP3_FP_INITIAL_PKT_NUM, initial_pkt_num));
     applyTrustAnchors(trust_anchors);
-    this->setConnState("http3", quic + "|" + settings + "|" + transport_params + "|" + tls + "|" + tls_extension_permutation_http3 + "|" + tls_verify_sigalgs_http3 + "|" + trust_anchors);
+    this->setConnState("http3", quic + "|" + settings + "|" + transport_params + "|" + tls + "|" + tls_extension_permutation_http3 + "|" + tls_verify_sigalgs_http3 + "|" + trust_anchors + "|" + std::to_string(initial_pkt_num));
 }
 
 void BaoCurl::setOnPublishCallback(BaoCurlOnPublishCallback callback)

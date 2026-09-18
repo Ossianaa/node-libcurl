@@ -325,6 +325,7 @@ export interface BaoLibCurlImpl {
         permutation: string,
         verifySigalgs: string,
         trustAnchors: string,
+        initialPktNum: number,
     ): void;
     setHttp2NextStreamId(streamId: number): void;
     setHttp2StreamWeight(weight: number): void;
@@ -954,6 +955,7 @@ export class LibCurl {
         if (typeof config == "string") {
             throw new LibCurlError("http3 fingerprint no support");
         }
+        const initialPktNum = config.initial_packet_number ?? 0;
         const http3Args = [
             config.scid,
             config.settings,
@@ -962,6 +964,7 @@ export class LibCurl {
             config.permutation,
             config.verify_sigalgs,
             config.trust_anchors || "",
+            initialPktNum,
         ].join("\u0001");
         if (http3Args === this.m_lastHttp3FingerprintArgs) {
             return;
@@ -974,6 +977,7 @@ export class LibCurl {
             config.permutation,
             config.verify_sigalgs,
             config.trust_anchors || "",
+            initialPktNum,
         );
         this.m_lastHttp3FingerprintArgs = http3Args;
         /* CURLOPT_TRUST_ANCHORS is shared with the JA3 (HTTP/2) fingerprint */

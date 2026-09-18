@@ -175,6 +175,8 @@ type LibCurlHttp3FingerPrintConfig = {
     permutation: string;
     verify_sigalgs: string;
     trust_anchors?: string;
+    /** Initial QUIC packet number. Chrome starts at 1; ngtcp2 defaults to 0. */
+    initial_packet_number?: number;
 };
 export type LibCurlHttp3FingerPrintInfo =
     | LibCurlHttp3FingerPrintConfig
@@ -202,6 +204,7 @@ export const LibCurlHttp3FingerPrintImplMap: {
         permutation: "7,0,14,19,15,9,4,24,17,21,1",
         verify_sigalgs:
             "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201",
+        initial_packet_number: 1,
     }),
     chrome150: () => ({
         scid: "scid=0",
@@ -214,6 +217,7 @@ export const LibCurlHttp3FingerPrintImplMap: {
         permutation: "0,15,19,23,9,1,14,21,17,4,7",
         verify_sigalgs:
             "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201",
+        initial_packet_number: 1,
     }),
     chrome152: () => ({
         // Chrome 152 adds trust_anchors (kExtensions index 27) to the
@@ -233,6 +237,7 @@ export const LibCurlHttp3FingerPrintImplMap: {
         trust_anchors: randomStringTrustAnchors(
             "11129.9.6,11129.9.11,44947.2.18,11129.9.15,52580.200109.1.18,11129.9.12,44947.2.15,44947.2.20,44947.2.19,52580.200109.1.13,11129.9.10,11129.9.13,52580.200109.1.11,11129.9.4,11129.9.1,52580.200109.1.12,52580.200109.1.9,44947.2.6,11129.9.5,52580.200109.1.7,11129.9.8,11129.9.7,52580.200109.1.10,44947.2.14,44947.2.13,44947.2.1,52580.200109.1.19,52580.200109.1.8",
         ),
+        initial_packet_number: 1,
     }),
     auto(browserBrand: LibCurlBrowserBrand, chromeVersion?: number) {
         if (!chromeVersion) {

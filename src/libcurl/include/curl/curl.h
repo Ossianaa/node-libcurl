@@ -2255,6 +2255,11 @@ typedef enum {
      sample list is used. An empty string sends the extension with an
      empty list. */
   CURLOPT(CURLOPT_TRUST_ANCHORS, CURLOPTTYPE_STRINGPOINT, 337),
+  /* Initial packet number for every QUIC packet number space (HTTP/3).
+     Must be in the range [0, INT32_MAX]; 0 keeps the ngtcp2 default.
+     Chrome starts at 1 and H3 fingerprint checkers report the value, so
+     it is configurable here. */
+  CURLOPT(CURLOPT_HTTP3_FP_INITIAL_PKT_NUM, CURLOPTTYPE_LONG, 338),
   CURLOPT_LASTENTRY /* the last unused */
 } CURLoption;
 
