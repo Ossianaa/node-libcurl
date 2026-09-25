@@ -9,6 +9,7 @@ export type LibCurlJA3FingerPrintImpl =
     | "chrome133"
     | "chrome150"
     | "chrome152"
+    | "chrome154"
     | "auto";
 export type LibCurlAkamaiFingerPrintImpl =
     | "chrome99"
@@ -107,9 +108,28 @@ export const LibCurlJA3FingerPrintImplMap: {
             "11129.9.6,11129.9.11,44947.2.18,11129.9.15,52580.200109.1.18,11129.9.12,44947.2.15,44947.2.20,44947.2.19,52580.200109.1.13,11129.9.10,11129.9.13,52580.200109.1.11,11129.9.4,11129.9.1,52580.200109.1.12,52580.200109.1.9,44947.2.6,11129.9.5,52580.200109.1.7,11129.9.8,11129.9.7,52580.200109.1.10,44947.2.14,44947.2.13,44947.2.1,52580.200109.1.19,52580.200109.1.8",
         ),
     ],
+    chrome154: () => [
+        // Chrome 154 keeps trust_anchors in a fixed order (ascending anchor ID
+        // bytes) instead of shuffling it per connection.
+        `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-65037-21-51764")}-41,4588-29-23-24,0`,
+        [
+            "ml_dsa_44",
+            "ml_dsa_65",
+            "ml_dsa_87",
+            "ecdsa_secp256r1_sha256",
+            "rsa_pss_rsae_sha256",
+            "rsa_pkcs1_sha256",
+            "ecdsa_secp384r1_sha384",
+            "rsa_pss_rsae_sha384",
+            "rsa_pkcs1_sha384",
+            "rsa_pss_rsae_sha512",
+            "rsa_pkcs1_sha512",
+        ],
+        "44947.2.1,44947.2.6,44947.2.13,44947.2.14,44947.2.15,44947.2.18,44947.2.19,44947.2.20,52580.200109.1.7,52580.200109.1.8,52580.200109.1.9,52580.200109.1.10,52580.200109.1.11,52580.200109.1.12,52580.200109.1.13,52580.200109.1.18,52580.200109.1.19,11129.9.1,11129.9.4,11129.9.5,11129.9.6,11129.9.7,11129.9.8,11129.9.10,11129.9.11,11129.9.12,11129.9.13,11129.9.15",
+    ],
     auto(browserBrand: LibCurlBrowserBrand, chromeVersion?: number) {
         if (!chromeVersion) {
-            return this.chrome152();
+            return this.chrome154();
         }
         if (chromeVersion < 101) {
             return this.chrome99();
@@ -125,11 +145,10 @@ export const LibCurlJA3FingerPrintImplMap: {
             return this.chrome133();
         } else if (chromeVersion < 152) {
             return this.chrome150();
-        } else {
-            return browserBrand === "edge"
-                ? this.chrome150()
-                : this.chrome152();
+        } else if (chromeVersion < 154) {
+            return this.chrome152();
         }
+        return browserBrand === "edge" ? this.chrome150() : this.chrome154();
     },
 };
 
@@ -166,6 +185,7 @@ export type LibCurlHttp3FingerPrintImpl =
     | "chrome126"
     | "chrome150"
     | "chrome152"
+    | "chrome154"
     | "auto";
 type LibCurlHttp3FingerPrintConfig = {
     scid: string;
@@ -239,16 +259,34 @@ export const LibCurlHttp3FingerPrintImplMap: {
         ),
         initial_packet_number: 1,
     }),
+    chrome154: () => ({
+        // Chrome 154 trust_anchors keep the same order as in the root-store list.
+        scid: "scid=0",
+        settings: "1:65536;6:262144;7:100;51:1;GREASE",
+        transport_params: `12584:0x4f524947;9:103;1:30000;7:6291456;15:AUTO;4:15728640;GREASE;32:65536;3:1472;17:1@1,GREASE;8:100;6:6291456;12583:${randomInt(
+            120000,
+            200000,
+        )};5:6291456`,
+        tls: "ciphers=1,2,3;alps=h3;grease=off;rand=on",
+        permutation: "0,15,19,23,9,1,14,21,17,4,7,27",
+        verify_sigalgs:
+            "0x0403,0x0804,0x0401,0x0503,0x0805,0x0501,0x0806,0x0601,0x0201",
+        trust_anchors:
+            "44947.2.1,44947.2.6,44947.2.13,44947.2.14,44947.2.15,44947.2.18,44947.2.19,44947.2.20,52580.200109.1.7,52580.200109.1.8,52580.200109.1.9,52580.200109.1.10,52580.200109.1.11,52580.200109.1.12,52580.200109.1.13,52580.200109.1.18,52580.200109.1.19,11129.9.1,11129.9.4,11129.9.5,11129.9.6,11129.9.7,11129.9.8,11129.9.10,11129.9.11,11129.9.12,11129.9.13,11129.9.15",
+        initial_packet_number: 1,
+    }),
     auto(browserBrand: LibCurlBrowserBrand, chromeVersion?: number) {
         if (!chromeVersion) {
-            return this.chrome152();
+            return this.chrome154();
         }
         if (chromeVersion < 150) {
             return this.chrome126();
         } else if (chromeVersion < 152) {
             return this.chrome150();
+        } else if (chromeVersion < 154) {
+            return this.chrome152();
         }
-        return browserBrand === "edge" ? this.chrome150() : this.chrome152();
+        return browserBrand === "edge" ? this.chrome150() : this.chrome154();
     },
 };
 

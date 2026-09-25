@@ -366,7 +366,7 @@ export class LibCurl {
         new CaseInsensitiveMap();
     private m_requestType: LibCurlRequestType = "fetch";
     private m_nextRequestType: LibCurlRequestType | null = null;
-    private m_chromeVersion: number = 153;
+    private m_chromeVersion: number = 154;
     private m_browserBrand: LibCurlBrowserBrand = "chrome";
     private m_hasCustomTLSVerifySigalgs: boolean = false;
     /* Last JA3/HTTP/3 fingerprint arguments actually applied to the native

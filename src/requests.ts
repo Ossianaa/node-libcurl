@@ -212,6 +212,15 @@ export class requests {
     };
 
     constructor(option: requestsInitOption = {}) {
+        /* Session options are connection-scoped. `headers` is request-scoped,
+           so accepting it here would silently do nothing: use
+           `defaultRequestHeaders` for session-wide headers, or pass `headers`
+           per request. */
+        if ("headers" in option) {
+            throw new LibCurlError(
+                "requests.session() does not accept `headers`; use `defaultRequestHeaders` for session-wide headers, or pass `headers` per request",
+            );
+        }
         this.option = {
             ...option,
             instance: option.instance || new LibCurl(),
@@ -501,8 +510,11 @@ export class requests {
         url: LibCurlURLInfo,
         requestStaticOpt?: requestsStaticOption,
     ) {
+        /* `headers` is request-scoped: keep it out of the session scope so the
+           session guard stays meaningful. It is applied per request below. */
+        const { headers: _headers, ...sessionOpt } = requestStaticOpt || {};
         return requests
-            .session(requestStaticOpt as requestsInitOption)
+            .session(sessionOpt as requestsInitOption)
             .sendRequestRetry(method, url, requestStaticOpt);
     }
 
