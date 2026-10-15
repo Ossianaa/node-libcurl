@@ -74,6 +74,8 @@ export const LibCurlJA3FingerPrintImplMap: {
     chrome150: () => [
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-65037-21")}-41,4588-29-23-24,0`,
         [
+            // Chrome sends a GREASE signature algorithm ahead of the list.
+            "GREASE",
             "ml_dsa_44",
             "ml_dsa_65",
             "ml_dsa_87",
@@ -92,6 +94,8 @@ export const LibCurlJA3FingerPrintImplMap: {
         // trustAnchors: the Chrome 152 root-store list
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-65037-21-51764")}-41,4588-29-23-24,0`,
         [
+            // Chrome sends a GREASE signature algorithm ahead of the list.
+            "GREASE",
             "ml_dsa_44",
             "ml_dsa_65",
             "ml_dsa_87",
@@ -113,6 +117,8 @@ export const LibCurlJA3FingerPrintImplMap: {
         // bytes) instead of shuffling it per connection.
         `771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,${randomStringExtensions("0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17613-65037-21-51764")}-41,4588-29-23-24,0`,
         [
+            // Chrome sends a GREASE signature algorithm ahead of the list.
+            "GREASE",
             "ml_dsa_44",
             "ml_dsa_65",
             "ml_dsa_87",
@@ -400,6 +406,9 @@ export type LibCurlTLSVerifySigalgsInfo =
           | LibCurlTLSVerifySigalgs
           | number
           | keyof typeof LibCurlTLSVerifySigalgs
+          /* Keyword, not a value: sends a GREASE signature algorithm ahead of
+             the list (Chrome does this on HTTP/2). */
+          | "GREASE"
       >;
 
 export enum LibCurlJA3SupportGroup {
